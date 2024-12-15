@@ -21,4 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "CherryPokemon"
 include(":app")
-include(":build-logic:convention")
+include(":data")
+include(":domain")

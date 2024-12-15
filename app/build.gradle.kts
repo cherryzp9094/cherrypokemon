@@ -1,3 +1,4 @@
+import com.cherryzp.cherrypokemon.app.Versions
 import com.cherryzp.cherrypokemon.app.setBuildType
 import com.cherryzp.cherrypokemon.app.setConfigs
 
@@ -27,11 +28,11 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = Versions.JAVA_VERSION
+        targetCompatibility = Versions.JAVA_VERSION
     }
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = Versions.JAVA_VERSION_STRING
     }
     buildFeatures {
         compose = true
@@ -45,6 +46,9 @@ android {
 }
 
 dependencies {
+    implementation(project(":data"))
+    implementation(project(":domain"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
