@@ -2,12 +2,15 @@ package com.cherryzp.data.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.cherryzp.data.api.PokemonApi
+import com.cherryzp.data.extend.default
+import com.cherryzp.data.mapper.toDomain
 import com.cherryzp.domain.model.Pokemon
 import com.cherryzp.domain.repository.PokemonRepository
 import javax.inject.Inject
 
 class PokemonPagingSource @Inject constructor(
-    private val pokemonRepository: PokemonRepository
+    private val pokemonApi: PokemonApi
 ): PagingSource<Int, Pokemon>() {
     private val limit = 20
 
@@ -15,10 +18,11 @@ class PokemonPagingSource @Inject constructor(
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Pokemon> {
         val page = params.key ?: 1
-        val response = pokemonRepository.fetchPokemonList(limit, page)
+        val response = pokemonApi.fetchPokemonList(limit, page)
+            .results?.map { it.toDomain() }.default()
 
         return try {
-            val nextPage = if (response.count() == limit) page + 1 else null
+            val nextPage = if (response.count() == limit) page + limit else null
             LoadResult.Page(
                 data = response,
                 nextKey = nextPage,
