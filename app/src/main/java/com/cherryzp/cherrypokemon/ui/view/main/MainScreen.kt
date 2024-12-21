@@ -1,5 +1,6 @@
 package com.cherryzp.cherrypokemon.ui.view.main
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,17 +10,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
+import com.cherryzp.data.extend.default
 import com.cherryzp.domain.model.Pokemon
 import com.skydoves.landscapist.glide.GlideImage
 
 @Composable
 fun MainScreen(
-    pokemons: LazyPagingItems<Pokemon>?
+    pokemons: LazyPagingItems<Pokemon>?,
+    goPokemonDetail: (Int) -> Unit
 ) {
     LazyColumn {
         pokemons?.let {
             items(pokemons.itemCount) { index ->
-                Column {
+                Column(
+                    modifier = Modifier
+                        .clickable { goPokemonDetail(pokemons[index]?.id.default()) }
+                ) {
                     Text(
                         text = "No.${pokemons[index]?.id}. ${pokemons[index]?.name.orEmpty()}",
                         style = MaterialTheme.typography.h4

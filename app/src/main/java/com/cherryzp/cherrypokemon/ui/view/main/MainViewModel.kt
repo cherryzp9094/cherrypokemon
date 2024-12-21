@@ -31,4 +31,8 @@ class MainViewModel @Inject constructor(
             )
         }
     }
+
+    fun goPokemonDetail(pokeId: Int) = postSideEffect {
+        MainUiSideEffect.goPokemonDetail(pokeId)
+    }
 }

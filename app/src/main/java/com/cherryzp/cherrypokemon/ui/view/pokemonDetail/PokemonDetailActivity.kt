@@ -4,9 +4,11 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.core.os.bundleOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cherryzp.cherrypokemon.ui.view.base.base.BaseActivity
 import com.cherryzp.cherrypokemon.ui.view.base.base.UiSideEffect
+import com.cherryzp.consts.KeyConsts.POKE_NO
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -22,4 +24,12 @@ class PokemonDetailActivity: BaseActivity<PokemonDetailViewModel, PokemonDetailU
     }
 
     override fun handleSideEffect(sideEffect: UiSideEffect) {}
+
+    companion object {
+        fun create(
+            pokeId: Int
+        ) = bundleOf(
+            POKE_NO to pokeId
+        )
+    }
 }

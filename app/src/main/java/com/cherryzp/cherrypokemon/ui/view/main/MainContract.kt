@@ -12,4 +12,6 @@ data class MainUiState(
     val pokemons: Flow<PagingData<Pokemon>>? = null,
 ): UiState()
 
-sealed class MainUiSideEffect: UiSideEffect
+sealed class MainUiSideEffect: UiSideEffect {
+    data class goPokemonDetail(val pokeId: Int): MainUiSideEffect()
+}
