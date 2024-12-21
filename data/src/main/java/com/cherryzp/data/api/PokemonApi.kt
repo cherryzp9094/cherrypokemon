@@ -1,5 +1,7 @@
 package com.cherryzp.data.api
 
+import com.cherryzp.consts.KeyConsts.POKE_NO
+import com.cherryzp.data.model.PokemonDetailResponse
 import com.cherryzp.data.model.PokemonListResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -16,9 +18,5 @@ interface PokemonApi {
     @GET("pokemon/{${POKE_NO}}")
     suspend fun fetchPokemonDetail(
         @Path(POKE_NO) pokeNo: Int
-    )
-
-    companion object {
-        const val POKE_NO = "pokeNo"
-    }
+    ): PokemonDetailResponse
 }
