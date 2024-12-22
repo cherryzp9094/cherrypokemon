@@ -15,7 +15,6 @@ fun PokemonDetailResponse.toDomain() = PokemonDetail(
     forms = forms.orEmpty().map { it.toDomain() },
     species = species.toDomain(),
     sprites = sprites.toDomain(),
-    stats = stats.orEmpty().map { it.toDomain() },
     types = types.orEmpty().map { it.toDomain() }
 )
 
@@ -45,12 +44,6 @@ fun PokemonDetailResponse.Sprites?.toDomain() = PokemonDetail.Sprites(
     backShiny = this?.back_shiny.orEmpty(),
     frontDefault = this?.front_default.orEmpty(),
     frontShiny = this?.front_shiny.orEmpty()
-)
-
-fun PokemonDetailResponse.Stat?.toDomain() = PokemonDetail.Stat(
-    baseStat = this?.base_stat.default(),
-    effort = this?.effort.default(),
-    stat = this?.stat.toDomain()
 )
 
 fun PokemonDetailResponse.Type?.toDomain() = PokemonDetail.Type(

@@ -13,7 +13,6 @@ data class PokemonDetailResponse(
     val forms: List<Form>?,
     val species: Species?,
     val sprites: Sprites?,
-    val stats: List<Stat>?,
     val types: List<Type>?
 ) {
 
@@ -43,12 +42,6 @@ data class PokemonDetailResponse(
         val back_shiny: String?,
         val front_default: String?,
         val front_shiny: String?
-    )
-
-    data class Stat(
-        val base_stat: Int,
-        val effort: Int,
-        val stat: NamedAPIResource
     )
 
     data class Type(
