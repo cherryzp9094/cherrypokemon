@@ -17,7 +17,7 @@ class PokemonPagingSource @Inject constructor(
     override fun getRefreshKey(state: PagingState<Int, Pokemon>): Int? = null
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Pokemon> {
-        val page = params.key ?: 1
+        val page = params.key ?: 0
         val response = pokemonApi.fetchPokemonList(limit, page)
             .results?.map { it.toDomain() }.default()
 

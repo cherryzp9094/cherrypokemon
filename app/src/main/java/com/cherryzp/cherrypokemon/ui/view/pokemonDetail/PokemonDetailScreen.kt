@@ -18,7 +18,8 @@ fun PokemonDetailScreen(
     pokemonDetail: PokemonDetail
 ) {
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -33,7 +34,37 @@ fun PokemonDetailScreen(
 
         GlideImage(
             modifier = Modifier.size(100.dp),
+            imageModel = { pokemonDetail.sprites.frontShiny }
+        )
+
+        GlideImage(
+            modifier = Modifier.size(100.dp),
             imageModel = { pokemonDetail.sprites.backDefault }
+        )
+
+        GlideImage(
+            modifier = Modifier.size(100.dp),
+            imageModel = { pokemonDetail.sprites.backShiny }
+        )
+
+        GlideImage(
+            modifier = Modifier.size(100.dp),
+            imageModel = { pokemonDetail.sprites.other?.officialArtwork?.frontDefault }
+        )
+
+        GlideImage(
+            modifier = Modifier.size(100.dp),
+            imageModel = { pokemonDetail.sprites.other?.officialArtwork?.frontShiny }
+        )
+
+        GlideImage(
+            modifier = Modifier.size(100.dp),
+            imageModel = { pokemonDetail.sprites.other?.showdown?.frontDefault }
+        )
+
+        GlideImage(
+            modifier = Modifier.size(100.dp),
+            imageModel = { pokemonDetail.sprites.other?.showdown?.backDefault }
         )
 
         Text(text = pokemonDetail.toString())

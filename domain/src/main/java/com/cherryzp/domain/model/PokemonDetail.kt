@@ -13,7 +13,6 @@ data class PokemonDetail(
     val sprites: Sprites,
     val types: List<Type>
 ) {
-
     data class Form(
         val name: String,
         val url: String
@@ -22,12 +21,6 @@ data class PokemonDetail(
     data class NamedAPIResource(
         val name: String,
         val url: String
-    )
-
-    data class VersionGroupDetail(
-        val levelLearnedAt: Int,
-        val moveLearnMethod: NamedAPIResource,
-        val versionGroup: NamedAPIResource
     )
 
     data class Species(
@@ -39,11 +32,33 @@ data class PokemonDetail(
         val backDefault: String?,
         val backShiny: String?,
         val frontDefault: String?,
-        val frontShiny: String?
+        val frontShiny: String?,
+        val other: Other?
     )
 
     data class Type(
         val slot: Int,
         val type: NamedAPIResource
+    )
+
+    data class Other(
+        val officialArtwork: OfficialArtwork?,
+        val showdown: Showdown?
+    )
+
+    data class OfficialArtwork(
+        val frontDefault: String?,
+        val frontShiny: String?
+    )
+
+    data class Showdown(
+        val backDefault: String?,
+        val backFemale: String?,
+        val backShiny: String?,
+        val backShinyFemale: String?,
+        val frontDefault: String?,
+        val frontFemale: String?,
+        val frontShiny: String?,
+        val frontShinyFemale: String?
     )
 }

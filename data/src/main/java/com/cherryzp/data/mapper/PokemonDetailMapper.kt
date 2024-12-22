@@ -28,25 +28,41 @@ fun PokemonDetailResponse.NamedAPIResource?.toDomain() = PokemonDetail.NamedAPIR
     url = this?.url.orEmpty()
 )
 
-fun PokemonDetailResponse.VersionGroupDetail?.toDomain() = PokemonDetail.VersionGroupDetail(
-    levelLearnedAt = this?.level_learned_at.default(),
-    moveLearnMethod = this?.move_learn_method.toDomain(),
-    versionGroup = this?.version_group.toDomain()
-)
-
 fun PokemonDetailResponse.Species?.toDomain() = PokemonDetail.Species(
     name = this?.name.orEmpty(),
     url = this?.url.orEmpty()
 )
 
 fun PokemonDetailResponse.Sprites?.toDomain() = PokemonDetail.Sprites(
-    backDefault = this?.back_default.orEmpty(),
-    backShiny = this?.back_shiny.orEmpty(),
-    frontDefault = this?.front_default.orEmpty(),
-    frontShiny = this?.front_shiny.orEmpty()
+    backDefault = this?.back_default,
+    backShiny = this?.back_shiny,
+    frontDefault = this?.front_default,
+    frontShiny = this?.front_shiny,
+    other = this?.other.toDomain()
 )
 
 fun PokemonDetailResponse.Type?.toDomain() = PokemonDetail.Type(
     slot = this?.slot.default(),
     type = this?.type.toDomain()
+)
+
+fun PokemonDetailResponse.Other?.toDomain() = PokemonDetail.Other(
+    officialArtwork = this?.officialArtwork.toDomain(),
+    showdown = this?.showdown.toDomain()
+)
+
+fun PokemonDetailResponse.OfficialArtwork?.toDomain() = PokemonDetail.OfficialArtwork(
+    frontDefault = this?.front_default,
+    frontShiny = this?.front_shiny
+)
+
+fun PokemonDetailResponse.Showdown?.toDomain() = PokemonDetail.Showdown(
+    backDefault = this?.back_default,
+    backFemale = this?.back_female,
+    backShiny = this?.back_shiny,
+    backShinyFemale = this?.back_shiny_female,
+    frontDefault = this?.front_default,
+    frontFemale = this?.front_female,
+    frontShiny = this?.front_shiny,
+    frontShinyFemale = this?.front_shiny_female
 )
