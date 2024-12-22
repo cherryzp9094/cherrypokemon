@@ -12,36 +12,16 @@ fun PokemonDetailResponse.toDomain() = PokemonDetail(
     isDefault = is_default.default(),
     order = order.default(),
     weight = weight.default(),
-    abilities = abilities.orEmpty().map { it.toDomain() },
     forms = forms.orEmpty().map { it.toDomain() },
-    gameIndices = game_indices.orEmpty().map { it.toDomain() },
-    locationAreaEncounters = location_area_encounters.orEmpty(),
-    moves = moves.orEmpty().map { it.toDomain() },
     species = species.toDomain(),
     sprites = sprites.toDomain(),
     stats = stats.orEmpty().map { it.toDomain() },
     types = types.orEmpty().map { it.toDomain() }
 )
 
-fun PokemonDetailResponse.Ability?.toDomain() = PokemonDetail.Ability(
-    ability = this?.ability.toDomain(),
-    isHidden = this?.is_hidden.default(),
-    slot = this?.slot.default()
-)
-
 fun PokemonDetailResponse.Form?.toDomain() = PokemonDetail.Form(
     name = this?.name.orEmpty(),
     url = this?.url.orEmpty()
-)
-
-fun PokemonDetailResponse.GameIndex?.toDomain() = PokemonDetail.GameIndex(
-    gameIndex = this?.game_index.default(),
-    version = this?.version.toDomain()
-)
-
-fun PokemonDetailResponse.Move?.toDomain() = PokemonDetail.Move(
-    move = this?.move.toDomain(),
-    versionGroupDetails = this?.version_group_details.orEmpty().map { it.toDomain() }
 )
 
 fun PokemonDetailResponse.NamedAPIResource?.toDomain() = PokemonDetail.NamedAPIResource(

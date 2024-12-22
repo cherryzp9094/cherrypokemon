@@ -10,35 +10,16 @@ data class PokemonDetailResponse(
     val is_default: Boolean?,
     val order: Int?,
     val weight: Int?,
-    val abilities: List<Ability>?,
     val forms: List<Form>?,
-    val game_indices: List<GameIndex>?,
-    val location_area_encounters: String?,
-    val moves: List<Move>?,
     val species: Species?,
     val sprites: Sprites?,
     val stats: List<Stat>?,
     val types: List<Type>?
 ) {
-    data class Ability(
-        val ability: NamedAPIResource,
-        val is_hidden: Boolean,
-        val slot: Int
-    )
 
     data class Form(
         val name: String,
         val url: String
-    )
-
-    data class GameIndex(
-        val game_index: Int,
-        val version: NamedAPIResource
-    )
-
-    data class Move(
-        val move: NamedAPIResource,
-        val version_group_details: List<VersionGroupDetail>
     )
 
     data class NamedAPIResource(
