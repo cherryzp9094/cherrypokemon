@@ -38,27 +38,29 @@ fun PokemonCard(
 ) {
     Column(
         modifier = modifier
-            .background(
-                Color.White,
+            .clip(
                 Shapes().medium
+            ).background(
+                Color.White
             ).border(
-                width = 1.dp,
+                width = 2.dp,
                 color = Color.LightGray,
                 shape = Shapes().medium
-            ).padding(8.dp)
+            ).background(extractDominantColor(image.orEmpty()))
+            .padding(8.dp)
     ) {
         Text(
             text = "No.$id",
             fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            fontWeight = FontWeight.ExtraBold,
+            color = Color.White,
         )
 
         Text(
             text = name,
             fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.White,
             maxLines = 1
         )
 
@@ -66,8 +68,7 @@ fun PokemonCard(
             modifier = Modifier
                 .clip(Shapes().medium)
                 .fillMaxWidth()
-                .aspectRatio(1f)
-                .background(extractDominantColor(image.orEmpty())),
+                .aspectRatio(1f),
             imageModel = { image }
         )
     }
