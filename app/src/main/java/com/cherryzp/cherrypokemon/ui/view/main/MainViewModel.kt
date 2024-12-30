@@ -1,10 +1,12 @@
 package com.cherryzp.cherrypokemon.ui.view.main
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import com.cherryzp.cherrypokemon.ui.view.base.base.BaseViewModel
 import com.cherryzp.domain.usecase.PokemonListUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,6 +32,17 @@ class MainViewModel @Inject constructor(
                 pokemons = pokemons
             )
         }
+    }
+
+    fun updateBackgroundColor(pokeId: Int, color: Color) = reduceState {
+        it.copy(
+            pokemonBackgroundColor = it
+                .pokemonBackgroundColor
+                .toMutableMap()
+                .apply {
+                    put(pokeId, color)
+                }.toPersistentMap()
+        )
     }
 
     fun goPokemonDetail(pokeId: Int) = postSideEffect {

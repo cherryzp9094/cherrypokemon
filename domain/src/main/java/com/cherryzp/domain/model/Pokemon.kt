@@ -2,7 +2,7 @@ package com.cherryzp.domain.model
 
 data class Pokemon(
     val name: String,
-    val url: String,
+    val url: String
 ) {
     val id: Int
         get() = url.split("/").lastOrNull { it.isNotEmpty() }?.toInt() ?: 0

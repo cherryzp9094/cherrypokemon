@@ -23,6 +23,8 @@ class MainActivity : BaseActivity<MainViewModel, MainUiState>() {
 
         MainScreen(
             pokemons = pokemons,
+            pokemonBackgroundColor = uiState.pokemonBackgroundColor,
+            updateBackgroundColor = viewModel::updateBackgroundColor,
             goPokemonDetail = viewModel::goPokemonDetail
         )
     }
