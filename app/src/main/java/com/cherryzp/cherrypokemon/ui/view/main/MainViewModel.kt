@@ -1,5 +1,6 @@
 package com.cherryzp.cherrypokemon.ui.view.main
 
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
@@ -35,6 +36,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun updateBackgroundColor(pokeId: Int, color: Color) = reduceState {
+        Log.e("updateBackgroundColor", "pokeId: $pokeId, color: $color")
         it.copy(
             pokemonBackgroundColor = it
                 .pokemonBackgroundColor

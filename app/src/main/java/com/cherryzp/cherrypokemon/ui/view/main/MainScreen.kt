@@ -38,7 +38,7 @@ fun MainScreen(
         ) {
             items(pokemons.itemCount) { index ->
                 pokemons[index]?.let { pokemon ->
-                    pokemonBackgroundColor[pokemon.id]?.let {
+                    if (pokemonBackgroundColor[pokemon.id] == null) {
                         LaunchedEffect(pokemon.id) {
                             val color = fetchDominantColor(context, pokemon.imageUrl)
                             updateBackgroundColor(pokemon.id, color)
