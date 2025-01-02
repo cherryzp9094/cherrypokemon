@@ -18,26 +18,34 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+val LightColorScheme = lightColorScheme(
+    primary = PrimaryFire,
+    onPrimary = TextOnPrimary,
+    primaryContainer = Color(0xFFFFDAB5),
+    onPrimaryContainer = PrimaryFire,
+    secondary = PrimaryWater,
+    onSecondary = TextOnPrimary,
+    secondaryContainer = Color(0xFFBFD9FF),
+    onSecondaryContainer = PrimaryWater,
+    background = NeutralBackground,
+    onBackground = TextOnBackground,
+    surface = NeutralSurface,
+    onSurface = TextOnBackground
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+val DarkColorScheme = darkColorScheme(
+    primary = PrimaryFire,
+    onPrimary = Color.Black,
+    primaryContainer = Color(0xFF8C3900),
+    onPrimaryContainer = PrimaryFire,
+    secondary = PrimaryWater,
+    onSecondary = Color.Black,
+    secondaryContainer = Color(0xFF003C8A),
+    onSecondaryContainer = PrimaryWater,
+    background = NeutralBackgroundDark,
+    onBackground = TextOnBackgroundDark,
+    surface = NeutralSurfaceDark,
+    onSurface = TextOnBackgroundDark
 )
 
 @Composable
@@ -63,8 +71,8 @@ fun CherryPokemonTheme(
             val activity = view.context.findActivity()
             activity?.let {
                 val window = it.window
-                window.statusBarColor = Color.White.toArgb()
-                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
+                window.statusBarColor = PrimaryFire.toArgb()
+                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
             }
         }
     }
