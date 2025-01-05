@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.material.TopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -26,6 +28,7 @@ import com.cherryzp.cherrypokemon.ui.theme.PrimaryFire
 import com.cherryzp.domain.model.Pokemon
 import kotlinx.collections.immutable.ImmutableMap
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     pokemons: LazyPagingItems<Pokemon>?,
@@ -48,7 +51,12 @@ fun MainScreen(
                     fontWeight = FontWeight.Bold
                 )
             },
-            backgroundColor = PrimaryFire
+            colors = TopAppBarDefaults
+                .topAppBarColors()
+                .copy(
+                    containerColor = PrimaryFire,
+                    titleContentColor = Color.White,
+                )
         )
 
         pokemons?.let {
