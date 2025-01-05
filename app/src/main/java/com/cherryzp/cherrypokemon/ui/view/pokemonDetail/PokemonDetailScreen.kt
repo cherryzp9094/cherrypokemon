@@ -2,7 +2,6 @@ package com.cherryzp.cherrypokemon.ui.view.pokemonDetail
 
 import android.view.Window
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
@@ -16,11 +15,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import com.cherryzp.domain.model.PokemonDetail
 import com.skydoves.landscapist.glide.GlideImage
@@ -42,8 +44,7 @@ fun PokemonDetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .verticalScroll(rememberScrollState())
     ) {
 
         GlideImage(
@@ -60,7 +61,15 @@ fun PokemonDetailScreen(
             imageModel = { pokemonDetail.sprites.other?.officialArtwork?.frontDefault }
         )
 
-        Text(text = pokemonDetail.name)
+        Text(
+            modifier = Modifier
+                .padding(top = 24.dp)
+                .align(CenterHorizontally),
+            text = pokemonDetail.name,
+            fontSize = 36.sp,
+            fontWeight = FontWeight.Bold,
+        )
+
         Text(text = pokemonDetail.height.toString())
         Text(text = pokemonDetail.weight.toString())
 
