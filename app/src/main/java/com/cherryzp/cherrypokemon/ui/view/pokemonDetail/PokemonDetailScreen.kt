@@ -1,18 +1,23 @@
 package com.cherryzp.cherrypokemon.ui.view.pokemonDetail
 
 import android.view.Window
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
@@ -40,6 +45,21 @@ fun PokemonDetailScreen(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+
+        GlideImage(
+            modifier = Modifier
+                .clip(
+                    RoundedCornerShape(
+                        bottomStart = 24.dp,
+                        bottomEnd = 24.dp
+                    )
+                )
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .background(Color(pokemonBackgroundColor)),
+            imageModel = { pokemonDetail.sprites.other?.officialArtwork?.frontDefault }
+        )
+
         Text(text = pokemonDetail.name)
         Text(text = pokemonDetail.height.toString())
         Text(text = pokemonDetail.weight.toString())
