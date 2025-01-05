@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -34,7 +35,7 @@ fun MainScreen(
     pokemons: LazyPagingItems<Pokemon>?,
     pokemonBackgroundColor: ImmutableMap<Int, Color>,
     updateBackgroundColor: (Int, Color) -> Unit,
-    goPokemonDetail: (Int) -> Unit
+    goPokemonDetail: (Int, Int) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -84,7 +85,12 @@ fun MainScreen(
                             image = pokemon.imageUrl,
                             pokemonBackground = pokemonBackgroundColor[pokemon.id] ?: Color.White,
                             modifier = Modifier
-                                .clickable { goPokemonDetail(pokemon.id) }
+                                .clickable {
+                                    goPokemonDetail(
+                                        pokemon.id,
+                                        (pokemonBackgroundColor[pokemon.id] ?: Color.White).toArgb()
+                                    )
+                                }
                         )
                     }
                 }

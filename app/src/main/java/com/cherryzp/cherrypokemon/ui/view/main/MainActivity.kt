@@ -36,7 +36,10 @@ class MainActivity : BaseActivity<MainViewModel, MainUiState>() {
                     Intent(
                         this, PokemonDetailActivity::class.java
                     ).putExtras(
-                        PokemonDetailActivity.create(sideEffect.pokeId)
+                        PokemonDetailActivity.create(
+                            sideEffect.pokeId,
+                            sideEffect.pokemonBackgroundColor
+                        )
                     )
                 )
             }

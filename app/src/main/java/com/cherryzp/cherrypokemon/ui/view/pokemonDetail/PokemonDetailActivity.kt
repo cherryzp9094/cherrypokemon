@@ -8,6 +8,7 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cherryzp.cherrypokemon.ui.view.base.base.BaseActivity
 import com.cherryzp.cherrypokemon.ui.view.base.base.UiSideEffect
+import com.cherryzp.consts.KeyConsts.POKEMON_BACKGROUND_COLOR
 import com.cherryzp.consts.KeyConsts.POKE_NO
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -19,7 +20,12 @@ class PokemonDetailActivity: BaseActivity<PokemonDetailViewModel, PokemonDetailU
     override fun BuildContent(paddingValues: PaddingValues) {
         val uiState by viewModel.container.uiState.collectAsStateWithLifecycle()
         uiState.pokemonDetail?.let { pokemonDetail ->
-            PokemonDetailScreen(pokemonDetail = pokemonDetail)
+            PokemonDetailScreen(
+                paddingValues = paddingValues,
+                window = window,
+                pokemonDetail = pokemonDetail,
+                pokemonBackgroundColor = uiState.pokemonBackgroundColor
+            )
         }
     }
 
@@ -27,9 +33,11 @@ class PokemonDetailActivity: BaseActivity<PokemonDetailViewModel, PokemonDetailU
 
     companion object {
         fun create(
-            pokeId: Int
+            pokeId: Int,
+            pokemonBackgroundColor: Int
         ) = bundleOf(
-            POKE_NO to pokeId
+            POKE_NO to pokeId,
+            POKEMON_BACKGROUND_COLOR to pokemonBackgroundColor
         )
     }
 }
