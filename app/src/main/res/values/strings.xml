@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">CherryPokemon</string>
+
+    <string name="height">Height</string>
+    <string name="weight">Weight</string>
+
 </resources>
