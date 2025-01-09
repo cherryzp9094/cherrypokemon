@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import com.cherryzp.cherrypokemon.R
+import com.cherryzp.cherrypokemon.enums.PokemonTypeEnum
 import com.cherryzp.cherrypokemon.ui.theme.PrimaryFire
 import com.cherryzp.domain.model.PokemonDetail
 import com.skydoves.landscapist.glide.GlideImage
@@ -82,15 +83,23 @@ fun PokemonDetailScreen(
 
         Row(
             modifier = Modifier
-                .padding(top = 4.dp)
+                .padding(top = 16.dp)
                 .align(CenterHorizontally),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             pokemonDetail.types.forEach { type ->
                 Text(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(PokemonTypeEnum.creator(type.type.name).color)
+                        .padding(
+                            vertical = 6.dp,
+                            horizontal = 12.dp
+                        ),
                     text = type.type.name,
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
                 )
             }
         }
