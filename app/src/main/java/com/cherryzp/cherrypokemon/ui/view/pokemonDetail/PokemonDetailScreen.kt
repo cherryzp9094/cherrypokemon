@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -117,46 +116,6 @@ fun PokemonDetailScreen(
                     .format(pokemonDetail.weight * 0.1f)} kg"
             )
         }
-
-        GlideImage(
-            modifier = Modifier.size(100.dp),
-            imageModel = { pokemonDetail.sprites.frontDefault }
-        )
-
-        GlideImage(
-            modifier = Modifier.size(100.dp),
-            imageModel = { pokemonDetail.sprites.frontShiny }
-        )
-
-        GlideImage(
-            modifier = Modifier.size(100.dp),
-            imageModel = { pokemonDetail.sprites.backDefault }
-        )
-
-        GlideImage(
-            modifier = Modifier.size(100.dp),
-            imageModel = { pokemonDetail.sprites.backShiny }
-        )
-
-        GlideImage(
-            modifier = Modifier.size(100.dp),
-            imageModel = { pokemonDetail.sprites.other?.officialArtwork?.frontDefault }
-        )
-
-        GlideImage(
-            modifier = Modifier.size(100.dp),
-            imageModel = { pokemonDetail.sprites.other?.officialArtwork?.frontShiny }
-        )
-
-        GlideImage(
-            modifier = Modifier.size(100.dp),
-            imageModel = { pokemonDetail.sprites.other?.showdown?.frontDefault }
-        )
-
-        GlideImage(
-            modifier = Modifier.size(100.dp),
-            imageModel = { pokemonDetail.sprites.other?.showdown?.backDefault }
-        )
 
         Text(text = pokemonDetail.toString())
     }
