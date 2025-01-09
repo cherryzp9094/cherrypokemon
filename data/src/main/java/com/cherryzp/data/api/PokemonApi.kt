@@ -3,6 +3,7 @@ package com.cherryzp.data.api
 import com.cherryzp.consts.KeyConsts.POKE_NO
 import com.cherryzp.data.model.PokemonDetailResponse
 import com.cherryzp.data.model.PokemonListResponse
+import com.cherryzp.data.model.PokemonSpeciesResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -19,4 +20,9 @@ interface PokemonApi {
     suspend fun fetchPokemonDetail(
         @Path(POKE_NO) pokeNo: Int
     ): PokemonDetailResponse
+
+    @GET("pokemon-species/{${POKE_NO}}")
+    suspend fun fetchPokemonSpecies(
+        @Path(POKE_NO) pokeNo: Int
+    ): PokemonSpeciesResponse
 }

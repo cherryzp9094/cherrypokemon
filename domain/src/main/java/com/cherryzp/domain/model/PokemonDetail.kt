@@ -18,7 +18,7 @@ data class PokemonDetail(
         val url: String
     )
 
-    data class NamedAPIResource(
+    data class NamedResource(
         val name: String,
         val url: String
     )
@@ -38,7 +38,7 @@ data class PokemonDetail(
 
     data class Type(
         val slot: Int,
-        val type: NamedAPIResource
+        val type: NamedResource
     )
 
     data class Other(

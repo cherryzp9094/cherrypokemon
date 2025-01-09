@@ -23,7 +23,7 @@ fun PokemonDetailResponse.Form?.toDomain() = PokemonDetail.Form(
     url = this?.url.orEmpty()
 )
 
-fun PokemonDetailResponse.NamedAPIResource?.toDomain() = PokemonDetail.NamedAPIResource(
+fun PokemonDetailResponse.NamedResource?.toDomain() = PokemonDetail.NamedResource(
     name = this?.name.orEmpty(),
     url = this?.url.orEmpty()
 )
