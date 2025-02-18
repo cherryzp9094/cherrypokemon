@@ -125,8 +125,6 @@ fun PokemonDetailScreen(
                     .format(pokemonDetail.weight * 0.1f)} kg"
             )
         }
-
-        Text(text = pokemonDetail.toString())
     }
 }
 
