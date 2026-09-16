@@ -15,8 +15,9 @@ PokeAPI 기반 포켓몬 도감 앱. Jetpack Compose + 커스텀 MVI + 3-레이�
 | Composable | `compose.md` |
 | Repository, UseCase, DTO, DI | `data.md` |
 | 테스트 | `testing.md` |
+| Gradle, 모듈 build 파일, CI | `build.md` |
 
-이 파일의 아래 내용은 **지금 코드**의 설명이고, 컨벤션은 **목표 상태**다. 개선 계획의 해당 Phase가 끝나기 전에는 그 영역을 기존 구조에 맞춰 고친다.
+이 파일의 아래 내용은 **지금 코드**의 설명이고, 컨벤션은 **목표 상태**다. 지금 코드를 목표 상태로 옮기는 순서는 `docs/improvement-plan.md`에 있다.
 
 ## 명령어
 
