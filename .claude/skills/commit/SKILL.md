@@ -2,7 +2,7 @@
 name: commit
 description: 팀 커밋 규칙에 따라 작업 트리의 변경을 작은 단위 커밋 여러 개로 나눠 커밋한다. 푸시와 PR은 /pr 에서 한다.
 disable-model-invocation: true
-allowed-tools: Bash(git branch *) Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git add *) Bash(git commit *) Bash(git restore --staged *) Bash(./gradlew *)
+allowed-tools: Bash(git branch *) Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git add *) Bash(git commit *) Bash(git restore --staged *) Bash(git switch *) Bash(./gradlew *)
 ---
 
 # 커밋
@@ -82,6 +82,8 @@ allowed-tools: Bash(git branch *) Bash(git status *) Bash(git diff *) Bash(git l
 | # | 메시지 | 파일 |
 |---|---|---|
 
+현재 브랜치가 `main`이면 새로 만들 브랜치 이름도 함께 보여준다. 이름은 `타입/짧은-영문-설명` 형식이고 소문자 kebab-case다. 타입은 계획의 주된 목적을 따른다. (예: `fix/paging-crash`)
+
 그 다음 **AskUserQuestion**으로 진행 여부를 묻는다. 일반 메시지로 묻고 턴을 끝내면 `allowed-tools`의 사전 승인이 사라지기 때문이다.
 
 ### 5. 빌드 확인
@@ -92,10 +94,9 @@ allowed-tools: Bash(git branch *) Bash(git status *) Bash(git diff *) Bash(git l
 
 ### 6. 커밋
 
-현재 브랜치에 커밋한다. `main`이어도 괜찮다. PR을 올릴 때 `/pr`이 브랜치를 만든다.
-
-1. 이미 스테이징된 것이 있으면 `git restore --staged -- <파일>`로 내린다. 작업 트리는 건드리지 않는다.
-2. 계획의 커밋마다:
+1. 현재 브랜치가 `main`이면 4단계에서 확인받은 이름으로 `git switch -c <브랜치>`를 실행한다. `main`에는 커밋하지 않는다. 로컬 `main`에 커밋이 쌓이면 다음 PR에 앞 PR의 커밋이 섞인다.
+2. 이미 스테이징된 것이 있으면 `git restore --staged -- <파일>`로 내린다. 작업 트리는 건드리지 않는다.
+3. 계획의 커밋마다:
    - `git add -- <파일...>`로 **경로를 명시**해서 스테이징한다. `git add -A`, `git add .`는 쓰지 않는다. 삭제된 파일도 경로를 명시하면 스테이징된다.
    - `git diff --cached --name-only`로 스테이징된 목록이 계획과 같은지 확인한다.
    - 메시지는 heredoc으로 넘긴다.
@@ -107,7 +108,7 @@ allowed-tools: Bash(git branch *) Bash(git status *) Bash(git diff *) Bash(git l
      Co-Authored-By: ...
      MSG
      ```
-3. 훅이나 커밋이 실패하면 멈추고 보고한다. `--no-verify`를 쓰지 않는다.
+4. 훅이나 커밋이 실패하면 멈추고 보고한다. `--no-verify`를 쓰지 않는다.
 
 ### 7. 보고
 
