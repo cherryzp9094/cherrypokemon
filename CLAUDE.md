@@ -41,15 +41,13 @@ PokeAPI 기반 포켓몬 도감 앱. Jetpack Compose + 커스텀 MVI + 3-레이�
 
 ktlint / detekt / CI 는 아직 구성되어 있지 않다.
 
-`buildSrc` 를 수정하면 전체 프로젝트의 configuration 이 무효화되어 빌드가 느려진다.
-
 ## 모듈 구조
 
 ```
 :app     Compose UI + MVI (presentation)
 :data    Retrofit / Paging / DI / DTO·Mapper
 :domain  model, repository interface, usecase
-buildSrc 공유 빌드 로직 (컨벤션 플러그인이 아닌 확장 함수 방식)
+build-logic  공유 빌드 로직 (included build 의 convention plugin)
 ```
 
 의존 방향: `:app → :data`, `:app → :domain`, `:data → :domain`
@@ -115,19 +113,17 @@ PokemonApi (Retrofit)
 - DI 는 `data/di/` 에만 있다. `ApiModule`(`@Provides`, `internal object`) + `RepositoryModule`(`@Binds`, `interface`). 둘 다 `SingletonComponent`.
 - `Pokemon.id` 와 `Pokemon.imageUrl` 은 저장 필드가 아니라 `url` 문자열에서 매번 파싱하는 computed property 다.
 
-## 버전 관리
-
-**버전이 두 군데로 나뉘어 있다.** 수정 시 어느 쪽인지 확인할 것.
+## 빌드 설정
 
 | 위치 | 담당 |
 |---|---|
 | `gradle/libs.versions.toml` | 라이브러리·플러그인 버전, 번들 |
-| `buildSrc/.../app/Versions.kt` | `COMPILE_SDK`, `MIN_SDK`, `TARGET_SDK`, Java 버전 |
-| `buildSrc/.../app/BuildTaskObject.kt` | 빌드 타입별 `isMinifyEnabled` / `isDebuggable` |
+| `build-logic/convention/.../KotlinAndroid.kt` | `COMPILE_SDK`, `MIN_SDK`, `TARGET_SDK`, Java·Kotlin JVM 타깃 |
+| `build-logic/convention/src/main/kotlin/*ConventionPlugin.kt` | 모듈 종류별 공통 설정 (`cherrypokemon.android.application`, `.application.compose`, `.android.library`, `cherrypokemon.hilt`) |
 
-`buildSrc/.../app/BaseExtension.kt` 의 `setConfigs()` / `setBuildType()` 을 각 모듈 `build.gradle.kts` 에서 호출한다.
-
-플러그인은 alias 가 아니라 `id(libs.plugins.xxx.get().pluginId)` 형태로 적용한다.
+- 모듈 `build.gradle.kts` 에는 플러그인, `namespace`, 그 모듈에만 필요한 설정과 의존성만 둔다.
+- convention plugin 은 `id("cherrypokemon.…")`, 카탈로그 플러그인은 `alias(libs.plugins.…)` 로 적용한다.
+- 플러그인을 새로 만들면 `build-logic/convention/build.gradle.kts` 의 `gradlePlugin {}` 에 등록한다.
 
 ## 알려진 부채
 
