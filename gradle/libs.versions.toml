@@ -32,6 +32,7 @@ paletteKtx = "1.0.0"
 [libraries]
 javapoet = { module = "com.squareup:javapoet", version.ref = "javapoet" }
 tools-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 compose-compiler-gradle-plugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
 
