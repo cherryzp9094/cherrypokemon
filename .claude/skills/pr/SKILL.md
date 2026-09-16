@@ -2,7 +2,7 @@
 name: pr
 description: 팀 PR 규칙에 따라 현재 브랜치를 푸시하고 main 대상 PR을 만든다. 이미 열린 PR이 있으면 제목과 본문을 규칙에 맞게 고친다.
 disable-model-invocation: true
-allowed-tools: Bash(git branch *) Bash(git status *) Bash(git log *) Bash(git diff *) Bash(git fetch *) Bash(git switch *) Bash(git push *) Bash(gh pr list *) Bash(gh pr view *) Bash(gh pr create *) Bash(gh pr edit *) Bash(./gradlew *)
+allowed-tools: Bash(git branch *) Bash(git status *) Bash(git log *) Bash(git diff *) Bash(git fetch *) Bash(git push *) Bash(gh pr list *) Bash(gh pr view *) Bash(gh pr create *) Bash(gh pr edit *) Bash(./gradlew *)
 ---
 
 # PR
@@ -28,7 +28,7 @@ allowed-tools: Bash(git branch *) Bash(git status *) Bash(git log *) Bash(git di
 
 ## 브랜치 이름
 
-`타입/짧은-영문-설명`. 소문자 kebab-case. (예: `fix/paging-crash`, `chore/pr-skill`)
+`타입/짧은-영문-설명`. 소문자 kebab-case. (예: `fix/paging-crash`, `chore/pr-skill`) 브랜치는 `/commit`이 커밋하기 전에 만든다.
 
 ## 본문
 
@@ -65,10 +65,10 @@ allowed-tools: Bash(git branch *) Bash(git status *) Bash(git log *) Bash(git di
 
 ### 1. 브랜치와 변경 확인
 
-1. 커밋 안 된 변경이 있으면 `/commit`을 먼저 하라고 안내하고 멈춘다. 단, `/commit`이 커밋하지 않는 파일(`.idea/`, `build/`, 줄바꿈만 바뀐 파일 등)만 있으면 무시하고 진행한다.
-2. `git fetch origin main`
-3. `git log --oneline origin/main..HEAD`로 PR에 들어갈 커밋을 확인한다. 없으면 그렇게 알리고 끝낸다.
-4. 현재 브랜치가 `main`이면 커밋 내용에 맞는 이름으로 `git switch -c <타입>/<짧은-영문-설명>`을 실행한다. 로컬 `main`에 남은 커밋은 건드리지 않고 보고에 적는다.
+1. 현재 브랜치가 `main`이면 PR을 만들지 않고 멈춘다. `git log --oneline origin/main..main`에 커밋이 있으면 그 목록을 보여주고, 브랜치로 옮기려면 로컬 `main`을 되돌려야 하니 어떻게 할지 사용자에게 묻는다.
+2. 커밋 안 된 변경이 있으면 `/commit`을 먼저 하라고 안내하고 멈춘다. 단, `/commit`이 커밋하지 않는 파일(`.idea/`, `build/`, 줄바꿈만 바뀐 파일 등)만 있으면 무시하고 진행한다.
+3. `git fetch origin main`
+4. `git log --oneline origin/main..HEAD`로 PR에 들어갈 커밋을 확인한다. 없으면 그렇게 알리고 끝낸다.
 
 ### 2. 내용 파악
 
@@ -115,4 +115,3 @@ allowed-tools: Bash(git branch *) Bash(git status *) Bash(git log *) Bash(git di
 - PR URL
 - 포함된 커밋 목록
 - 확인하지 않은 항목
-- 로컬 `main`에 커밋이 남아 있으면 그 사실
