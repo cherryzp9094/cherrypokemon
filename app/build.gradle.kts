@@ -2,7 +2,7 @@ plugins {
     id("cherrypokemon.android.application")
     id("cherrypokemon.android.application.compose")
     id("cherrypokemon.hilt")
-    id(libs.plugins.kotlin.parcelize.get().pluginId)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 android {
