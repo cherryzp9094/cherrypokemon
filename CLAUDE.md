@@ -131,7 +131,7 @@ PokemonApi (Retrofit)
 
 ## 알려진 부채
 
-새 코드를 쓸 때 아래를 답습하지 말고, 근처를 수정하게 되면 함께 고칠 것. 전체 개선 순서는 `docs/improvement-plan.md` 에 있다.
+새 코드를 쓸 때 아래를 답습하지 말 것. 옛 코드에서는 고치지 않고, 새 구조로 옮기면서 없앤다. 각 항목이 사라지는 단계는 `docs/improvement-plan.md` 에 있다.
 
 - `PokemonPagingSource.load()` 의 API 호출이 `try` 블록 **밖**에 있어 네트워크 에러가 크래시로 이어진다.
 - 로딩 / 에러 / 빈 상태 UI 가 없다. Paging `loadState` 를 아무도 읽지 않는다.
