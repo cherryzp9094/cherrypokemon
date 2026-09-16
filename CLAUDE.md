@@ -4,6 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 PokeAPI 기반 포켓몬 도감 앱. Jetpack Compose + 커스텀 MVI + 3-레이어 멀티모듈 구성의 학습용 프로젝트.
 
+## 컨벤션
+
+코드를 쓰거나 고치기 전에 [`docs/conventions/`](docs/conventions/README.md)에서 해당 영역 문서를 읽는다.
+
+| 작업 | 문서 |
+|---|---|
+| 모듈·레이어, ViewModel·UiState, 내비게이션 | `architecture.md` |
+| 이름, 포맷, 코루틴 | `kotlin.md` |
+| Composable | `compose.md` |
+| Repository, UseCase, DTO, DI | `data.md` |
+| 테스트 | `testing.md` |
+
+이 파일의 아래 내용은 **지금 코드**의 설명이고, 컨벤션은 **목표 상태**다. 개선 계획의 해당 Phase가 끝나기 전에는 그 영역을 기존 구조에 맞춰 고친다.
+
 ## 명령어
 
 ```bash
