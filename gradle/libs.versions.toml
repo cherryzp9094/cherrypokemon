@@ -2,7 +2,6 @@
 agp = "8.5.2"
 kotlin = "2.0.0"
 coreKtx = "1.13.1"
-javapoet = "1.13.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
@@ -30,8 +29,7 @@ glide = "2.4.0"
 paletteKtx = "1.0.0"
 
 [libraries]
-javapoet = { module = "com.squareup:javapoet", version.ref = "javapoet" }
-tools-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 compose-compiler-gradle-plugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
 
@@ -54,7 +52,6 @@ androidx-palette-ktx = { group = "androidx.palette", name = "palette-ktx", versi
 
 kotlinx-collections-immutable = { group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "kotlinxCollections" }
 
-hilt-android-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt-android-gradle-plugin" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 hilt-navigation = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt-navigation" }
