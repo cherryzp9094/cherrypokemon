@@ -16,13 +16,5 @@ internal fun Project.configureSpotless() {
             targetExclude("**/build/**/*.kt")
             ktlint(ktlintVersion).editorConfigOverride(mapOf("android" to "true"))
         }
-        format("kts") {
-            target("**/*.kts")
-            targetExclude("**/build/**/*.kts")
-        }
-        format("xml") {
-            target("**/*.xml")
-            targetExclude("**/build/**/*.xml")
-        }
     }
 }
