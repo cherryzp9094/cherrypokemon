@@ -10,8 +10,8 @@ import com.cherryzp.domain.repository.PokemonRepository
 import javax.inject.Inject
 
 class PokemonPagingSource @Inject constructor(
-    private val pokemonApi: PokemonApi
-): PagingSource<Int, Pokemon>() {
+    private val pokemonApi: PokemonApi,
+) : PagingSource<Int, Pokemon>() {
     private val limit = 20
 
     override fun getRefreshKey(state: PagingState<Int, Pokemon>): Int? = null

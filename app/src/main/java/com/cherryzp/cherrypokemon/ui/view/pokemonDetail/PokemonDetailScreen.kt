@@ -40,9 +40,8 @@ fun PokemonDetailScreen(
     paddingValues: PaddingValues,
     window: Window?,
     pokemonDetail: PokemonDetail,
-    pokemonBackgroundColor: Int
+    pokemonBackgroundColor: Int,
 ) {
-
     LaunchedEffect(pokemonBackgroundColor) {
         window?.let {
             WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -55,21 +54,20 @@ fun PokemonDetailScreen(
             .fillMaxSize()
             .padding(paddingValues)
             .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
     ) {
-
         GlideImage(
             modifier = Modifier
                 .clip(
                     RoundedCornerShape(
                         bottomStart = 24.dp,
-                        bottomEnd = 24.dp
-                    )
+                        bottomEnd = 24.dp,
+                    ),
                 )
                 .fillMaxWidth()
                 .aspectRatio(1f)
                 .background(Color(pokemonBackgroundColor)),
-            imageModel = { pokemonDetail.sprites.other?.officialArtwork?.frontDefault }
+            imageModel = { pokemonDetail.sprites.other?.officialArtwork?.frontDefault },
         )
 
         Text(
@@ -85,7 +83,7 @@ fun PokemonDetailScreen(
             modifier = Modifier
                 .padding(top = 16.dp)
                 .align(CenterHorizontally),
-            horizontalArrangement = Arrangement.spacedBy(20.dp)
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             pokemonDetail.types.forEach { type ->
                 Text(
@@ -94,12 +92,12 @@ fun PokemonDetailScreen(
                         .background(PokemonTypeEnum.creator(type.type.name).color)
                         .padding(
                             vertical = 6.dp,
-                            horizontal = 12.dp
+                            horizontal = 12.dp,
                         ),
                     text = type.type.name,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.White
+                    color = Color.White,
                 )
             }
         }
@@ -109,20 +107,20 @@ fun PokemonDetailScreen(
                 .padding(top = 20.dp)
                 .fillMaxWidth()
                 .align(CenterHorizontally)
-                .padding(horizontal = 40.dp)
+                .padding(horizontal = 40.dp),
         ) {
             PokemonDetailSizeColumn(
                 modifier = Modifier.weight(1f),
                 name = stringResource(R.string.height),
                 size = "${DecimalFormat("#,###.#")
-                    .format(pokemonDetail.height * 0.1f)} m"
+                    .format(pokemonDetail.height * 0.1f)} m",
             )
 
             PokemonDetailSizeColumn(
                 modifier = Modifier.weight(1f),
                 name = stringResource(R.string.weight),
                 size = "${DecimalFormat("#,###.#")
-                    .format(pokemonDetail.weight * 0.1f)} kg"
+                    .format(pokemonDetail.weight * 0.1f)} kg",
             )
         }
     }
@@ -132,21 +130,21 @@ fun PokemonDetailScreen(
 private fun PokemonDetailSizeColumn(
     name: String,
     size: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
-        horizontalAlignment = CenterHorizontally
+        horizontalAlignment = CenterHorizontally,
     ) {
         Text(
             text = size,
             fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
         )
 
         Text(
             text = name,
-            fontSize = 14.sp
+            fontSize = 14.sp,
         )
     }
 }
@@ -168,7 +166,7 @@ fun PokemonDetailScreenPreview() {
             forms = emptyList(),
             species = PokemonDetail.Species(
                 name = "bulbasaur",
-                url = "https://pokeapi.co/api/v2/pokemon-species/1/"
+                url = "https://pokeapi.co/api/v2/pokemon-species/1/",
             ),
             sprites = PokemonDetail.Sprites(
                 backDefault = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
@@ -178,7 +176,7 @@ fun PokemonDetailScreenPreview() {
                 other = PokemonDetail.Other(
                     officialArtwork = PokemonDetail.OfficialArtwork(
                         frontDefault = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
-                        frontShiny = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"
+                        frontShiny = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
                     ),
                     showdown = PokemonDetail.Showdown(
                         backDefault = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
@@ -188,12 +186,12 @@ fun PokemonDetailScreenPreview() {
                         frontDefault = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
                         frontFemale = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
                         frontShiny = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
-                        frontShinyFemale = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"
-                    )
-                )
+                        frontShinyFemale = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
+                    ),
+                ),
             ),
-            types = emptyList()
+            types = emptyList(),
         ),
-        pokemonBackgroundColor = PrimaryFire.toArgb()
+        pokemonBackgroundColor = PrimaryFire.toArgb(),
     )
 }

@@ -15,22 +15,22 @@ fun PokemonDetailResponse.toDomain() = PokemonDetail(
     forms = forms.orEmpty().map { it.toDomain() },
     species = species.toDomain(),
     sprites = sprites.toDomain(),
-    types = types.orEmpty().map { it.toDomain() }
+    types = types.orEmpty().map { it.toDomain() },
 )
 
 fun PokemonDetailResponse.Form?.toDomain() = PokemonDetail.Form(
     name = this?.name.orEmpty(),
-    url = this?.url.orEmpty()
+    url = this?.url.orEmpty(),
 )
 
 fun PokemonDetailResponse.NamedResource?.toDomain() = PokemonDetail.NamedResource(
     name = this?.name.orEmpty(),
-    url = this?.url.orEmpty()
+    url = this?.url.orEmpty(),
 )
 
 fun PokemonDetailResponse.Species?.toDomain() = PokemonDetail.Species(
     name = this?.name.orEmpty(),
-    url = this?.url.orEmpty()
+    url = this?.url.orEmpty(),
 )
 
 fun PokemonDetailResponse.Sprites?.toDomain() = PokemonDetail.Sprites(
@@ -38,22 +38,22 @@ fun PokemonDetailResponse.Sprites?.toDomain() = PokemonDetail.Sprites(
     backShiny = this?.back_shiny,
     frontDefault = this?.front_default,
     frontShiny = this?.front_shiny,
-    other = this?.other.toDomain()
+    other = this?.other.toDomain(),
 )
 
 fun PokemonDetailResponse.Type?.toDomain() = PokemonDetail.Type(
     slot = this?.slot.default(),
-    type = this?.type.toDomain()
+    type = this?.type.toDomain(),
 )
 
 fun PokemonDetailResponse.Other?.toDomain() = PokemonDetail.Other(
     officialArtwork = this?.officialArtwork.toDomain(),
-    showdown = this?.showdown.toDomain()
+    showdown = this?.showdown.toDomain(),
 )
 
 fun PokemonDetailResponse.OfficialArtwork?.toDomain() = PokemonDetail.OfficialArtwork(
     frontDefault = this?.front_default,
-    frontShiny = this?.front_shiny
+    frontShiny = this?.front_shiny,
 )
 
 fun PokemonDetailResponse.Showdown?.toDomain() = PokemonDetail.Showdown(
@@ -64,5 +64,5 @@ fun PokemonDetailResponse.Showdown?.toDomain() = PokemonDetail.Showdown(
     frontDefault = this?.front_default,
     frontFemale = this?.front_female,
     frontShiny = this?.front_shiny,
-    frontShinyFemale = this?.front_shiny_female
+    frontShinyFemale = this?.front_shiny_female,
 )

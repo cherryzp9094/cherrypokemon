@@ -6,7 +6,7 @@ import com.cherryzp.domain.model.PokemonDetail
 
 data class PokemonDetailUiState(
     val pokemonDetail: PokemonDetail? = null,
-    val pokemonBackgroundColor: Int
-): UiState()
+    val pokemonBackgroundColor: Int,
+) : UiState()
 
-sealed class PokemonDetailUiSideEffect: UiSideEffect
+sealed class PokemonDetailUiSideEffect : UiSideEffect

@@ -30,7 +30,7 @@ val LightColorScheme = lightColorScheme(
     background = Gray90,
     onBackground = TextOnBackground,
     surface = NeutralSurface,
-    onSurface = TextOnBackground
+    onSurface = TextOnBackground,
 )
 
 val DarkColorScheme = darkColorScheme(
@@ -45,7 +45,7 @@ val DarkColorScheme = darkColorScheme(
     background = Gray20,
     onBackground = TextOnBackgroundDark,
     surface = NeutralSurfaceDark,
-    onSurface = TextOnBackgroundDark
+    onSurface = TextOnBackgroundDark,
 )
 
 @Composable
@@ -53,7 +53,7 @@ fun CherryPokemonTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
@@ -62,6 +62,7 @@ fun CherryPokemonTheme(
         }
 
         darkTheme -> DarkColorScheme
+
         else -> LightColorScheme
     }
 
@@ -80,7 +81,7 @@ fun CherryPokemonTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
+        content = content,
     )
 }
 

@@ -7,11 +7,9 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class PokemonDetailUseCase @Inject constructor(
-    private val pokemonRepository: PokemonRepository
+    private val pokemonRepository: PokemonRepository,
 ) {
     operator fun invoke(
-        pokeNo: Int
-    ): Flow<PokemonDetail> =
-        flow { emit(pokemonRepository.fetchPokemonDetail(pokeNo)) }
-
+        pokeNo: Int,
+    ): Flow<PokemonDetail> = flow { emit(pokemonRepository.fetchPokemonDetail(pokeNo)) }
 }

@@ -14,6 +14,6 @@ interface RepositoryModule {
 
     @Binds
     fun bindsPokemonRepository(
-        pokemonRepositoryImpl: PokemonRepositoryImpl
+        pokemonRepositoryImpl: PokemonRepositoryImpl,
     ): PokemonRepository
 }

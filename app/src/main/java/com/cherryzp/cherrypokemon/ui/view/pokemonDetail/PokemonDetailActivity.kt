@@ -13,7 +13,7 @@ import com.cherryzp.consts.KeyConsts.POKE_NO
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class PokemonDetailActivity: BaseActivity<PokemonDetailViewModel, PokemonDetailUiState>() {
+class PokemonDetailActivity : BaseActivity<PokemonDetailViewModel, PokemonDetailUiState>() {
     override val viewModel: PokemonDetailViewModel by viewModels()
 
     @Composable
@@ -24,7 +24,7 @@ class PokemonDetailActivity: BaseActivity<PokemonDetailViewModel, PokemonDetailU
                 paddingValues = paddingValues,
                 window = window,
                 pokemonDetail = pokemonDetail,
-                pokemonBackgroundColor = uiState.pokemonBackgroundColor
+                pokemonBackgroundColor = uiState.pokemonBackgroundColor,
             )
         }
     }
@@ -34,10 +34,10 @@ class PokemonDetailActivity: BaseActivity<PokemonDetailViewModel, PokemonDetailU
     companion object {
         fun create(
             pokeId: Int,
-            pokemonBackgroundColor: Int
+            pokemonBackgroundColor: Int,
         ) = bundleOf(
             POKE_NO to pokeId,
-            POKEMON_BACKGROUND_COLOR to pokemonBackgroundColor
+            POKEMON_BACKGROUND_COLOR to pokemonBackgroundColor,
         )
     }
 }
