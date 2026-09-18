@@ -1,7 +1,6 @@
 plugins {
     id("cherrypokemon.android.library")
     id("cherrypokemon.hilt")
-    alias(libs.plugins.kotlin.parcelize)
 }
 
 android {
@@ -9,7 +8,6 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
