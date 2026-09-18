@@ -2,7 +2,6 @@ plugins {
     id("cherrypokemon.android.application")
     id("cherrypokemon.android.application.compose")
     id("cherrypokemon.hilt")
-    alias(libs.plugins.kotlin.parcelize)
 }
 
 android {
@@ -31,10 +30,8 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(libs.androidx.material)
 
     implementation(libs.bundles.paging)
-    implementation(libs.room.paging)
 
     implementation(libs.kotlinx.collections.immutable)
 
