@@ -13,12 +13,12 @@ import kotlinx.coroutines.flow.Flow
 @Stable
 data class MainUiState(
     val pokemons: Flow<PagingData<Pokemon>>? = null,
-    val pokemonBackgroundColor: ImmutableMap<Int, Color> = persistentMapOf()
-): UiState()
+    val pokemonBackgroundColor: ImmutableMap<Int, Color> = persistentMapOf(),
+) : UiState()
 
-sealed class MainUiSideEffect: UiSideEffect {
-    data class goPokemonDetail(
+sealed class MainUiSideEffect : UiSideEffect {
+    data class GoPokemonDetail(
         val pokeId: Int,
-        val pokemonBackgroundColor: Int
-    ): MainUiSideEffect()
+        val pokemonBackgroundColor: Int,
+    ) : MainUiSideEffect()
 }

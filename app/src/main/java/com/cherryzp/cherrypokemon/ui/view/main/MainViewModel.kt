@@ -13,8 +13,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val pokemonListUseCase: PokemonListUseCase
-): BaseViewModel<MainUiState>() {
+    private val pokemonListUseCase: PokemonListUseCase,
+) : BaseViewModel<MainUiState>() {
     override val initialState: MainUiState
         get() = MainUiState()
 
@@ -29,7 +29,7 @@ class MainViewModel @Inject constructor(
             }
         reduceState { state ->
             state.copy(
-                pokemons = pokemons
+                pokemons = pokemons,
             )
         }
     }
@@ -41,14 +41,14 @@ class MainViewModel @Inject constructor(
                 .toMutableMap()
                 .apply {
                     put(pokeId, color)
-                }.toPersistentMap()
+                }.toPersistentMap(),
         )
     }
 
     fun goPokemonDetail(pokeId: Int, pokemonBackgroundColor: Int) = postSideEffect {
-        MainUiSideEffect.goPokemonDetail(
+        MainUiSideEffect.GoPokemonDetail(
             pokeId = pokeId,
-            pokemonBackgroundColor = pokemonBackgroundColor
+            pokemonBackgroundColor = pokemonBackgroundColor,
         )
     }
 }
