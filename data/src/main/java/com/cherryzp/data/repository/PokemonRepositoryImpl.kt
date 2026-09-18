@@ -14,20 +14,19 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class PokemonRepositoryImpl @Inject constructor(
-    private val pokemonApi: PokemonApi
-): PokemonRepository {
-    override suspend fun fetchPokemonList(): Flow<PagingData<Pokemon>> =
-        Pager(config = PagingConfig(
+    private val pokemonApi: PokemonApi,
+) : PokemonRepository {
+    override suspend fun fetchPokemonList(): Flow<PagingData<Pokemon>> = Pager(
+        config = PagingConfig(
             pageSize = 20,
-            enablePlaceholders = false
+            enablePlaceholders = false,
         ),
-            pagingSourceFactory = {
-                PokemonPagingSource(
-                    pokemonApi = pokemonApi
-                )
-            }
-        ).flow
+        pagingSourceFactory = {
+            PokemonPagingSource(
+                pokemonApi = pokemonApi,
+            )
+        },
+    ).flow
 
-    override suspend fun fetchPokemonDetail(pokeNo: Int): PokemonDetail =
-        pokemonApi.fetchPokemonDetail(pokeNo).toDomain()
+    override suspend fun fetchPokemonDetail(pokeNo: Int): PokemonDetail = pokemonApi.fetchPokemonDetail(pokeNo).toDomain()
 }

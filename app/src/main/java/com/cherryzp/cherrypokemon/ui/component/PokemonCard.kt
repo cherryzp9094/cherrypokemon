@@ -32,15 +32,15 @@ fun PokemonCard(
     Column(
         modifier = modifier
             .clip(
-                Shapes().medium
+                Shapes().medium,
             ).background(
-                Color.White
+                Color.White,
             ).border(
                 width = 2.dp,
                 color = Color.LightGray,
-                shape = Shapes().medium
+                shape = Shapes().medium,
             ).background(pokemonBackground)
-            .padding(8.dp)
+            .padding(8.dp),
     ) {
         Text(
             text = "No.$id",
@@ -54,7 +54,7 @@ fun PokemonCard(
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
             color = Color.White,
-            maxLines = 1
+            maxLines = 1,
         )
 
         GlideImage(
@@ -68,7 +68,7 @@ fun PokemonCard(
             },
             failure = {
                 ImagePlaceholder()
-            }
+            },
         )
     }
 }
@@ -81,9 +81,9 @@ fun ImagePlaceholder() {
             .aspectRatio(1f)
             .padding(12.dp),
         imageOptions = ImageOptions(
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
         ),
-        imageModel = { R.drawable.img_pokeball }
+        imageModel = { R.drawable.img_pokeball },
     )
 }
 
@@ -94,6 +94,6 @@ private fun PokemonCardPreview() {
         id = 1,
         name = "Pikachu",
         image = null,
-        pokemonBackground = Color.White
+        pokemonBackground = Color.White,
     )
 }

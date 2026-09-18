@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
 class RealContainer<S : UiState>(
-    initialState: S
+    initialState: S,
 ) : Container<S> {
 
     private val pluginContext: ContainerContext<S> = ContainerContext(
@@ -15,7 +15,7 @@ class RealContainer<S : UiState>(
         postSideEffect = { internalUiSideEffect.emit(it) },
         reduceState = {
             internalUiStateFlow.update(it)
-        }
+        },
     )
     private val internalUiStateFlow = MutableStateFlow(initialState)
     override val uiState: StateFlow<S> = internalUiStateFlow
@@ -26,5 +26,4 @@ class RealContainer<S : UiState>(
     override fun event(intent: ContainerContext<S>.() -> Unit) {
         pluginContext.intent()
     }
-
 }

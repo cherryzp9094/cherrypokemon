@@ -13,7 +13,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
-
 @Module
 @InstallIn(SingletonComponent::class)
 internal object ApiModule {
@@ -22,8 +21,11 @@ internal object ApiModule {
     @Provides
     fun provideHttpLoggingInterceptor() = HttpLoggingInterceptor().apply {
         level =
-            if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
-            else HttpLoggingInterceptor.Level.NONE
+            if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BODY
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
     }
 
     @Singleton
@@ -41,7 +43,7 @@ internal object ApiModule {
     @Provides
     fun provideOKHttpClient(
         interceptor: Interceptor,
-        httpLoggingInterceptor: HttpLoggingInterceptor
+        httpLoggingInterceptor: HttpLoggingInterceptor,
     ): OkHttpClient {
         val okHttpClientBuilder =
             OkHttpClient().newBuilder()
@@ -55,7 +57,7 @@ internal object ApiModule {
     @Singleton
     @Provides
     fun provideRetrofitBuilder(
-        okHttpClient: OkHttpClient
+        okHttpClient: OkHttpClient,
     ): PokemonApi = Retrofit.Builder()
         .baseUrl("https://pokeapi.co/api/v2/")
         .client(okHttpClient)

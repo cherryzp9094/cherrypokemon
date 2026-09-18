@@ -18,11 +18,11 @@ interface PokemonApi {
 
     @GET("pokemon/{${POKE_NO}}")
     suspend fun fetchPokemonDetail(
-        @Path(POKE_NO) pokeNo: Int
+        @Path(POKE_NO) pokeNo: Int,
     ): PokemonDetailResponse
 
     @GET("pokemon-species/{${POKE_NO}}")
     suspend fun fetchPokemonSpecies(
-        @Path(POKE_NO) pokeNo: Int
+        @Path(POKE_NO) pokeNo: Int,
     ): PokemonSpeciesResponse
 }

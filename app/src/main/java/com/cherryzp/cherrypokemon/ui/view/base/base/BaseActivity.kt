@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.cherryzp.cherrypokemon.ui.theme.CherryPokemonTheme
 
-abstract class BaseActivity<V : BaseViewModel<S>, S : UiState>: ComponentActivity() {
+abstract class BaseActivity<V : BaseViewModel<S>, S : UiState> : ComponentActivity() {
 
     abstract val viewModel: V
 
@@ -34,7 +34,7 @@ abstract class BaseActivity<V : BaseViewModel<S>, S : UiState>: ComponentActivit
     private fun viewModelObserve() {
         viewModel.observe(
             lifecycleOwner = this,
-            sideEffect = ::handleSideEffect
+            sideEffect = ::handleSideEffect,
         )
     }
 

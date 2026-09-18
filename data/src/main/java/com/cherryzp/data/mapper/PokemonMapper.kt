@@ -5,5 +5,5 @@ import com.cherryzp.domain.model.Pokemon
 
 fun PokemonResponse.toDomain() = Pokemon(
     name = name.orEmpty(),
-    url = url.orEmpty()
+    url = url.orEmpty(),
 )
