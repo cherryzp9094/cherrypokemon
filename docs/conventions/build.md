@@ -105,10 +105,11 @@ android { compileOptions { sourceCompatibility = JavaVersion.VERSION_17 } }
 
 ## 5. 포맷 검사 `필수`
 
-- Spotless + ktlint를 convention plugin으로 모든 모듈에 적용한다. ktlint는 Android 스타일(`android = true`)로 설정한다.
+- Spotless + ktlint를 convention plugin으로 모든 모듈에 적용한다. `build-logic`은 included build라 convention plugin이 닿지 않으므로 루트 프로젝트에서 검사한다.
+- 코드 스타일은 루트 `.editorconfig` 한 곳에서 정한다(`ktlint_code_style = android_studio`, `max_line_length = 100`, 선언부 trailing comma). Gradle 쪽 `editorConfigOverride`는 쓰지 않는다 — IDE와 CLI ktlint가 `.editorconfig`만 읽으므로 출처가 둘이 되면 서로 다른 규칙을 본다.
 - `spotlessCheck`가 실패하면 머지하지 않는다.
 
-근거: NiA `build-logic/.../Spotless.kt` (모든 모듈에 적용)
+근거: NiA `build-logic/.../Spotless.kt` (모든 모듈에 적용), [ktlint code styles](https://github.com/pinterest/ktlint/blob/master/documentation/snapshot/docs/rules/code-styles.md) (`android = true`는 0.x 방식이며 1.x에서는 무시된다)
 
 ## 6. Lint `필수`
 
