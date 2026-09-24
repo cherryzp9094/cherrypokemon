@@ -15,20 +15,11 @@ data class PokemonDetailResponse(
     val sprites: Sprites?,
     val types: List<Type>?,
 ) {
-    data class Form(
-        val name: String,
-        val url: String,
-    )
+    data class Form(val name: String, val url: String)
 
-    data class NamedResource(
-        val name: String,
-        val url: String,
-    )
+    data class NamedResource(val name: String, val url: String)
 
-    data class Species(
-        val name: String,
-        val url: String,
-    )
+    data class Species(val name: String, val url: String)
 
     data class Sprites(
         val back_default: String?,
@@ -38,10 +29,7 @@ data class PokemonDetailResponse(
         val other: Other?,
     )
 
-    data class Type(
-        val slot: Int,
-        val type: NamedResource,
-    )
+    data class Type(val slot: Int, val type: NamedResource)
 
     data class Other(
         @SerializedName("official-artwork")
@@ -49,10 +37,7 @@ data class PokemonDetailResponse(
         val showdown: Showdown?,
     )
 
-    data class OfficialArtwork(
-        val front_default: String?,
-        val front_shiny: String?,
-    )
+    data class OfficialArtwork(val front_default: String?, val front_shiny: String?)
 
     data class Showdown(
         val back_default: String?,

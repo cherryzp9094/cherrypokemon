@@ -6,12 +6,12 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -56,9 +56,7 @@ internal object ApiModule {
 
     @Singleton
     @Provides
-    fun provideRetrofitBuilder(
-        okHttpClient: OkHttpClient,
-    ): PokemonApi = Retrofit.Builder()
+    fun provideRetrofitBuilder(okHttpClient: OkHttpClient): PokemonApi = Retrofit.Builder()
         .baseUrl("https://pokeapi.co/api/v2/")
         .client(okHttpClient)
         .addConverterFactory(GsonConverterFactory.create())

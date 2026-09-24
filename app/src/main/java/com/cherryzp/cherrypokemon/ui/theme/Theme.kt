@@ -30,7 +30,7 @@ val LightColorScheme = lightColorScheme(
     background = Gray90,
     onBackground = TextOnBackground,
     surface = NeutralSurface,
-    onSurface = TextOnBackground,
+    onSurface = TextOnBackground
 )
 
 val DarkColorScheme = darkColorScheme(
@@ -45,7 +45,7 @@ val DarkColorScheme = darkColorScheme(
     background = Gray20,
     onBackground = TextOnBackgroundDark,
     surface = NeutralSurfaceDark,
-    onSurface = TextOnBackgroundDark,
+    onSurface = TextOnBackgroundDark
 )
 
 @Composable
@@ -81,7 +81,7 @@ fun CherryPokemonTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content,
+        content = content
     )
 }
 

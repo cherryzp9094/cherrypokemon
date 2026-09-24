@@ -24,7 +24,7 @@ class PokemonDetailActivity : BaseActivity<PokemonDetailViewModel, PokemonDetail
                 paddingValues = paddingValues,
                 window = window,
                 pokemonDetail = pokemonDetail,
-                pokemonBackgroundColor = uiState.pokemonBackgroundColor,
+                pokemonBackgroundColor = uiState.pokemonBackgroundColor
             )
         }
     }
@@ -32,12 +32,9 @@ class PokemonDetailActivity : BaseActivity<PokemonDetailViewModel, PokemonDetail
     override fun handleSideEffect(sideEffect: UiSideEffect) {}
 
     companion object {
-        fun create(
-            pokeId: Int,
-            pokemonBackgroundColor: Int,
-        ) = bundleOf(
+        fun create(pokeId: Int, pokemonBackgroundColor: Int) = bundleOf(
             POKE_NO to pokeId,
-            POKEMON_BACKGROUND_COLOR to pokemonBackgroundColor,
+            POKEMON_BACKGROUND_COLOR to pokemonBackgroundColor
         )
     }
 }

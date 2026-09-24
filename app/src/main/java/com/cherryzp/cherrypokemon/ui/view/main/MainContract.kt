@@ -17,8 +17,6 @@ data class MainUiState(
 ) : UiState()
 
 sealed class MainUiSideEffect : UiSideEffect {
-    data class GoPokemonDetail(
-        val pokeId: Int,
-        val pokemonBackgroundColor: Int,
-    ) : MainUiSideEffect()
+    data class GoPokemonDetail(val pokeId: Int, val pokemonBackgroundColor: Int) :
+        MainUiSideEffect()
 }

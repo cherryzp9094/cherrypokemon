@@ -42,7 +42,7 @@ fun MainScreen(
 
     Column(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
     ) {
         TopAppBar(
             title = {
@@ -50,15 +50,15 @@ fun MainScreen(
                     text = "Cherry Pokemon",
                     color = Color.White,
                     fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Bold
                 )
             },
             colors = TopAppBarDefaults
                 .topAppBarColors()
                 .copy(
                     containerColor = PrimaryFire,
-                    titleContentColor = Color.White,
-                ),
+                    titleContentColor = Color.White
+                )
         )
 
         pokemons?.let {
@@ -69,7 +69,7 @@ fun MainScreen(
                     .background(MaterialTheme.colorScheme.background),
                 contentPadding = PaddingValues(12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(pokemons.itemCount) { index ->
                     pokemons[index]?.let { pokemon ->
@@ -89,9 +89,9 @@ fun MainScreen(
                                 .clickable {
                                     goPokemonDetail(
                                         pokemon.id,
-                                        (pokemonBackgroundColor[pokemon.id] ?: Color.White).toArgb(),
+                                        (pokemonBackgroundColor[pokemon.id] ?: Color.White).toArgb()
                                     )
-                                },
+                                }
                         )
                     }
                 }

@@ -25,7 +25,7 @@ class MainActivity : BaseActivity<MainViewModel, MainUiState>() {
             pokemons = pokemons,
             pokemonBackgroundColor = uiState.pokemonBackgroundColor,
             updateBackgroundColor = viewModel::updateBackgroundColor,
-            goPokemonDetail = viewModel::goPokemonDetail,
+            goPokemonDetail = viewModel::goPokemonDetail
         )
     }
 
@@ -35,13 +35,13 @@ class MainActivity : BaseActivity<MainViewModel, MainUiState>() {
                 startActivity(
                     Intent(
                         this,
-                        PokemonDetailActivity::class.java,
+                        PokemonDetailActivity::class.java
                     ).putExtras(
                         PokemonDetailActivity.create(
                             sideEffect.pokeId,
-                            sideEffect.pokemonBackgroundColor,
-                        ),
-                    ),
+                            sideEffect.pokemonBackgroundColor
+                        )
+                    )
                 )
             }
         }

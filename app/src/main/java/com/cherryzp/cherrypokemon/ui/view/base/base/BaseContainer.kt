@@ -28,9 +28,7 @@ class ContainerContext<S : UiState>(
         get() = initState()
 }
 
-fun <S : UiState> ContainerHost<S>.event(
-    transformer: ContainerContext<S>.() -> Unit,
-) {
+fun <S : UiState> ContainerHost<S>.event(transformer: ContainerContext<S>.() -> Unit) {
     container.event {
         transformer()
     }

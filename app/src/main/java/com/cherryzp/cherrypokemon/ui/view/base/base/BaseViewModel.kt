@@ -17,9 +17,7 @@ abstract class BaseViewModel<S : UiState> :
         reduceState { uiState(it) }
     }
 
-    protected fun <SEU> postSideEffect(
-        postFunc: suspend (state: S) -> SEU,
-    ) = event {
+    protected fun <SEU> postSideEffect(postFunc: suspend (state: S) -> SEU) = event {
         viewModelScope.launch {
             val sideEffectOrUnit = postFunc(state)
             if (sideEffectOrUnit is UiSideEffect) {

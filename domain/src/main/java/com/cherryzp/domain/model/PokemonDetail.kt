@@ -13,20 +13,11 @@ data class PokemonDetail(
     val sprites: Sprites,
     val types: List<Type>,
 ) {
-    data class Form(
-        val name: String,
-        val url: String,
-    )
+    data class Form(val name: String, val url: String)
 
-    data class NamedResource(
-        val name: String,
-        val url: String,
-    )
+    data class NamedResource(val name: String, val url: String)
 
-    data class Species(
-        val name: String,
-        val url: String,
-    )
+    data class Species(val name: String, val url: String)
 
     data class Sprites(
         val backDefault: String?,
@@ -36,20 +27,11 @@ data class PokemonDetail(
         val other: Other?,
     )
 
-    data class Type(
-        val slot: Int,
-        val type: NamedResource,
-    )
+    data class Type(val slot: Int, val type: NamedResource)
 
-    data class Other(
-        val officialArtwork: OfficialArtwork?,
-        val showdown: Showdown?,
-    )
+    data class Other(val officialArtwork: OfficialArtwork?, val showdown: Showdown?)
 
-    data class OfficialArtwork(
-        val frontDefault: String?,
-        val frontShiny: String?,
-    )
+    data class OfficialArtwork(val frontDefault: String?, val frontShiny: String?)
 
     data class Showdown(
         val backDefault: String?,

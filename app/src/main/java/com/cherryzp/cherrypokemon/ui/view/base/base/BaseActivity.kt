@@ -15,9 +15,7 @@ abstract class BaseActivity<V : BaseViewModel<S>, S : UiState> : ComponentActivi
     abstract val viewModel: V
 
     @Composable
-    abstract fun BuildContent(
-        paddingValues: PaddingValues,
-    )
+    abstract fun BuildContent(paddingValues: PaddingValues)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +32,7 @@ abstract class BaseActivity<V : BaseViewModel<S>, S : UiState> : ComponentActivi
     private fun viewModelObserve() {
         viewModel.observe(
             lifecycleOwner = this,
-            sideEffect = ::handleSideEffect,
+            sideEffect = ::handleSideEffect
         )
     }
 
