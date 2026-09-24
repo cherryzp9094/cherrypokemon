@@ -1,5 +1,10 @@
 root = true
 
 [*.{kt,kts}]
+ktlint_code_style = android_studio
+max_line_length = 100
+# 여러 줄로 나눈 선언부 끝에는 trailing comma 를 둔다. 호출부에는 두지 않는다.
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = false
 # @Composable 함수는 PascalCase 를 쓴다.
 ktlint_function_naming_ignore_when_annotated_with = Composable
