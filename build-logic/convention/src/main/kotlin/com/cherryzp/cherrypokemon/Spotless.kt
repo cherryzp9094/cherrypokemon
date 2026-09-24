@@ -13,7 +13,6 @@ internal fun Project.configureSpotless() {
 
         kotlin {
             target("src/**/*.kt")
-            targetExclude("**/build/**/*.kt")
             ktlint(ktlintVersion)
         }
     }
