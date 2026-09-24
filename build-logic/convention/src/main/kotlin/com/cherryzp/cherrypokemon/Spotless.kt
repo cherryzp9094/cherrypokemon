@@ -4,7 +4,10 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 
-/** 모든 모듈에 Spotless + ktlint 를 적용한다. 코드 스타일은 루트 `.editorconfig` 가 정한다. */
+/**
+ * 모든 모듈에 Spotless + ktlint 를 적용한다.
+ * 코드 스타일은 루트 `.editorconfig` 가 정한다.
+ */
 internal fun Project.configureSpotless() {
     pluginManager.apply("com.diffplug.spotless")
 
