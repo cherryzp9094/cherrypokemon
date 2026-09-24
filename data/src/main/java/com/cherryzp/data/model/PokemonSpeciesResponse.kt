@@ -9,10 +9,10 @@ data class PokemonSpeciesResponse(
     @SerializedName("egg_groups") val eggGroups: List<NamedResource>,
     @SerializedName("name") val name: String,
     @SerializedName("order") val order: Int,
-    @SerializedName("habitat") val habitat: NamedResource?
+    @SerializedName("habitat") val habitat: NamedResource?,
 )
 
 data class NamedResource(
     @SerializedName("name") val name: String,
-    @SerializedName("url") val url: String
+    @SerializedName("url") val url: String,
 )

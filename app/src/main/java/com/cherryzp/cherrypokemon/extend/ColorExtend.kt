@@ -7,8 +7,8 @@ import com.bumptech.glide.Glide
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-suspend fun fetchDominantColor(context: Context, imageUrl: String): Color {
-    return withContext(Dispatchers.IO) {
+suspend fun fetchDominantColor(context: Context, imageUrl: String): Color =
+    withContext(Dispatchers.IO) {
         try {
             val bitmap = Glide.with(context)
                 .asBitmap()
@@ -24,4 +24,3 @@ suspend fun fetchDominantColor(context: Context, imageUrl: String): Color {
             Color.White
         }
     }
-}

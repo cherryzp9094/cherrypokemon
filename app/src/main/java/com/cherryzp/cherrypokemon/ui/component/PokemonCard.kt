@@ -46,7 +46,7 @@ fun PokemonCard(
             text = "No.$id",
             fontSize = 12.sp,
             fontWeight = FontWeight.ExtraBold,
-            color = Color.White,
+            color = Color.White
         )
 
         Text(

@@ -10,14 +10,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.cherryzp.cherrypokemon.ui.theme.CherryPokemonTheme
 
-abstract class BaseActivity<V : BaseViewModel<S>, S : UiState>: ComponentActivity() {
+abstract class BaseActivity<V : BaseViewModel<S>, S : UiState> : ComponentActivity() {
 
     abstract val viewModel: V
 
     @Composable
-    abstract fun BuildContent(
-        paddingValues: PaddingValues,
-    )
+    abstract fun BuildContent(paddingValues: PaddingValues)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

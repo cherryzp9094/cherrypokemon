@@ -6,15 +6,14 @@ import androidx.paging.cachedIn
 import com.cherryzp.cherrypokemon.ui.view.base.base.BaseViewModel
 import com.cherryzp.domain.usecase.PokemonListUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
-    private val pokemonListUseCase: PokemonListUseCase
-): BaseViewModel<MainUiState>() {
+class MainViewModel @Inject constructor(private val pokemonListUseCase: PokemonListUseCase) :
+    BaseViewModel<MainUiState>() {
     override val initialState: MainUiState
         get() = MainUiState()
 
@@ -46,7 +45,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun goPokemonDetail(pokeId: Int, pokemonBackgroundColor: Int) = postSideEffect {
-        MainUiSideEffect.goPokemonDetail(
+        MainUiSideEffect.GoPokemonDetail(
             pokeId = pokeId,
             pokemonBackgroundColor = pokemonBackgroundColor
         )

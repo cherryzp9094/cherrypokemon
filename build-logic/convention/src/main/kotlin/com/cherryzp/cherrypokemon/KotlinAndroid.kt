@@ -7,10 +7,11 @@ import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
-/** 모든 Android 모듈에 공통인 SDK·Java·Kotlin 설정. SDK와 언어 버전은 여기서만 정한다. */
-internal fun Project.configureKotlinAndroid(
-    commonExtension: CommonExtension<*, *, *, *, *, *>,
-) {
+/**
+ * 모든 Android 모듈에 공통인 SDK·Java·Kotlin 설정.
+ * SDK와 언어 버전은 여기서만 정한다.
+ */
+internal fun Project.configureKotlinAndroid(commonExtension: CommonExtension<*, *, *, *, *, *>) {
     commonExtension.apply {
         compileSdk = COMPILE_SDK
 

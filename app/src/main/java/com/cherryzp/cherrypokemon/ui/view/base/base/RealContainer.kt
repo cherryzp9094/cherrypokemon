@@ -6,9 +6,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
-class RealContainer<S : UiState>(
-    initialState: S
-) : Container<S> {
+class RealContainer<S : UiState>(initialState: S) : Container<S> {
 
     private val pluginContext: ContainerContext<S> = ContainerContext(
         initState = { uiState.value },
@@ -26,5 +24,4 @@ class RealContainer<S : UiState>(
     override fun event(intent: ContainerContext<S>.() -> Unit) {
         pluginContext.intent()
     }
-
 }

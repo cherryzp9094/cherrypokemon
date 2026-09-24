@@ -22,16 +22,13 @@ interface ContainerHost<S : UiState> {
 class ContainerContext<S : UiState>(
     val initState: () -> S,
     val postSideEffect: suspend (UiSideEffect) -> Unit,
-    val reduceState: ((S) -> S) -> Unit
+    val reduceState: ((S) -> S) -> Unit,
 ) {
     val state: S
         get() = initState()
-
 }
 
-fun <S: UiState> ContainerHost<S>.event(
-    transformer: ContainerContext<S>.() -> Unit
-) {
+fun <S : UiState> ContainerHost<S>.event(transformer: ContainerContext<S>.() -> Unit) {
     container.event {
         transformer()
     }
@@ -39,7 +36,7 @@ fun <S: UiState> ContainerHost<S>.event(
 
 fun <STATE : UiState> ContainerHost<STATE>.observe(
     lifecycleOwner: LifecycleOwner,
-    sideEffect: ((sideEffect: UiSideEffect) -> Unit)? = null
+    sideEffect: ((sideEffect: UiSideEffect) -> Unit)? = null,
 ) {
     lifecycleOwner.lifecycleScope.launch {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -47,4 +44,3 @@ fun <STATE : UiState> ContainerHost<STATE>.observe(
         }
     }
 }
-

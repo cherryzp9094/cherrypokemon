@@ -1,6 +1,7 @@
 import com.android.build.api.dsl.ApplicationExtension
 import com.cherryzp.cherrypokemon.TARGET_SDK
 import com.cherryzp.cherrypokemon.configureKotlinAndroid
+import com.cherryzp.cherrypokemon.configureSpotless
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
@@ -11,6 +12,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
         with(target) {
             apply(plugin = "com.android.application")
             apply(plugin = "org.jetbrains.kotlin.android")
+            configureSpotless()
 
             extensions.configure<ApplicationExtension> {
                 configureKotlinAndroid(this)
@@ -21,7 +23,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                         isMinifyEnabled = false
                         proguardFiles(
                             getDefaultProguardFile("proguard-android-optimize.txt"),
-                            "proguard-rules.pro",
+                            "proguard-rules.pro"
                         )
                     }
                 }
