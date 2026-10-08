@@ -1,5 +1,6 @@
 import com.android.build.api.dsl.ApplicationExtension
 import com.cherryzp.cherrypokemon.TARGET_SDK
+import com.cherryzp.cherrypokemon.configureGradleManagedDevices
 import com.cherryzp.cherrypokemon.configureKotlinAndroid
 import com.cherryzp.cherrypokemon.configureSpotless
 import org.gradle.api.Plugin
@@ -16,6 +17,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
             extensions.configure<ApplicationExtension> {
                 configureKotlinAndroid(this)
+                configureGradleManagedDevices(this)
                 defaultConfig.targetSdk = TARGET_SDK
 
                 buildTypes {

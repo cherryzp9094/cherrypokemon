@@ -25,6 +25,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 rootProject.name = "CherryPokemon"
 include(":app")
 include(":core:common")
+include(":core:database")
 include(":core:model")
 include(":core:network")
 include(":core:testing")

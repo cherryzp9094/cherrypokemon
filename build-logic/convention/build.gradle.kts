@@ -23,6 +23,7 @@ dependencies {
     compileOnly(libs.compose.compiler.gradle.plugin)
     compileOnly(libs.kotlin.gradle.plugin)
     compileOnly(libs.spotless.gradle.plugin)
+    compileOnly(libs.room.gradle.plugin)
 }
 
 tasks {
@@ -53,6 +54,10 @@ gradlePlugin {
         register("jvmLibrary") {
             id = "cherrypokemon.jvm.library"
             implementationClass = "JvmLibraryConventionPlugin"
+        }
+        register("androidRoom") {
+            id = "cherrypokemon.android.room"
+            implementationClass = "AndroidRoomConventionPlugin"
         }
         register("hilt") {
             id = "cherrypokemon.hilt"
