@@ -5,6 +5,7 @@ coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
+androidxTestRunner = "1.7.0"
 lifecycleRuntimeKtx = "2.11.0"
 activityCompose = "1.9.3"
 composeBom = "2026.09.00"
@@ -18,7 +19,8 @@ hilt = "2.60.1"
 hilt-android-gradle-plugin = "2.60.1"
 hilt-navigation = "1.2.0"
 
-paging = "3.3.2"
+paging = "3.5.2"
+room = "3.0.3"
 
 
 retrofit = "3.0.0"
@@ -27,7 +29,7 @@ okhttp = "5.5.0"
 glide = "2.4.0"
 paletteKtx = "1.0.0"
 
-spotless = "8.10.2"
+spotless = "8.10.3"
 ktlint = "1.8.0"
 
 [libraries]
@@ -40,6 +42,7 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
@@ -64,6 +67,11 @@ hilt-navigation = { module = "androidx.hilt:hilt-navigation-compose", version.re
 paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
 paging-common-ktx = { group = "androidx.paging", name = "paging-common-ktx", version.ref = "paging" }
+room-runtime = { group = "androidx.room3", name = "room3-runtime", version.ref = "room" }
+room-compiler = { group = "androidx.room3", name = "room3-compiler", version.ref = "room" }
+room-paging = { group = "androidx.room3", name = "room3-paging", version.ref = "room" }
+room-testing = { group = "androidx.room3", name = "room3-testing", version.ref = "room" }
+room-gradle-plugin = { group = "androidx.room3", name = "room3-gradle-plugin", version.ref = "room" }
 
 
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
@@ -81,6 +89,7 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+room = { id = "androidx.room3", version.ref = "room" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt-android-gradle-plugin" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 
