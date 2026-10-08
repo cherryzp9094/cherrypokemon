@@ -12,6 +12,7 @@ ksp = "2.3.12"
 
 kotlinxCollections = "0.3.7"
 kotlinxCoroutines = "1.11.0"
+kotlinxSerialization = "1.11.0"
 
 hilt = "2.60.1"
 hilt-android-gradle-plugin = "2.60.1"
@@ -20,8 +21,8 @@ hilt-navigation = "1.2.0"
 paging = "3.3.2"
 
 
-retrofit = "2.11.0"
-okhttp = "4.12.0"
+retrofit = "3.0.0"
+okhttp = "5.5.0"
 
 glide = "2.4.0"
 paletteKtx = "1.0.0"
@@ -67,6 +68,8 @@ paging-common-ktx = { group = "androidx.paging", name = "paging-common-ktx", ver
 
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
+retrofit-converter-kotlinx-serialization = { module = "com.squareup.retrofit2:converter-kotlinx-serialization", version.ref = "retrofit" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 
 glide = { module = "com.github.skydoves:landscapist-glide", version.ref = "glide" }
@@ -77,6 +80,7 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt-android-gradle-plugin" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 
