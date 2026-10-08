@@ -1,5 +1,4 @@
 import com.cherryzp.cherrypokemon.configureKotlinJvm
-import com.cherryzp.cherrypokemon.configureSpotless
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
@@ -9,7 +8,6 @@ class JvmLibraryConventionPlugin : Plugin<Project> {
         with(target) {
             apply(plugin = "org.jetbrains.kotlin.jvm")
             apply(plugin = "cherrypokemon.android.lint")
-            configureSpotless()
             configureKotlinJvm()
         }
     }
