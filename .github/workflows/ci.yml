@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.claude/**'
+      - '.github/ISSUE_TEMPLATE/**'
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.claude/**'
+
+# 같은 브랜치에 새 커밋이 오면 이전 실행을 취소한다.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Gradle wrapper 검증
+        uses: gradle/actions/wrapper-validation@v6
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # main 에서만 캐시를 쓰고, PR 은 읽기만 한다.
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: 포맷 검사
+        run: ./gradlew spotlessCheck
+
+      - name: 단위 테스트
+        run: ./gradlew testDebugUnitTest
+
+      - name: Lint
+        run: ./gradlew lintRelease
+
+      - name: 빌드
+        run: ./gradlew assembleDebug assembleRelease
+
+      - name: 리포트 올리기
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports
+          path: |
+            **/build/reports/lint-results-*.html
+            **/build/reports/tests/**
+          if-no-files-found: ignore
+          retention-days: 7
