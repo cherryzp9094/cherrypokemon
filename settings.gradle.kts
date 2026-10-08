@@ -20,9 +20,12 @@ dependencyResolutionManagement {
     }
 }
 
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 rootProject.name = "CherryPokemon"
 include(":app")
 include(":core:common")
 include(":core:model")
+include(":core:testing")
 include(":data")
 include(":domain")
