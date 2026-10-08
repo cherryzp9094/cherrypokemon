@@ -67,3 +67,43 @@ jobs:
             **/build/reports/tests/**
           if-no-files-found: ignore
           retention-days: 7
+
+  instrumented-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Gradle wrapper 검증
+        uses: gradle/actions/wrapper-validation@v6
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: KVM 사용 허용
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: 계측 테스트
+        # 하드웨어 렌더링이 없는 러너라 swiftshader 로 그린다.
+        run: ./gradlew pixel5Api35Check -Pandroid.testoptions.manageddevices.emulator.gpu=swiftshader_indirect
+
+      - name: 리포트 올리기
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: instrumented-test-reports
+          path: '**/build/reports/androidTests/**'
+          if-no-files-found: ignore
+          retention-days: 7
