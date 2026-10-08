@@ -1,5 +1,7 @@
 package com.cherryzp.cherrypokemon.core.testing.repository
 
+import androidx.paging.LoadState
+import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import com.cherryzp.cherrypokemon.core.data.repository.PokemonRepository
 import com.cherryzp.cherrypokemon.core.model.Pokemon
@@ -15,7 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
  */
 class FakePokemonRepository @Inject constructor() : PokemonRepository {
 
-    private val pokemons = MutableStateFlow(PagingData.empty<Pokemon>())
+    private val pokemons = MutableStateFlow(PagingData.empty<Pokemon>(loadedStates))
     private val pokemonDetails = MutableSharedFlow<PokemonDetail?>(replay = 1)
 
     /** `refreshPokemonDetail` 이 던질 예외. null 이면 성공한다. */
@@ -26,7 +28,8 @@ class FakePokemonRepository @Inject constructor() : PokemonRepository {
         private set
 
     fun sendPokemons(values: List<Pokemon>) {
-        pokemons.value = PagingData.from(values)
+        // 로드 상태를 함께 주지 않으면 asSnapshot 이 로딩이 끝나기를 기다리며 멈춘다.
+        pokemons.value = PagingData.from(values, loadedStates)
     }
 
     fun sendPokemonDetail(detail: PokemonDetail?) {
@@ -34,6 +37,14 @@ class FakePokemonRepository @Inject constructor() : PokemonRepository {
     }
 
     override fun getPokemonsStream(): Flow<PagingData<Pokemon>> = pokemons
+
+    private companion object {
+        val loadedStates = LoadStates(
+            refresh = LoadState.NotLoading(endOfPaginationReached = true),
+            prepend = LoadState.NotLoading(endOfPaginationReached = true),
+            append = LoadState.NotLoading(endOfPaginationReached = true)
+        )
+    }
 
     override fun getPokemonDetailStream(pokeId: Int): Flow<PokemonDetail?> = pokemonDetails
 
