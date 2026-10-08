@@ -42,6 +42,10 @@ gradlePlugin {
             id = "cherrypokemon.android.application.compose"
             implementationClass = "AndroidApplicationComposeConventionPlugin"
         }
+        register("androidLint") {
+            id = "cherrypokemon.android.lint"
+            implementationClass = "AndroidLintConventionPlugin"
+        }
         register("androidLibrary") {
             id = "cherrypokemon.android.library"
             implementationClass = "AndroidLibraryConventionPlugin"
