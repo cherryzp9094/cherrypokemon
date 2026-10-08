@@ -1,5 +1,6 @@
 plugins {
     id("cherrypokemon.android.library")
+    id("cherrypokemon.hilt")
 }
 
 android {
@@ -7,7 +8,9 @@ android {
 }
 
 dependencies {
+    api(projects.core.data)
     api(projects.core.model)
+    api(libs.paging.common.ktx)
     api(libs.junit)
     api(libs.kotlinx.coroutines.test)
 }
