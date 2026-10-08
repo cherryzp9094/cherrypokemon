@@ -32,4 +32,4 @@ internal fun Project.configureKotlinAndroid(commonExtension: CommonExtension) {
 internal const val COMPILE_SDK = 37
 internal const val MIN_SDK = 26
 internal const val TARGET_SDK = 34
-private val JAVA_VERSION = JavaVersion.VERSION_17
+internal val JAVA_VERSION: JavaVersion = JavaVersion.VERSION_17
