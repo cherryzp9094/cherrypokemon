@@ -15,6 +15,14 @@ android {
 }
 
 dependencies {
+    implementation(projects.core.designsystem)
+    implementation(projects.core.navigation)
+    implementation(projects.feature.pokemonlist.api)
+    implementation(projects.feature.pokemonlist.impl)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+
     implementation(project(":data"))
     implementation(project(":domain"))
 
