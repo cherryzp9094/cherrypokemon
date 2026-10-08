@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="6" by="lint 8.5.2" type="baseline" client="gradle" dependencies="true" name="AGP (8.5.2)" variant="all" version="8.5.2">
+<issues format="6" by="lint 9.4.1" type="baseline" client="gradle" dependencies="true" name="AGP (9.4.1)" variant="all" version="9.4.1">
 
     <issue
         id="RedundantLabel"
@@ -13,72 +13,6 @@
     </issue>
 
     <issue
-        id="AndroidGradlePluginVersion"
-        message="A newer version of com.android.application than 8.5.2 is available: 9.4.1"
-        errorLine1="agp = &quot;8.5.2&quot;"
-        errorLine2="      ~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="2"
-            column="7"/>
-    </issue>
-
-    <issue
-        id="AndroidGradlePluginVersion"
-        message="A newer version of com.android.application than 8.5.2 is available: 9.4.1"
-        errorLine1="agp = &quot;8.5.2&quot;"
-        errorLine2="      ~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="2"
-            column="7"/>
-    </issue>
-
-    <issue
-        id="AndroidGradlePluginVersion"
-        message="A newer version of com.android.library than 8.5.2 is available: 9.4.1"
-        errorLine1="agp = &quot;8.5.2&quot;"
-        errorLine2="      ~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="2"
-            column="7"/>
-    </issue>
-
-    <issue
-        id="AndroidGradlePluginVersion"
-        message="A newer version of com.android.library than 8.5.2 is available: 9.4.1"
-        errorLine1="agp = &quot;8.5.2&quot;"
-        errorLine2="      ~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="2"
-            column="7"/>
-    </issue>
-
-    <issue
-        id="AndroidGradlePluginVersion"
-        message="A newer version of com.android.tools.build:gradle than 8.5.2 is available: 9.4.1"
-        errorLine1="agp = &quot;8.5.2&quot;"
-        errorLine2="      ~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="2"
-            column="7"/>
-    </issue>
-
-    <issue
-        id="AndroidGradlePluginVersion"
-        message="A newer version of com.android.tools.build:gradle than 8.5.2 is available: 9.4.1"
-        errorLine1="agp = &quot;8.5.2&quot;"
-        errorLine2="      ~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="2"
-            column="7"/>
-    </issue>
-
-    <issue
         id="GradleDependency"
         message="A newer version of androidx.core:core-ktx than 1.13.1 is available: 1.19.1"
         errorLine1="coreKtx = &quot;1.13.1&quot;"
@@ -87,28 +21,6 @@
             file="../gradle/libs.versions.toml"
             line="4"
             column="11"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.core:core-ktx than 1.13.1 is available: 1.19.1"
-        errorLine1="coreKtx = &quot;1.13.1&quot;"
-        errorLine2="          ~~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="4"
-            column="11"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.test.ext:junit than 1.2.1 is available: 1.3.0"
-        errorLine1="junitVersion = &quot;1.2.1&quot;"
-        errorLine2="               ~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="6"
-            column="16"/>
     </issue>
 
     <issue
@@ -135,89 +47,12 @@
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.test.espresso:espresso-core than 3.6.1 is available: 3.7.0"
-        errorLine1="espressoCore = &quot;3.6.1&quot;"
-        errorLine2="               ~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="7"
-            column="16"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.8.7 is available: 2.11.0"
-        errorLine1="lifecycleRuntimeKtx = &quot;2.8.7&quot;"
-        errorLine2="                      ~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="8"
-            column="23"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.8.7 is available: 2.11.0"
-        errorLine1="lifecycleRuntimeKtx = &quot;2.8.7&quot;"
-        errorLine2="                      ~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="8"
-            column="23"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
         message="A newer version of androidx.activity:activity-compose than 1.9.3 is available: 1.13.0"
         errorLine1="activityCompose = &quot;1.9.3&quot;"
         errorLine2="                  ~~~~~~~">
         <location
             file="../gradle/libs.versions.toml"
             line="9"
-            column="19"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.activity:activity-compose than 1.9.3 is available: 1.13.0"
-        errorLine1="activityCompose = &quot;1.9.3&quot;"
-        errorLine2="                  ~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="9"
-            column="19"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.compose:compose-bom than 2024.10.01 is available: 2026.09.00"
-        errorLine1="composeBom = &quot;2024.10.01&quot;"
-        errorLine2="             ~~~~~~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="10"
-            column="14"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.compose:compose-bom than 2024.10.01 is available: 2026.09.00"
-        errorLine1="composeBom = &quot;2024.10.01&quot;"
-        errorLine2="             ~~~~~~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="10"
-            column="14"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.hilt:hilt-navigation-compose than 1.2.0 is available: 1.4.0"
-        errorLine1="hilt-navigation = &quot;1.2.0&quot;"
-        errorLine2="                  ~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="17"
             column="19"/>
     </issue>
 
@@ -235,28 +70,6 @@
     <issue
         id="GradleDependency"
         message="A newer version of androidx.paging:paging-common-ktx than 3.3.2 is available: 3.5.2"
-        errorLine1="paging = &quot;3.3.2&quot;"
-        errorLine2="         ~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="19"
-            column="10"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.paging:paging-common-ktx than 3.3.2 is available: 3.5.2"
-        errorLine1="paging = &quot;3.3.2&quot;"
-        errorLine2="         ~~~~~~~">
-        <location
-            file="../gradle/libs.versions.toml"
-            line="19"
-            column="10"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.paging:paging-compose than 3.3.2 is available: 3.5.2"
         errorLine1="paging = &quot;3.3.2&quot;"
         errorLine2="         ~~~~~~~">
         <location
@@ -288,14 +101,80 @@
     </issue>
 
     <issue
-        id="GradleDependency"
-        message="A newer version of androidx.paging:paging-runtime than 3.3.2 is available: 3.5.2"
-        errorLine1="paging = &quot;3.3.2&quot;"
-        errorLine2="         ~~~~~~~">
+        id="NewerVersionAvailable"
+        message="A newer version of org.jetbrains.kotlinx:kotlinx-collections-immutable than 0.3.7 is available: 0.5.2"
+        errorLine1="kotlinxCollections = &quot;0.3.7&quot;"
+        errorLine2="                     ~~~~~~~">
         <location
             file="../gradle/libs.versions.toml"
-            line="19"
+            line="13"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of com.squareup.retrofit2:converter-gson than 2.11.0 is available: 3.0.0"
+        errorLine1="retrofit = &quot;2.11.0&quot;"
+        errorLine2="           ~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="22"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of com.squareup.retrofit2:retrofit than 2.11.0 is available: 3.0.0"
+        errorLine1="retrofit = &quot;2.11.0&quot;"
+        errorLine2="           ~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="22"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of com.squareup.okhttp3:logging-interceptor than 4.12.0 is available: 5.5.0"
+        errorLine1="okhttp = &quot;4.12.0&quot;"
+        errorLine2="         ~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="23"
             column="10"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of com.github.skydoves:landscapist-glide than 2.4.0 is available: 2.13.2"
+        errorLine1="glide = &quot;2.4.0&quot;"
+        errorLine2="        ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="25"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of com.diffplug.spotless than 8.10.2 is available: 8.10.3"
+        errorLine1="spotless = &quot;8.10.2&quot;"
+        errorLine2="           ~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="28"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of com.diffplug.spotless:spotless-plugin-gradle than 8.10.2 is available: 8.10.3"
+        errorLine1="spotless = &quot;8.10.2&quot;"
+        errorLine2="           ~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="28"
+            column="12"/>
     </issue>
 
     <issue
