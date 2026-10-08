@@ -16,10 +16,11 @@
         android:theme="@style/Theme.CherryPokemon"
         tools:targetApi="31">
         <activity
-            android:name=".ui.view.main.MainActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.CherryPokemon">
+            android:theme="@style/Theme.CherryPokemon"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
