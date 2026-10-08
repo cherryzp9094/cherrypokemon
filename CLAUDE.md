@@ -39,7 +39,15 @@ PokeAPI 기반 포켓몬 도감 앱. Jetpack Compose + 커스텀 MVI + 3-레이�
 ./gradlew lint                       # Android Lint
 ```
 
-ktlint / detekt / CI 는 아직 구성되어 있지 않다.
+포맷 검사와 Lint 는 convention plugin 으로 모든 모듈에 적용된다.
+
+```bash
+./gradlew spotlessCheck   # 포맷 검사 (ktlint, Android 스타일)
+./gradlew spotlessApply   # 포맷 자동 수정
+./gradlew lintRelease     # Lint (기존 경고는 각 모듈 lint-baseline.xml 로 제외)
+```
+
+CI 는 아직 구성되어 있지 않다.
 
 ## 모듈 구조
 
