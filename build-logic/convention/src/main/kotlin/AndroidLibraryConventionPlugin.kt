@@ -13,6 +13,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             apply(plugin = "com.android.library")
             apply(plugin = "org.jetbrains.kotlin.android")
             configureSpotless()
+            apply(plugin = "cherrypokemon.android.lint")
 
             extensions.configure<LibraryExtension> {
                 configureKotlinAndroid(this)
