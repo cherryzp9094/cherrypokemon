@@ -59,6 +59,14 @@ gradlePlugin {
             id = "cherrypokemon.jvm.library"
             implementationClass = "JvmLibraryConventionPlugin"
         }
+        register("androidFeatureApi") {
+            id = "cherrypokemon.android.feature.api"
+            implementationClass = "AndroidFeatureApiConventionPlugin"
+        }
+        register("androidFeatureImpl") {
+            id = "cherrypokemon.android.feature.impl"
+            implementationClass = "AndroidFeatureImplConventionPlugin"
+        }
         register("androidRoom") {
             id = "cherrypokemon.android.room"
             implementationClass = "AndroidRoomConventionPlugin"
