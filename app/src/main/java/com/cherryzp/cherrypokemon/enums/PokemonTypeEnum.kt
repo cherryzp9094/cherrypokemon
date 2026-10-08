@@ -23,7 +23,8 @@ enum class PokemonTypeEnum(val color: Color) {
     FAIRY(Color(0xFFEE99AC)),
     STELLAR(Color(0xFFFFD700)),
     UNKNOWN(Color(0xFF68A090)),
-    SHADOW(Color(0xFF606060));
+    SHADOW(Color(0xFF606060)),
+    ;
 
     companion object {
         fun creator(type: String) = entries.find { it.name == type.uppercase() } ?: UNKNOWN

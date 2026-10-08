@@ -5,8 +5,6 @@ import androidx.paging.PagingConfig
 import com.cherryzp.domain.repository.PokemonRepository
 import javax.inject.Inject
 
-class PokemonListUseCase @Inject constructor(
-    private val pokemonRepository: PokemonRepository
-) {
+class PokemonListUseCase @Inject constructor(private val pokemonRepository: PokemonRepository) {
     suspend operator fun invoke() = pokemonRepository.fetchPokemonList()
 }

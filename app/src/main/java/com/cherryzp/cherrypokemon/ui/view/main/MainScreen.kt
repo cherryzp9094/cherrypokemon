@@ -36,7 +36,7 @@ fun MainScreen(
     pokemons: LazyPagingItems<Pokemon>?,
     pokemonBackgroundColor: ImmutableMap<Int, Color>,
     updateBackgroundColor: (Int, Color) -> Unit,
-    goPokemonDetail: (Int, Int) -> Unit
+    goPokemonDetail: (Int, Int) -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -57,7 +57,7 @@ fun MainScreen(
                 .topAppBarColors()
                 .copy(
                     containerColor = PrimaryFire,
-                    titleContentColor = Color.White,
+                    titleContentColor = Color.White
                 )
         )
 
@@ -97,7 +97,5 @@ fun MainScreen(
                 }
             }
         }
-
     }
-
 }

@@ -9,18 +9,19 @@ import com.cherryzp.consts.KeyConsts.POKE_NO
 import com.cherryzp.data.extend.default
 import com.cherryzp.domain.usecase.PokemonDetailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 class PokemonDetailViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val pokemonDetailUseCase: PokemonDetailUseCase
-): BaseViewModel<PokemonDetailUiState>() {
+    private val pokemonDetailUseCase: PokemonDetailUseCase,
+) : BaseViewModel<PokemonDetailUiState>() {
     override val initialState: PokemonDetailUiState
         get() = PokemonDetailUiState(
-            pokemonBackgroundColor = savedStateHandle.get<Int>(POKEMON_BACKGROUND_COLOR) ?: Color.White.value.toInt()
+            pokemonBackgroundColor =
+                savedStateHandle.get<Int>(POKEMON_BACKGROUND_COLOR) ?: Color.White.value.toInt()
         )
 
     init {

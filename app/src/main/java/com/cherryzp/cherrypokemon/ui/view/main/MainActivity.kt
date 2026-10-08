@@ -31,10 +31,11 @@ class MainActivity : BaseActivity<MainViewModel, MainUiState>() {
 
     override fun handleSideEffect(sideEffect: UiSideEffect) {
         when (sideEffect) {
-            is MainUiSideEffect.goPokemonDetail -> {
+            is MainUiSideEffect.GoPokemonDetail -> {
                 startActivity(
                     Intent(
-                        this, PokemonDetailActivity::class.java
+                        this,
+                        PokemonDetailActivity::class.java
                     ).putExtras(
                         PokemonDetailActivity.create(
                             sideEffect.pokeId,
@@ -45,5 +46,4 @@ class MainActivity : BaseActivity<MainViewModel, MainUiState>() {
             }
         }
     }
-
 }

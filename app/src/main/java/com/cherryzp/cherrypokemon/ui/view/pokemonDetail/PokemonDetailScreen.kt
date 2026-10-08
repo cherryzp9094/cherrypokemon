@@ -40,9 +40,8 @@ fun PokemonDetailScreen(
     paddingValues: PaddingValues,
     window: Window?,
     pokemonDetail: PokemonDetail,
-    pokemonBackgroundColor: Int
+    pokemonBackgroundColor: Int,
 ) {
-
     LaunchedEffect(pokemonBackgroundColor) {
         window?.let {
             WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -57,7 +56,6 @@ fun PokemonDetailScreen(
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
     ) {
-
         GlideImage(
             modifier = Modifier
                 .clip(
@@ -78,7 +76,7 @@ fun PokemonDetailScreen(
                 .align(CenterHorizontally),
             text = pokemonDetail.name,
             fontSize = 36.sp,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Bold
         )
 
         Row(
@@ -129,11 +127,7 @@ fun PokemonDetailScreen(
 }
 
 @Composable
-private fun PokemonDetailSizeColumn(
-    name: String,
-    size: String,
-    modifier: Modifier = Modifier
-) {
+private fun PokemonDetailSizeColumn(name: String, size: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier,
         horizontalAlignment = CenterHorizontally
@@ -151,6 +145,7 @@ private fun PokemonDetailSizeColumn(
     }
 }
 
+@Suppress("ktlint:standard:max-line-length")
 @Preview
 @Composable
 fun PokemonDetailScreenPreview() {
