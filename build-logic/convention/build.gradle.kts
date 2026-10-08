@@ -50,6 +50,10 @@ gradlePlugin {
             id = "cherrypokemon.android.library"
             implementationClass = "AndroidLibraryConventionPlugin"
         }
+        register("jvmLibrary") {
+            id = "cherrypokemon.jvm.library"
+            implementationClass = "JvmLibraryConventionPlugin"
+        }
         register("hilt") {
             id = "cherrypokemon.hilt"
             implementationClass = "HiltConventionPlugin"
