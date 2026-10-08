@@ -1,19 +1,19 @@
 [versions]
-agp = "8.5.2"
-kotlin = "2.0.0"
+agp = "9.4.1"
+kotlin = "2.4.21"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
-lifecycleRuntimeKtx = "2.8.7"
+lifecycleRuntimeKtx = "2.11.0"
 activityCompose = "1.9.3"
-composeBom = "2024.10.01"
-ksp = "2.0.0-1.0.23"
+composeBom = "2026.09.00"
+ksp = "2.3.12"
 
 kotlinxCollections = "0.3.7"
 
-hilt = "2.51.1"
-hilt-android-gradle-plugin = "2.51.1"
+hilt = "2.60.1"
+hilt-android-gradle-plugin = "2.60.1"
 hilt-navigation = "1.2.0"
 
 paging = "3.3.2"
@@ -69,7 +69,6 @@ glide = { module = "com.github.skydoves:landscapist-glide", version.ref = "glide
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
