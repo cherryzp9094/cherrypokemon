@@ -37,5 +37,5 @@ dependencies {
 
     implementation(libs.hilt.navigation)
 
-    implementation(libs.glide)
+    implementation(libs.landscapist.glide)
 }
