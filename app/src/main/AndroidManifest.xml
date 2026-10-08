@@ -28,10 +28,6 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".ui.view.pokemonDetail.PokemonDetailActivity"
-            android:exported="false"/>
-
     </application>
 
 </manifest>

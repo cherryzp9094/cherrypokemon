@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feature_pokemondetail_impl_back">뒤로</string>
+    <string name="feature_pokemondetail_impl_height">키</string>
+    <string name="feature_pokemondetail_impl_weight">몸무게</string>
+    <string name="feature_pokemondetail_impl_height_value">%1$.1f m</string>
+    <string name="feature_pokemondetail_impl_weight_value">%1$.1f kg</string>
+    <string name="feature_pokemondetail_impl_error_load">정보를 불러오지 못했습니다</string>
+    <string name="feature_pokemondetail_impl_error_refresh">최신 정보를 가져오지 못했습니다</string>
+    <string name="feature_pokemondetail_impl_retry">다시 시도</string>
+</resources>

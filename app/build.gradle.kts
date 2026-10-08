@@ -17,6 +17,8 @@ android {
 dependencies {
     implementation(projects.core.designsystem)
     implementation(projects.core.navigation)
+    implementation(projects.feature.pokemondetail.api)
+    implementation(projects.feature.pokemondetail.impl)
     implementation(projects.feature.pokemonlist.api)
     implementation(projects.feature.pokemonlist.impl)
     implementation(libs.androidx.navigation3.runtime)
