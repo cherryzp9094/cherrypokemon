@@ -1,5 +1,6 @@
 import com.android.build.api.dsl.LibraryExtension
 import com.cherryzp.cherrypokemon.TARGET_SDK
+import com.cherryzp.cherrypokemon.configureGradleManagedDevices
 import com.cherryzp.cherrypokemon.configureKotlinAndroid
 import com.cherryzp.cherrypokemon.configureSpotless
 import org.gradle.api.Plugin
@@ -16,6 +17,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
             extensions.configure<LibraryExtension> {
                 configureKotlinAndroid(this)
+                configureGradleManagedDevices(this)
                 testOptions.targetSdk = TARGET_SDK
                 lint.targetSdk = TARGET_SDK
                 // 모듈 경로로 리소스 이름 접두사를 정한다. (:core:ui → core_ui_)
