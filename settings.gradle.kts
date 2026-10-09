@@ -26,6 +26,7 @@ rootProject.name = "CherryPokemon"
 include(":app")
 include(":core:common")
 include(":core:data")
+include(":core:data-test")
 include(":core:database")
 include(":core:designsystem")
 include(":core:model")

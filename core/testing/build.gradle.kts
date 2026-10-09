@@ -13,4 +13,6 @@ dependencies {
     api(libs.paging.common.ktx)
     api(libs.junit)
     api(libs.kotlinx.coroutines.test)
+    api(libs.androidx.test.runner)
+    api(libs.hilt.android.testing)
 }
