@@ -16,8 +16,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.components.rememberImageComponent
 import com.skydoves.landscapist.glide.GlideImage
 import com.skydoves.landscapist.palette.PalettePlugin
@@ -71,6 +73,8 @@ fun PokemonCard(
                         }
                     )
                 },
+                // 기본값인 Crop 은 이미지를 영역에 맞춰 잘라낸다.
+                imageOptions = ImageOptions(contentScale = ContentScale.Fit),
                 // 로딩 전후 크기가 같아야 목록이 튀지 않는다.
                 modifier = Modifier
                     .fillMaxWidth()
