@@ -11,6 +11,7 @@ android {
         applicationId = "com.cherryzp.cherrypokemon"
         versionCode = 1
         versionName = "1.0"
+        testInstrumentationRunner = "com.cherryzp.cherrypokemon.core.testing.util.CherryPokemonTestRunner"
     }
 }
 
@@ -29,6 +30,10 @@ dependencies {
     implementation(libs.androidx.ui)
 
     testImplementation(libs.junit)
+
+    androidTestImplementation(projects.core.dataTest)
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.hilt.android.testing)
+    kspAndroidTest(libs.hilt.compiler)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
