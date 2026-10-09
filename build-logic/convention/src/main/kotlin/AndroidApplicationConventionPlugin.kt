@@ -22,11 +22,10 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
                 buildTypes {
                     release {
-                        isMinifyEnabled = false
-                        proguardFiles(
-                            getDefaultProguardFile("proguard-android-optimize.txt"),
-                            "proguard-rules.pro"
-                        )
+                        // AGP 9.3 이상의 최적화 DSL. keep 규칙은 src/<variant>/keepRules/*.keep 에 둔다.
+                        optimization {
+                            enable = true
+                        }
                     }
                 }
 
