@@ -6,7 +6,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.espresso.Espresso
 import com.cherryzp.cherrypokemon.core.model.Pokemon
+import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
+import com.cherryzp.cherrypokemon.core.model.PokemonStats
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import com.cherryzp.cherrypokemon.core.testing.repository.FakePokemonRepository
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -42,7 +44,17 @@ class NavigationTest {
                 imageUrl = "",
                 heightMeters = 0.7f,
                 weightKilograms = 6.9f,
-                types = listOf(PokemonType.Grass)
+                types = listOf(PokemonType.Grass),
+                baseExperience = 64,
+                stats = PokemonStats(
+                    hp = 45,
+                    attack = 49,
+                    defense = 49,
+                    specialAttack = 65,
+                    specialDefense = 65,
+                    speed = 45
+                ),
+                abilities = listOf(PokemonAbility(name = "overgrow", isHidden = false))
             )
         )
     }

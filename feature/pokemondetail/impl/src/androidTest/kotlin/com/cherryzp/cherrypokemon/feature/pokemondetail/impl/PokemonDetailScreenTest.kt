@@ -7,7 +7,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cherryzp.cherrypokemon.core.designsystem.theme.CherryPokemonTheme
+import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
+import com.cherryzp.cherrypokemon.core.model.PokemonStats
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -26,7 +28,20 @@ class PokemonDetailScreenTest {
         imageUrl = "",
         heightMeters = 0.7f,
         weightKilograms = 6.9f,
-        types = listOf(PokemonType.Grass, PokemonType.Poison)
+        types = listOf(PokemonType.Grass, PokemonType.Poison),
+        baseExperience = 64,
+        stats = PokemonStats(
+            hp = 45,
+            attack = 49,
+            defense = 49,
+            specialAttack = 65,
+            specialDefense = 65,
+            speed = 45
+        ),
+        abilities = listOf(
+            PokemonAbility(name = "overgrow", isHidden = false),
+            PokemonAbility(name = "chlorophyll", isHidden = true)
+        )
     )
 
     @Test
@@ -37,6 +52,35 @@ class PokemonDetailScreenTest {
         composeTestRule.onNodeWithText("Grass").assertIsDisplayed()
         composeTestRule.onNodeWithText("0.7 m").assertIsDisplayed()
         composeTestRule.onNodeWithText("6.9 kg").assertIsDisplayed()
+    }
+
+    @Test
+    fun detail_showsStatsWithTotal() {
+        setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
+
+        composeTestRule
+            .onNodeWithContentDescription(
+                resources.getString(R.string.feature_pokemondetail_impl_stat_hp) + " 45"
+            )
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithContentDescription(
+                resources.getString(R.string.feature_pokemondetail_impl_stat_speed) + " 45"
+            )
+            .assertIsDisplayed()
+        // 45 + 49 + 49 + 65 + 65 + 45
+        composeTestRule.onNodeWithText("318").assertIsDisplayed()
+    }
+
+    @Test
+    fun detail_showsAbilitiesWithHiddenLabel() {
+        setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
+
+        composeTestRule.onNodeWithText("overgrow").assertIsDisplayed()
+        composeTestRule.onNodeWithText("chlorophyll").assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText(resources.getString(R.string.feature_pokemondetail_impl_hidden_ability))
+            .assertIsDisplayed()
     }
 
     @Test

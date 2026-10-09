@@ -55,4 +55,34 @@ class NetworkPokemonExtTest {
             entity.types
         )
     }
+
+    @Test
+    fun asEntity_detail_readsStatsByName() {
+        val entity = networkPokemonDetail(id = 1, name = "bulbasaur").asEntity()
+
+        assertEquals(45, entity.stats.hp)
+        assertEquals(49, entity.stats.attack)
+        assertEquals(65, entity.stats.specialAttack)
+        assertEquals(45, entity.stats.speed)
+        assertEquals(64, entity.baseExperience)
+    }
+
+    @Test
+    fun asEntity_detail_missingStat_fallsBackToZero() {
+        val detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+            .copy(stats = emptyList())
+
+        val entity = detail.asEntity()
+
+        assertEquals(0, entity.stats.hp)
+        assertEquals(0, entity.stats.speed)
+    }
+
+    @Test
+    fun asEntity_detail_keepsAbilityOrderAndHiddenFlag() {
+        val entity = networkPokemonDetail(id = 1, name = "bulbasaur").asEntity()
+
+        assertEquals(listOf("overgrow", "chlorophyll"), entity.abilities.map { it.name })
+        assertEquals(listOf(false, true), entity.abilities.map { it.isHidden })
+    }
 }

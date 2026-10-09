@@ -7,7 +7,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.model.PokemonDetailEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
+import com.cherryzp.cherrypokemon.core.database.model.PokemonStatsEntity
 import com.cherryzp.cherrypokemon.core.database.model.asExternalModel
+import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -88,7 +90,20 @@ class PokemonDaoTest {
                 imageUrl = "https://example.com/1.png",
                 heightMeters = 0.7f,
                 weightKilograms = 6.9f,
-                types = listOf(PokemonType.Grass, PokemonType.Poison)
+                types = listOf(PokemonType.Grass, PokemonType.Poison),
+                baseExperience = 64,
+                stats = PokemonStatsEntity(
+                    hp = 45,
+                    attack = 49,
+                    defense = 49,
+                    specialAttack = 65,
+                    specialDefense = 65,
+                    speed = 45
+                ),
+                abilities = listOf(
+                    PokemonAbility(name = "overgrow", isHidden = false),
+                    PokemonAbility(name = "chlorophyll", isHidden = true)
+                )
             )
         )
 
@@ -104,5 +119,40 @@ class PokemonDaoTest {
         id = id,
         name = name,
         imageUrl = "https://example.com/$id.png"
+    )
+
+    @Test
+    fun insertPokemonDetail_keepsStatsAndAbilities() = runTest {
+        pokemonDao.insertPokemonDetail(bulbasaurDetail())
+
+        val saved = pokemonDao.getPokemonDetailEntity(pokeId = 1).first()?.asExternalModel()
+
+        assertEquals(45, saved?.stats?.hp)
+        assertEquals(318, saved?.stats?.total)
+        assertEquals(64, saved?.baseExperience)
+        assertEquals(listOf("overgrow", "chlorophyll"), saved?.abilities?.map { it.name })
+        assertEquals(listOf(false, true), saved?.abilities?.map { it.isHidden })
+    }
+
+    private fun bulbasaurDetail() = PokemonDetailEntity(
+        id = 1,
+        name = "bulbasaur",
+        imageUrl = "https://example.com/1.png",
+        heightMeters = 0.7f,
+        weightKilograms = 6.9f,
+        types = listOf(PokemonType.Grass, PokemonType.Poison),
+        baseExperience = 64,
+        stats = PokemonStatsEntity(
+            hp = 45,
+            attack = 49,
+            defense = 49,
+            specialAttack = 65,
+            specialDefense = 65,
+            speed = 45
+        ),
+        abilities = listOf(
+            PokemonAbility(name = "overgrow", isHidden = false),
+            PokemonAbility(name = "chlorophyll", isHidden = true)
+        )
     )
 }

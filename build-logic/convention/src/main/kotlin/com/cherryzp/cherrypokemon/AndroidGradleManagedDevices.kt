@@ -15,6 +15,8 @@ internal fun configureGradleManagedDevices(commonExtension: CommonExtension) {
             device = "Pixel 5"
             apiLevel = 35
             systemImageSource = "aosp-atd"
+            // 지정하지 않으면 AGP 10 부터 기본값이 arm64-v8a 로 바뀐다.
+            testedAbi = "x86_64"
         }
     }
 }
