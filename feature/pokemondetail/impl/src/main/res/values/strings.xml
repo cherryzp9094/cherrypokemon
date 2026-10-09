@@ -1,10 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="feature_pokemondetail_impl_back">뒤로</string>
+    <string name="feature_pokemondetail_impl_section_stats">종족값</string>
+    <string name="feature_pokemondetail_impl_section_basics">기본 정보</string>
+    <string name="feature_pokemondetail_impl_stat_hp">HP</string>
+    <string name="feature_pokemondetail_impl_stat_attack">공격</string>
+    <string name="feature_pokemondetail_impl_stat_defense">방어</string>
+    <string name="feature_pokemondetail_impl_stat_special_attack">특공</string>
+    <string name="feature_pokemondetail_impl_stat_special_defense">특방</string>
+    <string name="feature_pokemondetail_impl_stat_speed">스피드</string>
+    <string name="feature_pokemondetail_impl_stat_total">합계</string>
     <string name="feature_pokemondetail_impl_height">키</string>
     <string name="feature_pokemondetail_impl_weight">몸무게</string>
+    <string name="feature_pokemondetail_impl_base_experience">기초 경험치</string>
+    <string name="feature_pokemondetail_impl_ability">특성</string>
+    <string name="feature_pokemondetail_impl_hidden_ability">숨겨진 특성</string>
     <string name="feature_pokemondetail_impl_height_value">%1$.1f m</string>
     <string name="feature_pokemondetail_impl_weight_value">%1$.1f kg</string>
+    <string name="feature_pokemondetail_impl_number">No.%1$d</string>
     <string name="feature_pokemondetail_impl_error_load">정보를 불러오지 못했습니다</string>
     <string name="feature_pokemondetail_impl_error_refresh">최신 정보를 가져오지 못했습니다</string>
     <string name="feature_pokemondetail_impl_retry">다시 시도</string>
