@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-PokeAPI 기반 포켓몬 도감 앱. Jetpack Compose + 커스텀 MVI + 3-레이어 멀티모듈 구성의 학습용 프로젝트.
+PokeAPI 기반 포켓몬 도감 앱. Jetpack Compose + Orbit MVI + 오프라인 우선 멀티모듈 구성의 학습용 프로젝트.
 
 ## 컨벤션
 
@@ -17,7 +17,7 @@ PokeAPI 기반 포켓몬 도감 앱. Jetpack Compose + 커스텀 MVI + 3-레이�
 | 테스트 | `testing.md` |
 | Gradle, 모듈 build 파일, CI | `build.md` |
 
-이 파일의 아래 내용은 **지금 코드**의 설명이고, 컨벤션은 **목표 상태**다. 지금 코드를 목표 상태로 옮기는 순서는 `docs/improvement-plan.md`에 있다.
+남은 작업 순서는 `docs/improvement-plan.md`에 있다.
 
 ## 명령어
 
@@ -31,15 +31,16 @@ PokeAPI 기반 포켓몬 도감 앱. Jetpack Compose + 커스텀 MVI + 3-레이�
 
 # 단위 테스트
 ./gradlew testDebugUnitTest                      # 전 모듈
-./gradlew :data:testDebugUnitTest                # 특정 모듈
-./gradlew :data:testDebugUnitTest --tests "com.cherryzp.data.ExampleUnitTest"
-./gradlew :data:testDebugUnitTest --tests "*.PokemonMapperTest.url에서 id를 파싱한다"
+./gradlew :core:data:testDebugUnitTest           # 특정 모듈
+./gradlew :core:data:testDebugUnitTest --tests "*.OfflineFirstPokemonRepositoryTest"
 
-./gradlew connectedDebugAndroidTest  # 계측 테스트 (기기/에뮬레이터 필요)
-./gradlew lint                       # Android Lint
+# 계측 테스트 (기기/에뮬레이터 필요)
+./gradlew connectedDebugAndroidTest
+# CI 와 같은 가상 기기로 실행
+./gradlew pixel5Api35Check
 ```
 
-포맷 검사와 Lint 는 convention plugin 으로 모든 모듈에 적용된다.
+포맷 검사와 Lint 는 모든 모듈에 적용된다.
 
 ```bash
 ./gradlew spotlessCheck   # 포맷 검사 (ktlint, Android 스타일)
@@ -47,99 +48,106 @@ PokeAPI 기반 포켓몬 도감 앱. Jetpack Compose + 커스텀 MVI + 3-레이�
 ./gradlew lintRelease     # Lint (기존 경고는 각 모듈 lint-baseline.xml 로 제외)
 ```
 
-CI 는 아직 구성되어 있지 않다.
+CI 는 `.github/workflows/ci.yml` 이다. PR 마다 포맷·단위 테스트·Lint·빌드와 계측 테스트를 돌린다.
 
 ## 모듈 구조
 
 ```
-:app     Compose UI + MVI (presentation)
-:data    Retrofit / Paging / DI / DTO·Mapper
-:domain  model, repository interface, usecase
-build-logic  공유 빌드 로직 (included build 의 convention plugin)
+:app                          MainActivity, CherryPokemonApp (NavDisplay 조립)
+:feature:<화면>:api            NavKey, 이동 함수
+:feature:<화면>:impl           Screen, ViewModel, UiState, entry builder
+:core:navigation              NavigationState, Navigator
+:core:designsystem            테마, 색, 타이포그래피
+:core:ui                      PokemonCard, 타입 색, Preview 데이터
+:core:data                    Repository, RemoteMediator, 네트워크 모델 → 엔티티 변환
+:core:database                Room 3 데이터베이스, 엔티티, DAO
+:core:network                 네트워크 데이터 소스, 네트워크 모델
+:core:model                   도메인 모델 (JVM)
+:core:common                  디스패처 qualifier, 애플리케이션 스코프 (JVM)
+:core:testing                 테스트 규칙, 테스트 데이터, Fake Repository
+build-logic                   공유 빌드 로직 (included build 의 convention plugin)
 ```
 
-의존 방향: `:app → :data`, `:app → :domain`, `:data → :domain`
+의존 방향은 UI → data 한쪽이다. `:feature:*:impl` 은 다른 feature 의 `impl` 에 의존하지 않고, 이동이 필요하면 그 화면의 `api` 를 쓴다.
 
-> `:app → :data` 는 DI 조립용이 아니라 **실제 코드 참조**다. `PokemonDetailViewModel` 이 `com.cherryzp.data.extend.default` 를 import 하고 있다. 레이어 위반이므로 새 코드에서 따라하지 말 것.
+## 화면 구조
 
-## MVI 구조 (Orbit-MVI 모방, 직접 구현)
-
-`app/src/main/java/com/cherryzp/cherrypokemon/ui/view/base/base/` 의 5개 파일이 전체 흐름을 이룬다. 화면 하나를 추가하려면 이 구조를 먼저 이해해야 한다.
-
-```
-BaseViewModel<S : UiState>  ──has──▶ Container<S>  ──impl──▶ RealContainer<S>
-       │                                   │
-       │ reduceState / postSideEffect      ├─ uiState      : StateFlow<S>
-       ▼                                   └─ uiSideEffect : SharedFlow<UiSideEffect>
-  ContainerContext<S>  (state 읽기 + reduce + postSideEffect 를 묶은 컨텍스트)
-```
-
-- **State**: `BaseActivity.BuildContent()` 안에서 `viewModel.container.uiState.collectAsStateWithLifecycle()` 로 수집한다. `observe()` 는 State 를 수집하지 않는다 — SideEffect 전용이다.
-- **SideEffect**: `BaseActivity.onCreate` → `observe()` → `repeatOnLifecycle(STARTED)` 로 수집되어 `handleSideEffect()` 로 전달된다. 네비게이션 같은 1회성 이벤트에 사용.
-- **Intent 개념은 없다.** View 가 `viewModel::goPokemonDetail` 처럼 ViewModel 의 public 메서드를 직접 호출한다.
-
-### 화면 추가 시 규약
-
-화면마다 3개 파일을 `ui/view/<screen>/` 에 만든다.
+단일 Activity 다. 화면은 Activity 가 아니라 NavKey 와 entry 로 추가한다.
 
 | 파일 | 내용 |
 |---|---|
-| `XxxContract.kt` | `XxxUiState : UiState()`, `sealed class XxxUiSideEffect : UiSideEffect` |
-| `XxxViewModel.kt` | `BaseViewModel<XxxUiState>()`, `initialState` 오버라이드 |
-| `XxxActivity.kt` | `BaseActivity<XxxViewModel, XxxUiState>()`, `BuildContent()` + `handleSideEffect()` |
+| `:api` 의 `<화면>NavKey.kt` | `@Serializable` NavKey 와 `Navigator.navigateTo<화면>()`. 키에는 ID 같은 원시값만 담는다 |
+| `:impl` 의 `<화면>Screen.kt` | ViewModel 을 받는 Screen 과 상태만 받는 Screen, 같은 이름으로 오버로드 |
+| `:impl` 의 `<화면>ViewModel.kt` | `OrbitContainerHost` 구현 |
+| `:impl` 의 `<화면>UiState.kt` | UiState 와 SideEffect |
+| `:impl` 의 `navigation/<화면>EntryBuilder.kt` | `EntryProviderScope<NavKey>` 확장 함수 |
 
-`@AndroidEntryPoint` 를 Activity 에, `@HiltViewModel` 을 ViewModel 에 붙인다.
+새 화면을 추가하면 `:app` 의 `CherryPokemonApp` 에 entry builder 를 등록하고 `settings.gradle.kts` 에 모듈을 넣는다. **`settings.gradle.kts` 등록을 빠뜨리면 그 모듈은 빌드도 테스트도 되지 않는데 전체 빌드는 통과한다.**
 
-**`@HiltViewModel` 은 의존성이 없어도 `@Inject constructor()` 를 명시해야 한다.** 생략하면 KSP 가 "should contain exactly one @Inject or @AssistedInject annotated constructor" 로 실패한다.
-
-### 화면 간 데이터 전달
-
-Navigation Compose 를 쓰지 않는다. **Activity + Intent extras + `SavedStateHandle`** 조합이다.
+## 상태 관리 (Orbit MVI)
 
 ```kotlin
-// 보내는 쪽: companion object 의 create() 가 Bundle 을 만든다
-startActivity(Intent(this, PokemonDetailActivity::class.java)
-    .putExtras(PokemonDetailActivity.create(pokeId, bgColor)))
+@HiltViewModel(assistedFactory = PokemonDetailViewModel.Factory::class)
+internal class PokemonDetailViewModel @AssistedInject constructor(
+    @Assisted private val pokeId: Int,
+    private val pokemonRepository: PokemonRepository,
+) : ViewModel(),
+    OrbitContainerHost<PokemonDetailUiState, PokemonDetailUiState, PokemonDetailSideEffect> {
 
-// 받는 쪽: ViewModel 이 SavedStateHandle 로 읽는다
-savedStateHandle.get<Int>(POKE_NO)
+    override val container = orbitContainer<PokemonDetailUiState, PokemonDetailSideEffect>(
+        initialState = PokemonDetailUiState(refreshState = RefreshState.Refreshing),
+    ) { /* onCreate: 스트림 구독과 첫 갱신 */ }
+}
 ```
 
-키는 `domain/src/main/java/com/cherryzp/consts/KeyConsts.kt` 에 모아둔다. 이 상수는 Retrofit `@Path` 이름으로도 재사용된다 (`PokemonApi`).
+- 로딩과 구독은 `init` 이 아니라 `orbitContainer` 의 `onCreate` 블록에서 시작한다. 테스트에서는 `runOnCreate()` 로 실행한다.
+- 화면 인자는 NavKey 값을 assisted injection 으로 받는다.
+- 상태는 `collectAsState()`, 일회성 이벤트는 `collectSideEffect {}` 로 받는다.
+- UI 에서 시작하는 이동(버튼 클릭)은 ViewModel 을 거치지 않고 Screen 콜백으로 처리한다.
 
 ## 데이터 흐름
 
+오프라인 우선이다. **읽기는 항상 Room 에서** 하고, 네트워크는 로컬을 갱신하는 데만 쓴다.
+
 ```
-PokemonApi (Retrofit)
-  └─ PokemonPagingSource ──▶ Pager ──▶ Flow<PagingData<Pokemon>>
-       └─ PokemonRepositoryImpl ──▶ PokemonRepository (domain 인터페이스)
-            └─ PokemonListUseCase / PokemonDetailUseCase
-                 └─ ViewModel ──▶ UiState ──▶ Compose
+PokemonNetworkDataSource (Retrofit + kotlinx.serialization)
+  └─ OfflineFirstPokemonRepository ─ asEntity() ─▶ PokemonDao (Room)
+       ├─ 목록: Pager(PokemonRemoteMediator, PokemonDao::pagingSource)
+       └─ 상세: getPokemonDetailStream() ─ asExternalModel() ─▶ Flow<PokemonDetail?>
+            └─ ViewModel ──▶ UiState ──▶ Compose
 ```
 
-- DTO → 도메인 변환은 `data/mapper/` 의 `toDomain()` 확장 함수로만 한다. DTO 필드는 nullable 로 두고 매퍼에서 `default()` / `orEmpty()` 로 기본값을 채운다.
-- DI 는 `data/di/` 에만 있다. `ApiModule`(`@Provides`, `internal object`) + `RepositoryModule`(`@Binds`, `interface`). 둘 다 `SingletonComponent`.
-- `Pokemon.id` 와 `Pokemon.imageUrl` 은 저장 필드가 아니라 `url` 문자열에서 매번 파싱하는 computed property 다.
+- 네트워크 모델(`Network*`)과 엔티티(`*Entity`)는 데이터 레이어 밖으로 나가지 않는다. 밖에는 `:core:model` 의 모델을 노출한다.
+- 단위 변환(PokeAPI 의 데시미터·헥토그램 → m·kg)과 ID·이미지 주소 계산은 `:core:data` 의 매퍼가 한다. 모델은 계산하지 않는다.
+- 데이터베이스 클래스는 모듈 밖으로 내보내지 않는다. 여러 DAO 를 한 트랜잭션으로 묶을 때는 `DatabaseTransactionRunner` 를 주입받는다.
+- 네트워크 실패는 예외로 던지고, 상태를 만드는 쪽(ViewModel)이 잡아 상태나 SideEffect 로 바꾼다.
 
 ## 빌드 설정
 
 | 위치 | 담당 |
 |---|---|
-| `gradle/libs.versions.toml` | 라이브러리·플러그인 버전, 번들 |
+| `gradle/libs.versions.toml` | 라이브러리·플러그인 버전 |
 | `build-logic/convention/.../KotlinAndroid.kt` | `COMPILE_SDK`, `MIN_SDK`, `TARGET_SDK`, Java·Kotlin JVM 타깃 |
-| `build-logic/convention/src/main/kotlin/*ConventionPlugin.kt` | 모듈 종류별 공통 설정 (`cherrypokemon.android.application`, `.application.compose`, `.android.library`, `cherrypokemon.hilt`) |
+| `build-logic/convention/src/main/kotlin/*ConventionPlugin.kt` | 모듈 종류별 공통 설정 |
+
+| convention plugin | 적용 모듈 |
+|---|---|
+| `cherrypokemon.android.application`, `.application.compose` | `:app` |
+| `cherrypokemon.android.library`, `.library.compose` | Android 라이브러리 |
+| `cherrypokemon.android.feature.api`, `.feature.impl` | `:feature:*` |
+| `cherrypokemon.jvm.library` | `:core:model`, `:core:common` |
+| `cherrypokemon.android.room` | `:core:database` |
+| `cherrypokemon.hilt`, `cherrypokemon.android.lint` | 해당 모듈 |
 
 - 모듈 `build.gradle.kts` 에는 플러그인, `namespace`, 그 모듈에만 필요한 설정과 의존성만 둔다.
 - convention plugin 은 `id("cherrypokemon.…")`, 카탈로그 플러그인은 `alias(libs.plugins.…)` 로 적용한다.
-- 플러그인을 새로 만들면 `build-logic/convention/build.gradle.kts` 의 `gradlePlugin {}` 에 등록한다.
+- Spotless 는 루트에서만 설정한다. 모듈마다 적용하면 그 모듈의 플러그인 클래스패스가 ktlint 룰 초기화를 깨뜨린다.
 
-## 알려진 부채
+## 남은 작업
 
-새 코드를 쓸 때 아래를 답습하지 말 것. 옛 코드에서는 고치지 않고, 새 구조로 옮기면서 없앤다. 각 항목이 사라지는 단계는 `docs/improvement-plan.md` 에 있다.
+`docs/improvement-plan.md` 의 6-4 이후다.
 
-- `PokemonPagingSource.load()` 의 API 호출이 `try` 블록 **밖**에 있어 네트워크 에러가 크래시로 이어진다.
-- 로딩 / 에러 / 빈 상태 UI 가 없다. Paging `loadState` 를 아무도 읽지 않는다.
-- `RealContainer` 의 `MutableSharedFlow()` 는 버퍼가 0이라 구독자가 없으면 SideEffect 가 조용히 사라진다.
-- `:domain` 이 Android library 이며 Hilt·KSP·Parcelize·Paging 을 물고 있다. Parcelize 와 Room 은 전 모듈 사용처가 0건이다.
-- 상태바 색을 `CherryPokemonTheme` 과 `PokemonDetailScreen` 두 곳에서 서로 다르게 설정한다.
-- 릴리즈 빌드에 `isMinifyEnabled = false`. `PokemonDetailResponse` 는 `@SerializedName` 없이 snake_case 필드명에 의존하므로 R8 을 켜면 파싱이 깨진다.
+- targetSdk 를 최신으로 올리기 (지금 34)
+- 내비게이션 계측 테스트 (`:core:data-test`, `CherryPokemonTestRunner`)
+- release 빌드 R8 켜기 (지금 `isMinifyEnabled = false`)
+- 적응형 레이아웃, Baseline Profile, 스크린샷 테스트
