@@ -19,6 +19,7 @@ class AndroidFeatureImplConventionPlugin : Plugin<Project> {
                 "implementation"(project(":core:data"))
 
                 "implementation"(libs.findLibrary("androidx-navigation3-runtime").get())
+                "implementation"(libs.findLibrary("androidx-material3-adaptive-navigation3").get())
                 "implementation"(libs.findLibrary("androidx-lifecycle-viewmodel-navigation3").get())
                 "implementation"(
                     libs.findLibrary("androidx-hilt-lifecycle-viewmodel-compose").get()

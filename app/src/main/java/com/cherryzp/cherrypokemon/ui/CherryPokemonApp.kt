@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -20,6 +22,7 @@ import com.cherryzp.cherrypokemon.feature.pokemonlist.api.PokemonListNavKey
 import com.cherryzp.cherrypokemon.feature.pokemonlist.impl.navigation.pokemonListEntryBuilder
 
 /** 화면들을 모아 back stack 을 그린다. */
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun CherryPokemonApp(
     navigationState: NavigationState = rememberNavigationState(startKey = PokemonListNavKey),
@@ -44,6 +47,8 @@ fun CherryPokemonApp(
                 rememberSaveableStateHolderNavEntryDecorator(),
                 rememberViewModelStoreNavEntryDecorator()
             ),
+            // 창이 넓으면 목록과 상세를 나란히 보여준다.
+            sceneStrategies = listOf(rememberListDetailSceneStrategy()),
             onBack = { navigator.goBack() },
             modifier = Modifier.padding(padding)
         )
