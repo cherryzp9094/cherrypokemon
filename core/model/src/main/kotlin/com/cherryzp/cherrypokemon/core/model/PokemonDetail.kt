@@ -5,6 +5,7 @@ package com.cherryzp.cherrypokemon.core.model
  *
  * @param heightMeters 키(m)
  * @param weightKilograms 몸무게(kg)
+ * @param baseExperience 쓰러뜨렸을 때 얻는 기초 경험치
  */
 data class PokemonDetail(
     val id: Int,
@@ -13,4 +14,7 @@ data class PokemonDetail(
     val heightMeters: Float,
     val weightKilograms: Float,
     val types: List<PokemonType>,
+    val baseExperience: Int,
+    val stats: PokemonStats,
+    val abilities: List<PokemonAbility>,
 )

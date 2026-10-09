@@ -17,6 +17,25 @@ data class NetworkPokemonDetail(
     val weight: Int = 0,
     val types: List<NetworkPokemonTypeSlot> = emptyList(),
     val sprites: NetworkSprites = NetworkSprites(),
+    @SerialName("base_experience")
+    val baseExperience: Int = 0,
+    val stats: List<NetworkPokemonStat> = emptyList(),
+    val abilities: List<NetworkPokemonAbility> = emptyList(),
+)
+
+@Serializable
+data class NetworkPokemonStat(
+    @SerialName("base_stat")
+    val baseStat: Int = 0,
+    val stat: NetworkNamedResource = NetworkNamedResource(),
+)
+
+@Serializable
+data class NetworkPokemonAbility(
+    val ability: NetworkNamedResource = NetworkNamedResource(),
+    @SerialName("is_hidden")
+    val isHidden: Boolean = false,
+    val slot: Int = 0,
 )
 
 @Serializable
