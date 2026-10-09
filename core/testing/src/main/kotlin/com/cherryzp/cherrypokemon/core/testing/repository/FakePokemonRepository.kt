@@ -7,6 +7,7 @@ import com.cherryzp.cherrypokemon.core.data.repository.PokemonRepository
 import com.cherryzp.cherrypokemon.core.model.Pokemon
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
  * ViewModel 테스트와 Hilt 계측 테스트에서 쓰는 [PokemonRepository] 대역.
  * 값은 `send…` 로 넣고, 실패는 `…Error` 로 지정한다.
  */
+@Singleton
 class FakePokemonRepository @Inject constructor() : PokemonRepository {
 
     private val pokemons = MutableStateFlow(PagingData.empty<Pokemon>(loadedStates))
