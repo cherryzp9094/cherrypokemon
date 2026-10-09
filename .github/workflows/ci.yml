@@ -100,7 +100,12 @@ jobs:
 
       - name: 계측 테스트
         # 하드웨어 렌더링이 없는 러너라 swiftshader 로 그린다.
-        run: ./gradlew pixel5Api35Check -Pandroid.testoptions.manageddevices.emulator.gpu=swiftshader_indirect
+        # Baseline Profile 수집은 같은 러너에서 돌리면 메모리가 모자라 강제 종료된다.
+        # 프로파일은 필요할 때 로컬에서 ./gradlew :app:generateBaselineProfile 로 만든다.
+        run: >-
+          ./gradlew pixel5Api35Check
+          -x :baselineprofile:pixel5Api35NonMinifiedReleaseAndroidTest
+          -Pandroid.testoptions.manageddevices.emulator.gpu=swiftshader_indirect
 
       - name: 리포트 올리기
         if: ${{ !cancelled() }}
