@@ -1,5 +1,6 @@
 plugins {
     id("cherrypokemon.android.application")
+    alias(libs.plugins.androidx.baselineprofile)
     id("cherrypokemon.android.application.compose")
     id("cherrypokemon.hilt")
 }
@@ -24,6 +25,7 @@ dependencies {
     implementation(projects.feature.pokemonlist.impl)
 
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.profileinstaller)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.material3.adaptive.navigation3)
     implementation(libs.androidx.navigation3.runtime)
@@ -37,4 +39,6 @@ dependencies {
     androidTestImplementation(libs.hilt.android.testing)
     kspAndroidTest(libs.hilt.compiler)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    baselineProfile(projects.baselineprofile)
 }

@@ -24,6 +24,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "CherryPokemon"
 include(":app")
+include(":baselineprofile")
 include(":core:common")
 include(":core:data")
 include(":core:data-test")
