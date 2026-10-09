@@ -4,8 +4,10 @@ import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedResource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkOfficialArtwork
 import com.cherryzp.cherrypokemon.core.network.model.NetworkOtherSprites
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonAbility
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonStat
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonTypeSlot
 import com.cherryzp.cherrypokemon.core.network.model.NetworkSprites
 
@@ -53,7 +55,33 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
                         frontDefault = "https://example.com/$id.png"
                     )
                 )
+            ),
+            baseExperience = 64,
+            stats = listOf(
+                networkStat("hp", 45),
+                networkStat("attack", 49),
+                networkStat("defense", 49),
+                networkStat("special-attack", 65),
+                networkStat("special-defense", 65),
+                networkStat("speed", 45)
+            ),
+            abilities = listOf(
+                NetworkPokemonAbility(
+                    ability = NetworkNamedResource(name = "overgrow"),
+                    isHidden = false,
+                    slot = 1
+                ),
+                NetworkPokemonAbility(
+                    ability = NetworkNamedResource(name = "chlorophyll"),
+                    isHidden = true,
+                    slot = 3
+                )
             )
+        )
+
+        private fun networkStat(name: String, value: Int) = NetworkPokemonStat(
+            baseStat = value,
+            stat = NetworkNamedResource(name = name)
         )
     }
 }
