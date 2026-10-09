@@ -15,5 +15,6 @@ dependencies {
     api(libs.room.paging)
 
     androidTestImplementation(projects.core.testing)
+    androidTestImplementation(libs.room.testing)
     androidTestImplementation(libs.kotlinx.coroutines.test)
 }
