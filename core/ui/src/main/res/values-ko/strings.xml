@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="core_ui_pokemon_number">No.%1$d</string>
-    <string name="core_ui_pokemon_image_description">%1$s image</string>
+    <string name="core_ui_pokemon_image_description">%1$s 이미지</string>
 </resources>

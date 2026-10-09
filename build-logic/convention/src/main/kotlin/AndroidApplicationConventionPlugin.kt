@@ -29,6 +29,11 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                     }
                 }
 
+                // 번역이 있는 언어만 담는다. 다른 언어의 기본 리소스는 빼서 용량을 줄인다.
+                androidResources {
+                    localeFilters += listOf("en", "ko")
+                }
+
                 packaging {
                     resources {
                         excludes += "/META-INF/{AL2.0,LGPL2.1}"
