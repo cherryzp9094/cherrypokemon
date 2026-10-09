@@ -17,7 +17,7 @@ PokeAPI 기반 포켓몬 도감 앱. Jetpack Compose + Orbit MVI + 오프라인 
 | 테스트 | `testing.md` |
 | Gradle, 모듈 build 파일, CI | `build.md` |
 
-남은 작업 순서는 `docs/improvement-plan.md`에 있다.
+컨벤션과 지금 코드는 같은 상태다. 여기까지 옮긴 과정은 `docs/improvement-plan.md`에 있다.
 
 ## 명령어
 
@@ -48,7 +48,13 @@ PokeAPI 기반 포켓몬 도감 앱. Jetpack Compose + Orbit MVI + 오프라인 
 ./gradlew lintRelease     # Lint (기존 경고는 각 모듈 lint-baseline.xml 로 제외)
 ```
 
-CI 는 `.github/workflows/ci.yml` 이다. PR 마다 포맷·단위 테스트·Lint·빌드와 계측 테스트를 돌린다.
+```bash
+./gradlew validateDebugScreenshotTest   # 스크린샷 비교
+./gradlew updateDebugScreenshotTest     # 참조 이미지 갱신 (UI 를 의도적으로 바꿨을 때)
+./gradlew :app:generateBaselineProfile  # Baseline Profile 다시 수집
+```
+
+CI 는 `.github/workflows/ci.yml` 이다. PR 마다 포맷·단위 테스트·Lint·스크린샷·빌드와 계측 테스트를 돌린다.
 
 ## 모듈 구조
 
@@ -143,11 +149,6 @@ PokemonNetworkDataSource (Retrofit + kotlinx.serialization)
 - convention plugin 은 `id("cherrypokemon.…")`, 카탈로그 플러그인은 `alias(libs.plugins.…)` 로 적용한다.
 - Spotless 는 루트에서만 설정한다. 모듈마다 적용하면 그 모듈의 플러그인 클래스패스가 ktlint 룰 초기화를 깨뜨린다.
 
-## 남은 작업
+## 기록
 
-`docs/improvement-plan.md` 의 6-4 이후다.
-
-- targetSdk 를 최신으로 올리기 (지금 34)
-- 내비게이션 계측 테스트 (`:core:data-test`, `CherryPokemonTestRunner`)
-- release 빌드 R8 켜기 (지금 `isMinifyEnabled = false`)
-- 적응형 레이아웃, Baseline Profile, 스크린샷 테스트
+지금 구조로 옮긴 과정과 그때 겪은 함정은 `docs/improvement-plan.md` 에 있다. 비슷한 작업을 할 때 먼저 읽는다.
