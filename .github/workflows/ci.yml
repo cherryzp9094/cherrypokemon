@@ -54,6 +54,9 @@ jobs:
       - name: Lint
         run: ./gradlew lintRelease
 
+      - name: 스크린샷 테스트
+        run: ./gradlew validateDebugScreenshotTest
+
       - name: 빌드
         run: ./gradlew assembleDebug assembleRelease
 
