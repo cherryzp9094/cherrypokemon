@@ -15,6 +15,8 @@ import java.util.Locale
  *
  * 기기 언어를 바꾸는 것이 아니라 Compose 트리 안에서만 바꾼다. AppCompat 없이
  * minSdk 26 부터 같은 방식으로 동작하고, 설정을 바꾸면 화면이 바로 다시 그려진다.
+ *
+ * `stringResource` 는 [LocalResources] 에서 읽는다. 그래서 [LocalContext] 는 그대로 둔다.
  */
 @Composable
 fun ProvideAppLocale(language: AppLanguage, content: @Composable () -> Unit) {
@@ -29,7 +31,6 @@ fun ProvideAppLocale(language: AppLanguage, content: @Composable () -> Unit) {
     }
 
     CompositionLocalProvider(
-        LocalContext provides localized,
         LocalConfiguration provides localized.resources.configuration,
         LocalResources provides localized.resources,
         content = content
