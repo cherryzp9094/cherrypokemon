@@ -3,6 +3,7 @@ package com.cherryzp.cherrypokemon.feature.pokemonlist.impl
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.paging.LoadState
@@ -12,7 +13,9 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cherryzp.cherrypokemon.core.designsystem.theme.CherryPokemonTheme
+import com.cherryzp.cherrypokemon.core.model.AppLanguage
 import com.cherryzp.cherrypokemon.core.model.Pokemon
+import com.cherryzp.cherrypokemon.core.ui.R as CoreUiR
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -92,14 +95,57 @@ class PokemonListScreenTest {
             .assertIsDisplayed()
     }
 
+    @Test
+    fun languageClick_passesChosenLanguage() {
+        var chosen: AppLanguage? = null
+        composeTestRule.setContent {
+            PokemonListScreenWith(
+                pagingData = PagingData.from(
+                    listOf(Pokemon(id = 1, name = "bulbasaur", imageUrl = "")),
+                    loadedStates
+                ),
+                language = AppLanguage.ENGLISH,
+                onLanguageClick = { chosen = it }
+            )
+        }
+
+        composeTestRule
+            .onNodeWithContentDescription(
+                resources.getString(CoreUiR.string.core_ui_language_korean)
+            )
+            .performClick()
+
+        assertEquals(AppLanguage.KOREAN, chosen)
+    }
+
+    @Test
+    fun emptyList_stillShowsLanguageToggle() {
+        composeTestRule.setContent {
+            PokemonListScreenWith(pagingData = PagingData.from(emptyList(), loadedStates))
+        }
+
+        composeTestRule
+            .onNodeWithContentDescription(
+                resources.getString(CoreUiR.string.core_ui_language_english)
+            )
+            .assertIsDisplayed()
+    }
+
     @Composable
     private fun PokemonListScreenWith(
         pagingData: PagingData<Pokemon>,
+        language: AppLanguage = AppLanguage.KOREAN,
+        onLanguageClick: (AppLanguage) -> Unit = {},
         onPokemonClick: (Int) -> Unit = {},
     ) {
         val pokemons: LazyPagingItems<Pokemon> = flowOf(pagingData).collectAsLazyPagingItems()
         CherryPokemonTheme {
-            PokemonListScreen(pokemons = pokemons, onPokemonClick = onPokemonClick)
+            PokemonListScreen(
+                pokemons = pokemons,
+                language = language,
+                onLanguageClick = onLanguageClick,
+                onPokemonClick = onPokemonClick
+            )
         }
     }
 
