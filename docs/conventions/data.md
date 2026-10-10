@@ -277,6 +277,7 @@ class PokemonListUseCase @Inject constructor(private val repository: PokemonRepo
 | `CoroutineScopesModule` | `:core:common` | `@ApplicationScope CoroutineScope` |
 | `NetworkModule` | `:core:network` | `Json`, `Call.Factory`, 데이터 소스 바인딩 |
 | `DatabaseModule`, `DaosModule` | `:core:database` | 데이터베이스, DAO |
+| `DataStoreModule` | `:core:datastore` | `DataStore<Preferences>` |
 | `DataModule` | `:core:data` | Repository 바인딩 |
 
 ### 8-2. WorkManager `필수`
