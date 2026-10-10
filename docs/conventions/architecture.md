@@ -12,6 +12,7 @@
 :feature:pokemonlist:impl       :feature:pokemondetail:impl
 :core:navigation   :core:designsystem   :core:ui
 :core:domain       :core:data           :core:database   :core:network
+:core:datastore
 :core:model        :core:common
 :core:testing      :core:data-test
 ```
@@ -27,6 +28,7 @@
 | `:core:domain` | Android library | UseCase |
 | `:core:data` | Android library | Repository 인터페이스와 구현, RemoteMediator, 네트워크 모델 → 엔티티 변환 |
 | `:core:database` | Android library | Room 데이터베이스, 엔티티, DAO |
+| `:core:datastore` | Android library | DataStore, 사용자 설정 데이터 소스 |
 | `:core:network` | Android library | 네트워크 데이터 소스 인터페이스와 Retrofit 구현, 네트워크 모델 |
 | `:core:model` | **JVM library** | 앱 전체가 쓰는 도메인 모델 |
 | `:core:common` | **JVM library** | 디스패처 qualifier, 애플리케이션 `CoroutineScope`, `Result` |
