@@ -38,7 +38,10 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         pokemonDao.getPokemonDetailEntity(pokeId).map { it?.asExternalModel() }
 
     override suspend fun refreshPokemonDetail(pokeId: Int) {
-        pokemonDao.insertPokemonDetail(network.getPokemonDetail(pokeId).asEntity())
+        // 상세와 종 정보를 함께 받는다. 하나라도 실패하면 아무것도 쓰지 않는다.
+        val detail = network.getPokemonDetail(pokeId)
+        val species = network.getPokemonSpecies(pokeId)
+        pokemonDao.insertPokemonDetail(detail.asEntity(species))
     }
 
     private companion object {

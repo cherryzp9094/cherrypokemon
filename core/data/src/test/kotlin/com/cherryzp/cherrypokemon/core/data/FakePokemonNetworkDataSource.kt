@@ -1,14 +1,18 @@
 package com.cherryzp.cherrypokemon.core.data
 
 import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
+import com.cherryzp.cherrypokemon.core.network.model.NetworkFlavorText
+import com.cherryzp.cherrypokemon.core.network.model.NetworkGenus
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedResource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkOfficialArtwork
 import com.cherryzp.cherrypokemon.core.network.model.NetworkOtherSprites
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonAbility
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonSpecies
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonStat
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonTypeSlot
+import com.cherryzp.cherrypokemon.core.network.model.NetworkSpeciesName
 import com.cherryzp.cherrypokemon.core.network.model.NetworkSprites
 
 /** 테스트가 응답과 실패를 지정할 수 있는 네트워크 대역. */
@@ -17,6 +21,14 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
     var error: Throwable? = null
     var page: NetworkPokemonPage = NetworkPokemonPage()
     var detail: NetworkPokemonDetail = NetworkPokemonDetail()
+    var species: NetworkPokemonSpecies = NetworkPokemonSpecies(id = 0)
+
+    /** 종 정보만 실패시킬 때 쓴다. */
+    var speciesError: Throwable? = null
+
+    /** 종 정보 호출이 몇 번 불렸는지. */
+    var speciesCount: Int = 0
+        private set
 
     override suspend fun getPokemons(offset: Int, limit: Int): NetworkPokemonPage {
         error?.let { throw it }
@@ -26,6 +38,13 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
     override suspend fun getPokemonDetail(pokeId: Int): NetworkPokemonDetail {
         error?.let { throw it }
         return detail
+    }
+
+    override suspend fun getPokemonSpecies(pokeId: Int): NetworkPokemonSpecies {
+        speciesCount++
+        error?.let { throw it }
+        speciesError?.let { throw it }
+        return species
     }
 
     companion object {
@@ -76,6 +95,30 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
                     isHidden = true,
                     slot = 3
                 )
+            )
+        )
+
+        fun networkPokemonSpecies(
+            id: Int,
+            koreanName: String? = "이상해씨",
+            englishName: String? = "Bulbasaur",
+            koreanFlavorTexts: List<String> = listOf("오래된 설명", "등의 씨앗에\n영양을\u000c섭취한다."),
+        ) = NetworkPokemonSpecies(
+            id = id,
+            names = listOfNotNull(
+                koreanName?.let { NetworkSpeciesName(it, NetworkNamedResource(name = "ko")) },
+                englishName?.let { NetworkSpeciesName(it, NetworkNamedResource(name = "en")) },
+                NetworkSpeciesName("フシギダネ", NetworkNamedResource(name = "ja"))
+            ),
+            genera = listOf(
+                NetworkGenus("씨앗포켓몬", NetworkNamedResource(name = "ko")),
+                NetworkGenus("Seed Pokémon", NetworkNamedResource(name = "en"))
+            ),
+            flavorTextEntries = koreanFlavorTexts.map {
+                NetworkFlavorText(it, NetworkNamedResource(name = "ko"))
+            } + NetworkFlavorText(
+                "A strange seed was planted\non its back at birth.",
+                NetworkNamedResource(name = "en")
             )
         )
 

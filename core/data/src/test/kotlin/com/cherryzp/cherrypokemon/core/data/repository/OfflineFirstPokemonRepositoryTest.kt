@@ -4,6 +4,7 @@ import com.cherryzp.cherrypokemon.core.data.FakeDatabaseTransactionRunner
 import com.cherryzp.cherrypokemon.core.data.FakePokemonDao
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemonDetail
+import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemonSpecies
 import com.cherryzp.cherrypokemon.core.data.FakeRemoteKeyDao
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import java.io.IOException
@@ -45,18 +46,35 @@ class OfflineFirstPokemonRepositoryTest {
             name = "bulbasaur",
             typeNames = listOf("grass", "poison")
         )
+        network.species = networkPokemonSpecies(id = 1)
 
         repository.refreshPokemonDetail(pokeId = 1)
 
         val detail = repository.getPokemonDetailStream(pokeId = 1).first()
         assertEquals("bulbasaur", detail?.name)
+        assertEquals("이상해씨", detail?.localizedName?.korean)
+        assertEquals("Bulbasaur", detail?.localizedName?.english)
+        assertEquals("씨앗포켓몬", detail?.genus?.korean)
         assertEquals(0.7f, detail?.heightMeters)
         assertEquals(listOf(PokemonType.Grass, PokemonType.Poison), detail?.types)
     }
 
     @Test
+    fun refreshPokemonDetail_speciesFails_throwsAndWritesNothing() = runTest {
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.speciesError = IOException()
+
+        val thrown = runCatching { repository.refreshPokemonDetail(pokeId = 1) }.exceptionOrNull()
+
+        assertTrue(thrown is IOException)
+        // 둘 중 하나만 실패해도 반쪽짜리 상세를 남기지 않는다.
+        assertNull(repository.getPokemonDetailStream(pokeId = 1).first())
+    }
+
+    @Test
     fun refreshPokemonDetail_networkError_throwsAndKeepsLocalData() = runTest {
         network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.species = networkPokemonSpecies(id = 1)
         repository.refreshPokemonDetail(pokeId = 1)
         network.error = IOException()
 

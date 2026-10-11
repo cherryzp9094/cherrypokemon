@@ -7,6 +7,7 @@ import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedResource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonSpecies
 
 /** 목록 응답의 `{ name, url }` 을 엔티티로 바꾼다. URL 끝의 도감 번호를 꺼낸다. */
 fun NetworkNamedResource.asEntity(): PokemonEntity? {
@@ -18,9 +19,12 @@ fun NetworkNamedResource.asEntity(): PokemonEntity? {
     )
 }
 
-fun NetworkPokemonDetail.asEntity() = PokemonDetailEntity(
+fun NetworkPokemonDetail.asEntity(species: NetworkPokemonSpecies) = PokemonDetailEntity(
     id = id,
     name = name,
+    localizedName = species.localizedName(),
+    genus = species.localizedGenus(),
+    flavorText = species.localizedFlavorText(),
     imageUrl = sprites.other?.officialArtwork?.frontDefault ?: officialArtworkUrl(id),
     // PokeAPI 는 키를 데시미터, 몸무게를 헥토그램으로 준다.
     heightMeters = height / 10f,
