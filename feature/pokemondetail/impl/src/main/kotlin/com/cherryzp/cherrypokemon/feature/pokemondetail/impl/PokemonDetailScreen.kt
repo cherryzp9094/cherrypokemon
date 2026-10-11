@@ -117,7 +117,7 @@ private fun PokemonDetailContent(pokemonDetail: PokemonDetail) {
     // 위에서 이미 고른 언어로 리소스를 읽고 있다.
     val language = AppLanguage.fromTag(LocalConfiguration.current.locales[0]?.toLanguageTag())
     // 첫 타입 색으로 머리말 띠를 칠한다. 포켓몬마다 인상이 달라진다.
-    val accent = pokemonDetail.types.firstOrNull()?.color
+    val accent = pokemonDetail.types.firstOrNull()?.type?.color
         ?: MaterialTheme.colorScheme.primary
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
@@ -163,7 +163,7 @@ private fun PokemonDetailContent(pokemonDetail: PokemonDetail) {
                     DetailSectionLabel(
                         stringResource(R.string.feature_pokemondetail_impl_section_basics)
                     )
-                    BasicsBlock(pokemonDetail = pokemonDetail)
+                    BasicsBlock(pokemonDetail = pokemonDetail, language = language)
                 }
             }
         }
@@ -233,7 +233,10 @@ private fun NameBlock(pokemonDetail: PokemonDetail, language: AppLanguage) {
         )
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             pokemonDetail.types.forEach { type ->
-                TypeChip(text = type.name, color = type.color)
+                TypeChip(
+                    text = type.name.of(language).ifEmpty { type.type.name },
+                    color = type.type.color
+                )
             }
         }
     }
@@ -274,7 +277,7 @@ private fun StatsBlock(stats: PokemonStats, accent: Color) {
 }
 
 @Composable
-private fun BasicsBlock(pokemonDetail: PokemonDetail) {
+private fun BasicsBlock(pokemonDetail: PokemonDetail, language: AppLanguage) {
     DetailRow(
         label = stringResource(R.string.feature_pokemondetail_impl_height),
         value = stringResource(
@@ -294,7 +297,11 @@ private fun BasicsBlock(pokemonDetail: PokemonDetail) {
         value = pokemonDetail.baseExperience.toString()
     )
     pokemonDetail.abilities.forEach { ability ->
-        DetailRow(label = ability.label(), value = ability.name)
+        DetailRow(
+            label = ability.label(),
+            // 이름을 아직 받지 못했으면 식별자를 그대로 보여준다.
+            value = ability.localizedName.of(language).ifEmpty { ability.name }
+        )
     }
 }
 

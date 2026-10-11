@@ -12,6 +12,7 @@ import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonStats
 import com.cherryzp.cherrypokemon.core.model.PokemonType
+import com.cherryzp.cherrypokemon.core.model.PokemonTypeInfo
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -23,6 +24,9 @@ class PokemonDetailScreenTest {
 
     private val resources = InstrumentationRegistry.getInstrumentation().targetContext.resources
 
+    /** 테스트 기기 언어가 한국어가 아니면 영어가 나온다. 어느 쪽이든 하나는 보여야 한다. */
+    private val isKorean = resources.configuration.locales[0].language == "ko"
+
     private val pokemonDetail = PokemonDetail(
         id = 1,
         name = "bulbasaur",
@@ -32,7 +36,10 @@ class PokemonDetailScreenTest {
         imageUrl = "",
         heightMeters = 0.7f,
         weightKilograms = 6.9f,
-        types = listOf(PokemonType.Grass, PokemonType.Poison),
+        types = listOf(
+            PokemonTypeInfo(PokemonType.Grass, LocalizedText(korean = "풀", english = "Grass")),
+            PokemonTypeInfo(PokemonType.Poison, LocalizedText(korean = "독", english = "Poison"))
+        ),
         baseExperience = 64,
         stats = PokemonStats(
             hp = 45,
@@ -43,8 +50,16 @@ class PokemonDetailScreenTest {
             speed = 45
         ),
         abilities = listOf(
-            PokemonAbility(name = "overgrow", isHidden = false),
-            PokemonAbility(name = "chlorophyll", isHidden = true)
+            PokemonAbility(
+                name = "overgrow",
+                isHidden = false,
+                localizedName = LocalizedText(korean = "심록", english = "Overgrow")
+            ),
+            PokemonAbility(
+                name = "chlorophyll",
+                isHidden = true,
+                localizedName = LocalizedText(korean = "엽록소", english = "Chlorophyll")
+            )
         )
     )
 
@@ -52,8 +67,6 @@ class PokemonDetailScreenTest {
     fun detail_showsLocalizedNameGenusAndFlavorText() {
         setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
 
-        // 테스트 기기 언어가 한국어가 아니면 영어가 나온다. 둘 중 하나는 반드시 보인다.
-        val isKorean = resources.configuration.locales[0].language == "ko"
         composeTestRule
             .onNodeWithText(if (isKorean) "이상해씨" else "Bulbasaur")
             .assertIsDisplayed()
@@ -69,7 +82,7 @@ class PokemonDetailScreenTest {
     fun detail_isShownWithTypesAndMeasurements() {
         setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
 
-        composeTestRule.onNodeWithText("Grass").assertIsDisplayed()
+        composeTestRule.onNodeWithText(if (isKorean) "풀" else "Grass").assertIsDisplayed()
         composeTestRule.onNodeWithText("0.7 m").assertIsDisplayed()
         composeTestRule.onNodeWithText("6.9 kg").assertIsDisplayed()
     }
@@ -96,8 +109,8 @@ class PokemonDetailScreenTest {
     fun detail_showsAbilitiesWithHiddenLabel() {
         setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
 
-        composeTestRule.onNodeWithText("overgrow").assertIsDisplayed()
-        composeTestRule.onNodeWithText("chlorophyll").assertIsDisplayed()
+        composeTestRule.onNodeWithText(if (isKorean) "심록" else "Overgrow").assertIsDisplayed()
+        composeTestRule.onNodeWithText(if (isKorean) "엽록소" else "Chlorophyll").assertIsDisplayed()
         composeTestRule
             .onNodeWithText(resources.getString(R.string.feature_pokemondetail_impl_hidden_ability))
             .assertIsDisplayed()
@@ -107,7 +120,7 @@ class PokemonDetailScreenTest {
     fun failedWithCache_keepsShowingDetail() {
         setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Failed))
 
-        composeTestRule.onNodeWithText("Grass").assertIsDisplayed()
+        composeTestRule.onNodeWithText(if (isKorean) "풀" else "Grass").assertIsDisplayed()
         composeTestRule
             .onNodeWithText(resources.getString(R.string.feature_pokemondetail_impl_retry))
             .assertDoesNotExist()
