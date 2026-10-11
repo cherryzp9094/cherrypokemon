@@ -2,6 +2,7 @@ package com.cherryzp.cherrypokemon.core.network.retrofit
 
 import com.cherryzp.cherrypokemon.core.network.BuildConfig
 import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
+import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonSpecies
@@ -28,6 +29,12 @@ private interface RetrofitPokemonNetworkApi {
 
     @GET("pokemon-species/{id}")
     suspend fun getPokemonSpecies(@Path("id") pokeId: Int): NetworkPokemonSpecies
+
+    @GET("type/{name}")
+    suspend fun getType(@Path("name") name: String): NetworkNamedEntry
+
+    @GET("ability/{name}")
+    suspend fun getAbility(@Path("name") name: String): NetworkNamedEntry
 }
 
 @Singleton
@@ -52,4 +59,9 @@ internal class RetrofitPokemonNetwork @Inject constructor(
 
     override suspend fun getPokemonSpecies(pokeId: Int): NetworkPokemonSpecies =
         networkApi.getPokemonSpecies(pokeId = pokeId)
+
+    override suspend fun getType(name: String): NetworkNamedEntry = networkApi.getType(name = name)
+
+    override suspend fun getAbility(name: String): NetworkNamedEntry =
+        networkApi.getAbility(name = name)
 }

@@ -20,7 +20,7 @@ data class PokemonDetail(
     val imageUrl: String,
     val heightMeters: Float,
     val weightKilograms: Float,
-    val types: List<PokemonType>,
+    val types: List<PokemonTypeInfo>,
     val baseExperience: Int,
     val stats: PokemonStats,
     val abilities: List<PokemonAbility>,
