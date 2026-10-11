@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cherryzp.cherrypokemon.core.designsystem.theme.CherryPokemonTheme
+import com.cherryzp.cherrypokemon.core.model.LocalizedText
 import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonStats
@@ -25,6 +26,9 @@ class PokemonDetailScreenTest {
     private val pokemonDetail = PokemonDetail(
         id = 1,
         name = "bulbasaur",
+        localizedName = LocalizedText(korean = "이상해씨", english = "Bulbasaur"),
+        genus = LocalizedText(korean = "씨앗포켓몬", english = "Seed Pokémon"),
+        flavorText = LocalizedText(korean = "씨앗에 담긴 영양을 섭취한다.", english = "A strange seed."),
         imageUrl = "",
         heightMeters = 0.7f,
         weightKilograms = 6.9f,
@@ -45,10 +49,26 @@ class PokemonDetailScreenTest {
     )
 
     @Test
+    fun detail_showsLocalizedNameGenusAndFlavorText() {
+        setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
+
+        // 테스트 기기 언어가 한국어가 아니면 영어가 나온다. 둘 중 하나는 반드시 보인다.
+        val isKorean = resources.configuration.locales[0].language == "ko"
+        composeTestRule
+            .onNodeWithText(if (isKorean) "이상해씨" else "Bulbasaur")
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText(if (isKorean) "씨앗포켓몬" else "Seed Pokémon")
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText(if (isKorean) "씨앗에 담긴 영양을 섭취한다." else "A strange seed.")
+            .assertIsDisplayed()
+    }
+
+    @Test
     fun detail_isShownWithTypesAndMeasurements() {
         setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
 
-        composeTestRule.onNodeWithText("bulbasaur").assertIsDisplayed()
         composeTestRule.onNodeWithText("Grass").assertIsDisplayed()
         composeTestRule.onNodeWithText("0.7 m").assertIsDisplayed()
         composeTestRule.onNodeWithText("6.9 kg").assertIsDisplayed()
@@ -87,7 +107,7 @@ class PokemonDetailScreenTest {
     fun failedWithCache_keepsShowingDetail() {
         setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Failed))
 
-        composeTestRule.onNodeWithText("bulbasaur").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Grass").assertIsDisplayed()
         composeTestRule
             .onNodeWithText(resources.getString(R.string.feature_pokemondetail_impl_retry))
             .assertDoesNotExist()

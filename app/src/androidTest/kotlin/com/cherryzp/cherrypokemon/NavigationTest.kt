@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.espresso.Espresso
+import com.cherryzp.cherrypokemon.core.model.LocalizedText
 import com.cherryzp.cherrypokemon.core.model.Pokemon
 import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
@@ -41,6 +42,9 @@ class NavigationTest {
             PokemonDetail(
                 id = 1,
                 name = "bulbasaur",
+                localizedName = LocalizedText(korean = "이상해씨", english = "Bulbasaur"),
+                genus = LocalizedText(korean = "씨앗포켓몬", english = "Seed Pokémon"),
+                flavorText = LocalizedText(korean = "", english = ""),
                 imageUrl = "",
                 heightMeters = 0.7f,
                 weightKilograms = 6.9f,
