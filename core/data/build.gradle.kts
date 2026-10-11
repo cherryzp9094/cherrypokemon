@@ -11,6 +11,7 @@ dependencies {
     api(projects.core.model)
     implementation(projects.core.common)
     implementation(projects.core.database)
+    implementation(projects.core.datastore)
     implementation(projects.core.network)
 
     implementation(libs.paging.runtime)

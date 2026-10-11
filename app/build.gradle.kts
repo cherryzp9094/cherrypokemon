@@ -17,7 +17,10 @@ android {
 }
 
 dependencies {
+    implementation(projects.core.data)
     implementation(projects.core.designsystem)
+    implementation(projects.core.model)
+    implementation(projects.core.ui)
     implementation(projects.core.navigation)
     implementation(projects.feature.pokemondetail.api)
     implementation(projects.feature.pokemondetail.impl)
@@ -25,6 +28,7 @@ dependencies {
     implementation(projects.feature.pokemonlist.impl)
 
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.profileinstaller)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.material3.adaptive.navigation3)

@@ -2,4 +2,6 @@
 <resources>
     <string name="core_ui_pokemon_number">No.%1$d</string>
     <string name="core_ui_pokemon_image_description">%1$s image</string>
+    <string name="core_ui_language_korean">Korean</string>
+    <string name="core_ui_language_english">English</string>
 </resources>

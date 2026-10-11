@@ -67,6 +67,7 @@ CI 는 `.github/workflows/ci.yml` 이다. PR 마다 포맷·단위 테스트·Li
 :core:ui                      PokemonCard, 타입 색, Preview 데이터
 :core:data                    Repository, RemoteMediator, 네트워크 모델 → 엔티티 변환
 :core:database                Room 3 데이터베이스, 엔티티, DAO
+:core:datastore               DataStore (언어 등 사용자 설정)
 :core:network                 네트워크 데이터 소스, 네트워크 모델
 :core:model                   도메인 모델 (JVM)
 :core:common                  디스패처 qualifier, 애플리케이션 스코프 (JVM)

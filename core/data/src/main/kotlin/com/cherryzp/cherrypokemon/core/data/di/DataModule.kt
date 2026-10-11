@@ -1,7 +1,9 @@
 package com.cherryzp.cherrypokemon.core.data.di
 
+import com.cherryzp.cherrypokemon.core.data.repository.DefaultUserDataRepository
 import com.cherryzp.cherrypokemon.core.data.repository.OfflineFirstPokemonRepository
 import com.cherryzp.cherrypokemon.core.data.repository.PokemonRepository
+import com.cherryzp.cherrypokemon.core.data.repository.UserDataRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -15,4 +17,9 @@ abstract class DataModule {
     internal abstract fun bindsPokemonRepository(
         repository: OfflineFirstPokemonRepository,
     ): PokemonRepository
+
+    @Binds
+    internal abstract fun bindsUserDataRepository(
+        repository: DefaultUserDataRepository,
+    ): UserDataRepository
 }
