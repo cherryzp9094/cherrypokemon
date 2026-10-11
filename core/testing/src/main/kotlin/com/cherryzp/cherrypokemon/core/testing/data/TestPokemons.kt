@@ -1,5 +1,6 @@
 package com.cherryzp.cherrypokemon.core.testing.data
 
+import com.cherryzp.cherrypokemon.core.model.LocalizedText
 import com.cherryzp.cherrypokemon.core.model.Pokemon
 import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
@@ -17,6 +18,12 @@ val testPokemons = listOf(
 val testPokemonDetail = PokemonDetail(
     id = 1,
     name = "bulbasaur",
+    localizedName = LocalizedText(korean = "이상해씨", english = "Bulbasaur"),
+    genus = LocalizedText(korean = "씨앗포켓몬", english = "Seed Pokémon"),
+    flavorText = LocalizedText(
+        korean = "태어나서 얼마 동안 등의 씨앗에 담긴 영양을 섭취하며 자란다.",
+        english = "A strange seed was planted on its back at birth."
+    ),
     imageUrl = testImageUrl(1),
     heightMeters = 0.7f,
     weightKilograms = 6.9f,

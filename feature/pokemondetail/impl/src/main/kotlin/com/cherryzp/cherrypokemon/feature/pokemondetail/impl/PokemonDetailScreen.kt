@@ -34,11 +34,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.cherryzp.cherrypokemon.core.model.AppLanguage
 import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonStats
@@ -111,6 +114,8 @@ internal fun PokemonDetailScreen(
 
 @Composable
 private fun PokemonDetailContent(pokemonDetail: PokemonDetail) {
+    // 위에서 이미 고른 언어로 리소스를 읽고 있다.
+    val language = AppLanguage.fromTag(LocalConfiguration.current.locales[0]?.toLanguageTag())
     // 첫 타입 색으로 머리말 띠를 칠한다. 포켓몬마다 인상이 달라진다.
     val accent = pokemonDetail.types.firstOrNull()?.color
         ?: MaterialTheme.colorScheme.primary
@@ -139,7 +144,16 @@ private fun PokemonDetailContent(pokemonDetail: PokemonDetail) {
                         .navigationBarsPadding()
                         .padding(horizontal = 24.dp, vertical = 22.dp)
                 ) {
-                    NameBlock(pokemonDetail = pokemonDetail)
+                    NameBlock(pokemonDetail = pokemonDetail, language = language)
+
+                    if (!pokemonDetail.flavorText.isEmpty) {
+                        Text(
+                            text = pokemonDetail.flavorText.of(language),
+                            style = MaterialTheme.typography.bodyMedium,
+                            lineHeight = 22.sp,
+                            modifier = Modifier.padding(top = 14.dp)
+                        )
+                    }
 
                     DetailSectionLabel(
                         stringResource(R.string.feature_pokemondetail_impl_section_stats)
@@ -193,12 +207,20 @@ private fun HeaderBand(pokemonDetail: PokemonDetail, accent: Color) {
 }
 
 @Composable
-private fun NameBlock(pokemonDetail: PokemonDetail) {
+private fun NameBlock(pokemonDetail: PokemonDetail, language: AppLanguage) {
     Text(
-        text = pokemonDetail.name,
+        text = pokemonDetail.localizedName.of(language).ifEmpty { pokemonDetail.name },
         style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Bold
     )
+    if (!pokemonDetail.genus.isEmpty) {
+        Text(
+            text = pokemonDetail.genus.of(language),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.outline,
+            modifier = Modifier.padding(top = 2.dp)
+        )
+    }
     Row(
         modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,

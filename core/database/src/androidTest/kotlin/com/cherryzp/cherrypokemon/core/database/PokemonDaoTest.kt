@@ -5,6 +5,7 @@ import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
+import com.cherryzp.cherrypokemon.core.database.model.LocalizedTextEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonDetailEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonStatsEntity
@@ -87,6 +88,9 @@ class PokemonDaoTest {
             PokemonDetailEntity(
                 id = 1,
                 name = "bulbasaur",
+                localizedName = LocalizedTextEntity(korean = "이상해씨", english = "Bulbasaur"),
+                genus = LocalizedTextEntity(korean = "씨앗포켓몬", english = "Seed Pokémon"),
+                flavorText = LocalizedTextEntity(korean = "", english = ""),
                 imageUrl = "https://example.com/1.png",
                 heightMeters = 0.7f,
                 weightKilograms = 6.9f,
@@ -134,9 +138,24 @@ class PokemonDaoTest {
         assertEquals(listOf(false, true), saved?.abilities?.map { it.isHidden })
     }
 
+    @Test
+    fun insertPokemonDetail_keepsBothLanguages() = runTest {
+        pokemonDao.insertPokemonDetail(bulbasaurDetail())
+
+        val saved = pokemonDao.getPokemonDetailEntity(pokeId = 1).first()?.asExternalModel()
+
+        assertEquals("이상해씨", saved?.localizedName?.korean)
+        assertEquals("Bulbasaur", saved?.localizedName?.english)
+        assertEquals("씨앗포켓몬", saved?.genus?.korean)
+        assertEquals("A strange seed.", saved?.flavorText?.english)
+    }
+
     private fun bulbasaurDetail() = PokemonDetailEntity(
         id = 1,
         name = "bulbasaur",
+        localizedName = LocalizedTextEntity(korean = "이상해씨", english = "Bulbasaur"),
+        genus = LocalizedTextEntity(korean = "씨앗포켓몬", english = "Seed Pokémon"),
+        flavorText = LocalizedTextEntity(korean = "씨앗이 자란다.", english = "A strange seed."),
         imageUrl = "https://example.com/1.png",
         heightMeters = 0.7f,
         weightKilograms = 6.9f,

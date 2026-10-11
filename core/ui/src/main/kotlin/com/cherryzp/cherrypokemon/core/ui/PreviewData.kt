@@ -1,6 +1,7 @@
 package com.cherryzp.cherrypokemon.core.ui
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.cherryzp.cherrypokemon.core.model.LocalizedText
 import com.cherryzp.cherrypokemon.core.model.Pokemon
 import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
@@ -21,6 +22,12 @@ class PokemonDetailPreviewParameterProvider : PreviewParameterProvider<PokemonDe
         PokemonDetail(
             id = 1,
             name = "bulbasaur",
+            localizedName = LocalizedText(korean = "이상해씨", english = "Bulbasaur"),
+            genus = LocalizedText(korean = "씨앗포켓몬", english = "Seed Pokémon"),
+            flavorText = LocalizedText(
+                korean = "태어나서 얼마 동안 등의 씨앗에 담긴 영양을 섭취하며 자란다.",
+                english = "A strange seed was planted on its back at birth."
+            ),
             imageUrl = previewImageUrl(1),
             heightMeters = 0.7f,
             weightKilograms = 6.9f,

@@ -2,6 +2,7 @@ package com.cherryzp.cherrypokemon.core.data.model
 
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemon
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemonDetail
+import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemonSpecies
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedResource
 import org.junit.Assert.assertEquals
@@ -35,7 +36,10 @@ class NetworkPokemonExtTest {
 
     @Test
     fun asEntity_detail_convertsUnits() {
-        val entity = networkPokemonDetail(id = 1, name = "bulbasaur").asEntity()
+        val entity = networkPokemonDetail(
+            id = 1,
+            name = "bulbasaur"
+        ).asEntity(networkPokemonSpecies(id = 1))
 
         // PokeAPI 는 데시미터와 헥토그램으로 준다.
         assertEquals(0.7f, entity.heightMeters)
@@ -48,7 +52,7 @@ class NetworkPokemonExtTest {
             id = 1,
             name = "bulbasaur",
             typeNames = listOf("grass", "poison", "mystery")
-        ).asEntity()
+        ).asEntity(networkPokemonSpecies(id = 1))
 
         assertEquals(
             listOf(PokemonType.Grass, PokemonType.Poison, PokemonType.Unknown),
@@ -58,7 +62,10 @@ class NetworkPokemonExtTest {
 
     @Test
     fun asEntity_detail_readsStatsByName() {
-        val entity = networkPokemonDetail(id = 1, name = "bulbasaur").asEntity()
+        val entity = networkPokemonDetail(
+            id = 1,
+            name = "bulbasaur"
+        ).asEntity(networkPokemonSpecies(id = 1))
 
         assertEquals(45, entity.stats.hp)
         assertEquals(49, entity.stats.attack)
@@ -72,7 +79,7 @@ class NetworkPokemonExtTest {
         val detail = networkPokemonDetail(id = 1, name = "bulbasaur")
             .copy(stats = emptyList())
 
-        val entity = detail.asEntity()
+        val entity = detail.asEntity(networkPokemonSpecies(id = 1))
 
         assertEquals(0, entity.stats.hp)
         assertEquals(0, entity.stats.speed)
@@ -80,7 +87,10 @@ class NetworkPokemonExtTest {
 
     @Test
     fun asEntity_detail_keepsAbilityOrderAndHiddenFlag() {
-        val entity = networkPokemonDetail(id = 1, name = "bulbasaur").asEntity()
+        val entity = networkPokemonDetail(
+            id = 1,
+            name = "bulbasaur"
+        ).asEntity(networkPokemonSpecies(id = 1))
 
         assertEquals(listOf("overgrow", "chlorophyll"), entity.abilities.map { it.name })
         assertEquals(listOf(false, true), entity.abilities.map { it.isHidden })
