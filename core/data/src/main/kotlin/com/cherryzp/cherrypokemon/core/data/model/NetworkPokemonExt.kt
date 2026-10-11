@@ -48,7 +48,7 @@ fun NetworkPokemonDetail.asEntity(species: NetworkPokemonSpecies) = PokemonDetai
 private fun NetworkPokemonDetail.statValue(name: String): Int =
     stats.firstOrNull { it.stat.name == name }?.baseStat ?: 0
 
-private fun String.asPokemonType(): PokemonType =
+internal fun String.asPokemonType(): PokemonType =
     PokemonType.entries.firstOrNull { it.name.equals(this, ignoreCase = true) }
         ?: PokemonType.Unknown
 

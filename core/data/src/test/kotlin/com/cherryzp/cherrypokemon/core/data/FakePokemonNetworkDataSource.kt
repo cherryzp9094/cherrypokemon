@@ -3,6 +3,7 @@ package com.cherryzp.cherrypokemon.core.data
 import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkFlavorText
 import com.cherryzp.cherrypokemon.core.network.model.NetworkGenus
+import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedResource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkOfficialArtwork
 import com.cherryzp.cherrypokemon.core.network.model.NetworkOtherSprites
@@ -38,6 +39,34 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
     override suspend fun getPokemonDetail(pokeId: Int): NetworkPokemonDetail {
         error?.let { throw it }
         return detail
+    }
+
+    /** 타입·특성 이름 호출 횟수. 캐시가 듣는지 보는 데 쓴다. */
+    var nameCallCount: Int = 0
+        private set
+
+    override suspend fun getType(name: String): NetworkNamedEntry {
+        nameCallCount++
+        error?.let { throw it }
+        return NetworkNamedEntry(
+            name = name,
+            names = listOf(
+                NetworkSpeciesName("풀", NetworkNamedResource(name = "ko")),
+                NetworkSpeciesName("Grass", NetworkNamedResource(name = "en"))
+            )
+        )
+    }
+
+    override suspend fun getAbility(name: String): NetworkNamedEntry {
+        nameCallCount++
+        error?.let { throw it }
+        return NetworkNamedEntry(
+            name = name,
+            names = listOf(
+                NetworkSpeciesName("심록", NetworkNamedResource(name = "ko")),
+                NetworkSpeciesName("Overgrow", NetworkNamedResource(name = "en"))
+            )
+        )
     }
 
     override suspend fun getPokemonSpecies(pokeId: Int): NetworkPokemonSpecies {
