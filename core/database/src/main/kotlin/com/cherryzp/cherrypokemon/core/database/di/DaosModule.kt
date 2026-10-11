@@ -1,6 +1,7 @@
 package com.cherryzp.cherrypokemon.core.database.di
 
 import com.cherryzp.cherrypokemon.core.database.CherryPokemonDatabase
+import com.cherryzp.cherrypokemon.core.database.dao.LocalizedNameDao
 import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.dao.RemoteKeyDao
 import dagger.Module
@@ -17,4 +18,8 @@ internal object DaosModule {
     @Provides
     fun providesRemoteKeyDao(database: CherryPokemonDatabase): RemoteKeyDao =
         database.remoteKeyDao()
+
+    @Provides
+    fun providesLocalizedNameDao(database: CherryPokemonDatabase): LocalizedNameDao =
+        database.localizedNameDao()
 }
