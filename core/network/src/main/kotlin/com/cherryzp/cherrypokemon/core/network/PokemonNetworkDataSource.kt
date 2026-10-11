@@ -2,10 +2,14 @@ package com.cherryzp.cherrypokemon.core.network
 
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonSpecies
 
 /** PokeAPI 호출. 실패하면 예외를 그대로 던진다. */
 interface PokemonNetworkDataSource {
     suspend fun getPokemons(offset: Int, limit: Int): NetworkPokemonPage
 
     suspend fun getPokemonDetail(pokeId: Int): NetworkPokemonDetail
+
+    /** 언어별 이름·분류·도감 설명. 상세와 함께 받아 로컬에 같이 쓴다. */
+    suspend fun getPokemonSpecies(pokeId: Int): NetworkPokemonSpecies
 }

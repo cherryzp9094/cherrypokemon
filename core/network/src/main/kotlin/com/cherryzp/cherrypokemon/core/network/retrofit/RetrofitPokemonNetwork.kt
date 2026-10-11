@@ -4,6 +4,7 @@ import com.cherryzp.cherrypokemon.core.network.BuildConfig
 import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonSpecies
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.serialization.json.Json
@@ -24,6 +25,9 @@ private interface RetrofitPokemonNetworkApi {
 
     @GET("pokemon/{id}")
     suspend fun getPokemonDetail(@Path("id") pokeId: Int): NetworkPokemonDetail
+
+    @GET("pokemon-species/{id}")
+    suspend fun getPokemonSpecies(@Path("id") pokeId: Int): NetworkPokemonSpecies
 }
 
 @Singleton
@@ -45,4 +49,7 @@ internal class RetrofitPokemonNetwork @Inject constructor(
 
     override suspend fun getPokemonDetail(pokeId: Int): NetworkPokemonDetail =
         networkApi.getPokemonDetail(pokeId = pokeId)
+
+    override suspend fun getPokemonSpecies(pokeId: Int): NetworkPokemonSpecies =
+        networkApi.getPokemonSpecies(pokeId = pokeId)
 }
