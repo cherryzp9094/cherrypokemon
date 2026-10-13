@@ -1,0 +1,356 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 6,
+    "identityHash": "b07f3858ae702e2cb32fa948f6c830e7",
+    "entities": [
+      {
+        "tableName": "pokemons",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `image_url` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imageUrl",
+            "columnName": "image_url",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "pokemon_details",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `image_url` TEXT NOT NULL, `height_meters` REAL NOT NULL, `weight_kilograms` REAL NOT NULL, `types` TEXT NOT NULL, `base_experience` INTEGER NOT NULL DEFAULT 0, `abilities` TEXT NOT NULL DEFAULT '', `evolution_chain_id` INTEGER NOT NULL DEFAULT 0, `localized_name_korean` TEXT NOT NULL DEFAULT '', `localized_name_english` TEXT NOT NULL DEFAULT '', `genus_korean` TEXT NOT NULL DEFAULT '', `genus_english` TEXT NOT NULL DEFAULT '', `flavor_text_korean` TEXT NOT NULL DEFAULT '', `flavor_text_english` TEXT NOT NULL DEFAULT '', `stat_hp` INTEGER NOT NULL DEFAULT 0, `stat_attack` INTEGER NOT NULL DEFAULT 0, `stat_defense` INTEGER NOT NULL DEFAULT 0, `stat_special_attack` INTEGER NOT NULL DEFAULT 0, `stat_special_defense` INTEGER NOT NULL DEFAULT 0, `stat_speed` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imageUrl",
+            "columnName": "image_url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "heightMeters",
+            "columnName": "height_meters",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weightKilograms",
+            "columnName": "weight_kilograms",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "types",
+            "columnName": "types",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "baseExperience",
+            "columnName": "base_experience",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "abilities",
+            "columnName": "abilities",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "evolutionChainId",
+            "columnName": "evolution_chain_id",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "localizedName.korean",
+            "columnName": "localized_name_korean",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "localizedName.english",
+            "columnName": "localized_name_english",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "genus.korean",
+            "columnName": "genus_korean",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "genus.english",
+            "columnName": "genus_english",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "flavorText.korean",
+            "columnName": "flavor_text_korean",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "flavorText.english",
+            "columnName": "flavor_text_english",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "stats.hp",
+            "columnName": "stat_hp",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "stats.attack",
+            "columnName": "stat_attack",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "stats.defense",
+            "columnName": "stat_defense",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "stats.specialAttack",
+            "columnName": "stat_special_attack",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "stats.specialDefense",
+            "columnName": "stat_special_defense",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "stats.speed",
+            "columnName": "stat_speed",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "remote_keys",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `nextOffset` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextOffset",
+            "columnName": "nextOffset",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "type_names",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `korean` TEXT NOT NULL DEFAULT '', `english` TEXT NOT NULL DEFAULT '', `double_damage_from` TEXT NOT NULL DEFAULT '', `half_damage_from` TEXT NOT NULL DEFAULT '', `no_damage_from` TEXT NOT NULL DEFAULT '', PRIMARY KEY(`type`))",
+        "fields": [
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "korean",
+            "columnName": "korean",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "english",
+            "columnName": "english",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "doubleDamageFrom",
+            "columnName": "double_damage_from",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "halfDamageFrom",
+            "columnName": "half_damage_from",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "noDamageFrom",
+            "columnName": "no_damage_from",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "type"
+          ]
+        }
+      },
+      {
+        "tableName": "ability_names",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `korean` TEXT NOT NULL DEFAULT '', `english` TEXT NOT NULL DEFAULT '', PRIMARY KEY(`name`))",
+        "fields": [
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "korean",
+            "columnName": "korean",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "english",
+            "columnName": "english",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "name"
+          ]
+        }
+      },
+      {
+        "tableName": "evolution_chain_members",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`chain_id` INTEGER NOT NULL, `pokemon_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `stage` INTEGER NOT NULL, `min_level` INTEGER, `item` TEXT, `trigger` TEXT, PRIMARY KEY(`chain_id`, `pokemon_id`))",
+        "fields": [
+          {
+            "fieldPath": "chainId",
+            "columnName": "chain_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pokemonId",
+            "columnName": "pokemon_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stage",
+            "columnName": "stage",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minLevel",
+            "columnName": "min_level",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "item",
+            "columnName": "item",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "trigger",
+            "columnName": "trigger",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "chain_id",
+            "pokemon_id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b07f3858ae702e2cb32fa948f6c830e7')"
+    ]
+  }
+}

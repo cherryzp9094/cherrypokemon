@@ -4,10 +4,12 @@ import androidx.room3.AutoMigration
 import androidx.room3.ColumnTypeConverters
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
+import com.cherryzp.cherrypokemon.core.database.dao.EvolutionChainDao
 import com.cherryzp.cherrypokemon.core.database.dao.LocalizedNameDao
 import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.dao.RemoteKeyDao
 import com.cherryzp.cherrypokemon.core.database.model.AbilityNameEntity
+import com.cherryzp.cherrypokemon.core.database.model.EvolutionChainMemberEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonDetailEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
 import com.cherryzp.cherrypokemon.core.database.model.RemoteKeyEntity
@@ -21,14 +23,16 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         PokemonDetailEntity::class,
         RemoteKeyEntity::class,
         TypeNameEntity::class,
-        AbilityNameEntity::class
+        AbilityNameEntity::class,
+        EvolutionChainMemberEntity::class
     ],
-    version = 5,
+    version = 6,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
-        AutoMigration(from = 4, to = 5)
+        AutoMigration(from = 4, to = 5),
+        AutoMigration(from = 5, to = 6)
     ],
     exportSchema = true
 )
@@ -39,4 +43,6 @@ internal abstract class CherryPokemonDatabase : RoomDatabase() {
     abstract fun remoteKeyDao(): RemoteKeyDao
 
     abstract fun localizedNameDao(): LocalizedNameDao
+
+    abstract fun evolutionChainDao(): EvolutionChainDao
 }

@@ -133,4 +133,24 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate5To6_addsEvolutionTableAndChainId() = runTest {
+        helper.createDatabase(version = 5).use { connection ->
+            connection.execSQL(
+                "INSERT INTO pokemons (id, name, image_url) VALUES (1, 'bulbasaur', '')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 6).use { connection ->
+            connection.prepare("SELECT COUNT(*) FROM evolution_chain_members").use { statement ->
+                assertTrue(statement.step())
+                assertEquals(0, statement.getInt(0))
+            }
+            connection.prepare("SELECT name FROM pokemons WHERE id = 1").use { statement ->
+                assertTrue(statement.step())
+                assertEquals("bulbasaur", statement.getText(0))
+            }
+        }
+    }
 }
