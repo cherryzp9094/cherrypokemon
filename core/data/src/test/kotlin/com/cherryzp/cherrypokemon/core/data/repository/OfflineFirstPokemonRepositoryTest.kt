@@ -1,6 +1,7 @@
 package com.cherryzp.cherrypokemon.core.data.repository
 
 import com.cherryzp.cherrypokemon.core.data.FakeDatabaseTransactionRunner
+import com.cherryzp.cherrypokemon.core.data.FakeEvolutionChainDao
 import com.cherryzp.cherrypokemon.core.data.FakeLocalizedNameDao
 import com.cherryzp.cherrypokemon.core.data.FakePokemonDao
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource
@@ -22,6 +23,7 @@ class OfflineFirstPokemonRepositoryTest {
     private lateinit var network: FakePokemonNetworkDataSource
     private lateinit var pokemonDao: FakePokemonDao
     private lateinit var localizedNameDao: FakeLocalizedNameDao
+    private lateinit var evolutionChainDao: FakeEvolutionChainDao
     private lateinit var repository: OfflineFirstPokemonRepository
 
     @Before
@@ -29,10 +31,12 @@ class OfflineFirstPokemonRepositoryTest {
         network = FakePokemonNetworkDataSource()
         pokemonDao = FakePokemonDao()
         localizedNameDao = FakeLocalizedNameDao()
+        evolutionChainDao = FakeEvolutionChainDao()
         repository = OfflineFirstPokemonRepository(
             pokemonDao = pokemonDao,
             remoteKeyDao = FakeRemoteKeyDao(),
             localizedNameDao = localizedNameDao,
+            evolutionChainDao = evolutionChainDao,
             network = network,
             transaction = FakeDatabaseTransactionRunner()
         )
@@ -90,6 +94,31 @@ class OfflineFirstPokemonRepositoryTest {
         // 받아 둔 이름은 다시 받지 않는다.
         assertEquals(firstCalls, network.nameCallCount)
         assertTrue(firstCalls > 0)
+    }
+
+    @Test
+    fun refreshPokemonDetail_savesEvolutionChain() = runTest {
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.species = networkPokemonSpecies(id = 1)
+
+        repository.refreshPokemonDetail(pokeId = 1)
+
+        val stages = repository.getPokemonDetailStream(pokeId = 1).first()?.evolutionStages
+        assertEquals(listOf(1, 2), stages?.map { it.pokemonId })
+        assertEquals(listOf(1, 2), stages?.map { it.stage })
+        assertEquals(16, stages?.last()?.condition?.minLevel)
+    }
+
+    @Test
+    fun refreshPokemonDetail_chainAlreadySaved_doesNotCallAgain() = runTest {
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.species = networkPokemonSpecies(id = 1)
+        repository.refreshPokemonDetail(pokeId = 1)
+
+        repository.refreshPokemonDetail(pokeId = 1)
+
+        // 같은 체인의 포켓몬을 열어도 체인은 한 번만 받는다.
+        assertEquals(1, network.chainCallCount)
     }
 
     @Test
