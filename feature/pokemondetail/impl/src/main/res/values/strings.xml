@@ -26,4 +26,6 @@
     <string name="feature_pokemondetail_impl_resistance">Resists</string>
     <string name="feature_pokemondetail_impl_immunity">Immune to</string>
     <string name="feature_pokemondetail_impl_multiplier">×%1$s</string>
+    <string name="feature_pokemondetail_impl_section_evolution">Evolution</string>
+    <string name="feature_pokemondetail_impl_evolution_level">Lv. %1$d</string>
 </resources>

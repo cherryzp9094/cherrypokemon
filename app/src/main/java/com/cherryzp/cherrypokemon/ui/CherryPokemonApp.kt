@@ -34,6 +34,8 @@ fun CherryPokemonApp(
         pokemonListEntryBuilder(onPokemonClick = navigator::navigateToPokemonDetail)
         pokemonDetailEntryBuilder(
             onBackClick = navigator::goBack,
+            // 진화 체인에서 다른 포켓몬으로 간다. 뒤로가기로 돌아온다.
+            onPokemonClick = navigator::navigateToPokemonDetail,
             snackbarHostState = snackbarHostState
         )
     }

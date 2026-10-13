@@ -26,4 +26,6 @@
     <string name="feature_pokemondetail_impl_resistance">저항</string>
     <string name="feature_pokemondetail_impl_immunity">무효</string>
     <string name="feature_pokemondetail_impl_multiplier">×%1$s</string>
+    <string name="feature_pokemondetail_impl_section_evolution">진화</string>
+    <string name="feature_pokemondetail_impl_evolution_level">Lv. %1$d</string>
 </resources>

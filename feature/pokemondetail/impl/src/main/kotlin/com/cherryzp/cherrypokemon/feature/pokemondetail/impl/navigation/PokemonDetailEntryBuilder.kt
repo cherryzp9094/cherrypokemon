@@ -14,6 +14,7 @@ import com.cherryzp.cherrypokemon.feature.pokemondetail.impl.PokemonDetailViewMo
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 fun EntryProviderScope<NavKey>.pokemonDetailEntryBuilder(
     onBackClick: () -> Unit,
+    onPokemonClick: (pokeId: Int) -> Unit,
     snackbarHostState: SnackbarHostState,
 ) {
     entry<PokemonDetailNavKey>(metadata = ListDetailSceneStrategy.detailPane()) { key ->
@@ -22,6 +23,7 @@ fun EntryProviderScope<NavKey>.pokemonDetailEntryBuilder(
                 key = key.pokeId.toString()
             ) { factory -> factory.create(key.pokeId) },
             onBackClick = onBackClick,
+            onPokemonClick = onPokemonClick,
             snackbarHostState = snackbarHostState
         )
     }
