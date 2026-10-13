@@ -1,6 +1,7 @@
 package com.cherryzp.cherrypokemon.core.data
 
 import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
+import com.cherryzp.cherrypokemon.core.network.model.NetworkDamageRelations
 import com.cherryzp.cherrypokemon.core.network.model.NetworkFlavorText
 import com.cherryzp.cherrypokemon.core.network.model.NetworkGenus
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
@@ -15,6 +16,7 @@ import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonStat
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonTypeSlot
 import com.cherryzp.cherrypokemon.core.network.model.NetworkSpeciesName
 import com.cherryzp.cherrypokemon.core.network.model.NetworkSprites
+import com.cherryzp.cherrypokemon.core.network.model.NetworkType
 
 /** 테스트가 응답과 실패를 지정할 수 있는 네트워크 대역. */
 class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
@@ -45,14 +47,19 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
     var nameCallCount: Int = 0
         private set
 
-    override suspend fun getType(name: String): NetworkNamedEntry {
+    override suspend fun getType(name: String): NetworkType {
         nameCallCount++
         error?.let { throw it }
-        return NetworkNamedEntry(
+        return NetworkType(
             name = name,
             names = listOf(
                 NetworkSpeciesName("풀", NetworkNamedResource(name = "ko")),
                 NetworkSpeciesName("Grass", NetworkNamedResource(name = "en"))
+            ),
+            damageRelations = NetworkDamageRelations(
+                doubleDamageFrom = listOf(NetworkNamedResource(name = "fire")),
+                halfDamageFrom = listOf(NetworkNamedResource(name = "water")),
+                noDamageFrom = emptyList()
             )
         )
     }
