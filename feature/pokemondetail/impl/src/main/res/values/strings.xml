@@ -21,4 +21,9 @@
     <string name="feature_pokemondetail_impl_error_load">Couldn\'t load the details</string>
     <string name="feature_pokemondetail_impl_error_refresh">Couldn\'t get the latest details</string>
     <string name="feature_pokemondetail_impl_retry">Retry</string>
+    <string name="feature_pokemondetail_impl_section_matchups">Damage taken</string>
+    <string name="feature_pokemondetail_impl_weakness">Weak to</string>
+    <string name="feature_pokemondetail_impl_resistance">Resists</string>
+    <string name="feature_pokemondetail_impl_immunity">Immune to</string>
+    <string name="feature_pokemondetail_impl_multiplier">×%1$s</string>
 </resources>

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -45,6 +47,7 @@ import com.cherryzp.cherrypokemon.core.model.AppLanguage
 import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonStats
+import com.cherryzp.cherrypokemon.core.model.TypeMatchup
 import com.cherryzp.cherrypokemon.core.ui.DetailRow
 import com.cherryzp.cherrypokemon.core.ui.DetailSectionLabel
 import com.cherryzp.cherrypokemon.core.ui.StatBar
@@ -160,6 +163,16 @@ private fun PokemonDetailContent(pokemonDetail: PokemonDetail) {
                     )
                     StatsBlock(stats = pokemonDetail.stats, accent = accent)
 
+                    if (pokemonDetail.typeMatchups.isNotEmpty()) {
+                        DetailSectionLabel(
+                            stringResource(R.string.feature_pokemondetail_impl_section_matchups)
+                        )
+                        MatchupBlock(
+                            matchups = pokemonDetail.typeMatchups,
+                            language = language
+                        )
+                    }
+
                     DetailSectionLabel(
                         stringResource(R.string.feature_pokemondetail_impl_section_basics)
                     )
@@ -240,6 +253,54 @@ private fun NameBlock(pokemonDetail: PokemonDetail, language: AppLanguage) {
             }
         }
     }
+}
+
+/** 약점·저항·무효를 한 줄씩. 1 배인 타입은 보여줄 게 없어 빠져 있다. */
+@Composable
+private fun MatchupBlock(matchups: List<TypeMatchup>, language: AppLanguage) {
+    val groups = listOf(
+        R.string.feature_pokemondetail_impl_weakness to matchups.filter { it.isWeakness },
+        R.string.feature_pokemondetail_impl_resistance to matchups.filter { it.isResistance },
+        R.string.feature_pokemondetail_impl_immunity to matchups.filter { it.isImmunity }
+    )
+
+    groups.forEach { (labelId, group) ->
+        if (group.isEmpty()) return@forEach
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Text(
+                text = stringResource(labelId),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.width(56.dp).padding(top = 4.dp)
+            )
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                group.forEach { matchup ->
+                    TypeChip(
+                        text = matchup.label(language),
+                        color = matchup.type.type.color
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** 칩에 적을 글자. 무효는 배율을 적지 않는다. */
+@Composable
+private fun TypeMatchup.label(language: AppLanguage): String {
+    val name = type.name.of(language).ifEmpty { type.type.name }
+    if (isImmunity) return name
+    val multiplier = stringResource(
+        R.string.feature_pokemondetail_impl_multiplier,
+        if (multiplier % 1f == 0f) multiplier.toInt().toString() else multiplier.toString()
+    )
+    return "$name $multiplier"
 }
 
 @Composable

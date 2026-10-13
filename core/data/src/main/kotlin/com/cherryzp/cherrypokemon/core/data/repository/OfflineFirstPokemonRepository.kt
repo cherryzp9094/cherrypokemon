@@ -5,19 +5,19 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
-import com.cherryzp.cherrypokemon.core.data.model.asAbilityNameEntity
 import com.cherryzp.cherrypokemon.core.data.model.asEntity
 import com.cherryzp.cherrypokemon.core.data.model.asPokemonType
-import com.cherryzp.cherrypokemon.core.data.model.asTypeNameEntity
 import com.cherryzp.cherrypokemon.core.data.paging.PokemonRemoteMediator
 import com.cherryzp.cherrypokemon.core.database.DatabaseTransactionRunner
 import com.cherryzp.cherrypokemon.core.database.dao.LocalizedNameDao
 import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.dao.RemoteKeyDao
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
+import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.asExternalModel
 import com.cherryzp.cherrypokemon.core.model.Pokemon
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
+import com.cherryzp.cherrypokemon.core.model.PokemonType
 import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
 import javax.inject.Inject
@@ -47,7 +47,7 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         localizedNameDao.getAbilityNames()
     ) { detail, typeNames, abilityNames ->
         detail?.asExternalModel(
-            typeNames = typeNames.associate { it.asExternalModel() },
+            typeNames = typeNames.associateBy { it.type },
             abilityNames = abilityNames.associate { it.asExternalModel() }
         )
     }
@@ -61,17 +61,12 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
     }
 
     /**
-     * 아직 받지 않은 타입·특성 이름만 받아 둔다.
+     * 아직 받지 않은 타입·특성 이름과 상성을 받아 둔다.
      *
      * 타입은 20여 개, 특성은 포켓몬당 한둘이라 쓸수록 호출이 사라진다.
-     * 이름을 받지 못해도 상세는 이미 저장했으므로 실패를 삼킨다.
+     * 이름을 받지 못해도 상성 없이 상세는 보이므로 실패를 삼킨다.
      */
     private suspend fun refreshMissingNames(detail: NetworkPokemonDetail) {
-        val savedTypes = localizedNameDao.getSavedTypes().toSet()
-        val missingTypes = detail.types
-            .map { it.type.name }
-            .filter { it.asPokemonType().name !in savedTypes }
-            .distinct()
         val savedAbilities = localizedNameDao.getSavedAbilities().toSet()
         val missingAbilities = detail.abilities
             .map { it.ability.name }
@@ -79,15 +74,30 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
             .distinct()
 
         runCatching {
-            localizedNameDao.insertTypeNames(
-                missingTypes.map { typeName ->
-                    network.getType(typeName).asTypeNameEntity(typeName.asPokemonType())
-                }
+            val saved = refreshTypes(detail.types.map { it.type.name })
+            // 약점·저항으로 나올 타입의 이름도 있어야 칩에 글자를 적을 수 있다.
+            refreshTypes(
+                saved.flatMap { it.doubleDamageFrom + it.halfDamageFrom + it.noDamageFrom }
+                    .map { it.name.lowercase() }
             )
             localizedNameDao.insertAbilityNames(
-                missingAbilities.map { network.getAbility(it).asAbilityNameEntity() }
+                missingAbilities.map { network.getAbility(it).asEntity() }
             )
         }
+    }
+
+    /** 저장되지 않은 타입만 받아 쓰고, 이번에 받은 것들을 돌려준다. */
+    private suspend fun refreshTypes(typeNames: List<String>): List<TypeNameEntity> {
+        val savedTypes = localizedNameDao.getSavedTypes().toSet()
+        val missing = typeNames
+            .distinct()
+            .filter { it.asPokemonType() != PokemonType.Unknown }
+            .filter { it.asPokemonType().name !in savedTypes }
+        if (missing.isEmpty()) return emptyList()
+
+        val entities = missing.map { network.getType(it).asEntity(it.asPokemonType()) }
+        localizedNameDao.insertTypeNames(entities)
+        return entities
     }
 
     private companion object {

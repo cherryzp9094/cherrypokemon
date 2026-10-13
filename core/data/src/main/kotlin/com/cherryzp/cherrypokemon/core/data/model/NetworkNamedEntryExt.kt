@@ -4,21 +4,32 @@ import com.cherryzp.cherrypokemon.core.database.model.AbilityNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
+import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedResource
+import com.cherryzp.cherrypokemon.core.network.model.NetworkSpeciesName
+import com.cherryzp.cherrypokemon.core.network.model.NetworkType
 
-internal fun NetworkNamedEntry.asTypeNameEntity(type: PokemonType) = TypeNameEntity(
+internal fun NetworkType.asEntity(type: PokemonType) = TypeNameEntity(
     type = type.name,
-    korean = korean(),
-    english = english()
+    korean = names.korean(),
+    english = names.english(),
+    doubleDamageFrom = damageRelations.doubleDamageFrom.toTypes(),
+    halfDamageFrom = damageRelations.halfDamageFrom.toTypes(),
+    noDamageFrom = damageRelations.noDamageFrom.toTypes()
 )
 
-internal fun NetworkNamedEntry.asAbilityNameEntity() = AbilityNameEntity(
+internal fun NetworkNamedEntry.asEntity() = AbilityNameEntity(
     name = name,
-    korean = korean(),
-    english = english()
+    korean = names.korean(),
+    english = names.english()
 )
 
-private fun NetworkNamedEntry.korean() =
-    names.firstOrNull { it.language.name == "ko" }?.name.orEmpty()
+private fun List<NetworkSpeciesName>.korean() =
+    firstOrNull { it.language.name == "ko" }?.name.orEmpty()
 
-private fun NetworkNamedEntry.english() =
-    names.firstOrNull { it.language.name == "en" }?.name.orEmpty()
+private fun List<NetworkSpeciesName>.english() =
+    firstOrNull { it.language.name == "en" }?.name.orEmpty()
+
+/** 모르는 타입 이름은 버린다. 배율 계산에 쓸 수 없다. */
+private fun List<NetworkNamedResource>.toTypes(): List<PokemonType> = mapNotNull { resource ->
+    PokemonType.entries.firstOrNull { it.name.equals(resource.name, ignoreCase = true) }
+}
