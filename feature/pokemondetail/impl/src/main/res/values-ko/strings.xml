@@ -21,4 +21,9 @@
     <string name="feature_pokemondetail_impl_error_load">정보를 불러오지 못했습니다</string>
     <string name="feature_pokemondetail_impl_error_refresh">최신 정보를 가져오지 못했습니다</string>
     <string name="feature_pokemondetail_impl_retry">다시 시도</string>
+    <string name="feature_pokemondetail_impl_section_matchups">받는 데미지</string>
+    <string name="feature_pokemondetail_impl_weakness">약점</string>
+    <string name="feature_pokemondetail_impl_resistance">저항</string>
+    <string name="feature_pokemondetail_impl_immunity">무효</string>
+    <string name="feature_pokemondetail_impl_multiplier">×%1$s</string>
 </resources>

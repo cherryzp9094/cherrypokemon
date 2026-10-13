@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cherryzp.cherrypokemon.core.designsystem.theme.CherryPokemonTheme
 import com.cherryzp.cherrypokemon.core.model.LocalizedText
@@ -13,6 +14,7 @@ import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonStats
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import com.cherryzp.cherrypokemon.core.model.PokemonTypeInfo
+import com.cherryzp.cherrypokemon.core.model.TypeMatchup
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -48,6 +50,22 @@ class PokemonDetailScreenTest {
             specialAttack = 65,
             specialDefense = 65,
             speed = 45
+        ),
+        typeMatchups = listOf(
+            TypeMatchup(
+                type = PokemonTypeInfo(
+                    PokemonType.Fire,
+                    LocalizedText(korean = "불꽃", english = "Fire")
+                ),
+                multiplier = 2f
+            ),
+            TypeMatchup(
+                type = PokemonTypeInfo(
+                    PokemonType.Water,
+                    LocalizedText(korean = "물", english = "Water")
+                ),
+                multiplier = 0.5f
+            )
         ),
         abilities = listOf(
             PokemonAbility(
@@ -106,11 +124,33 @@ class PokemonDetailScreenTest {
     }
 
     @Test
+    fun detail_showsWeaknessesAndResistances() {
+        setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
+
+        composeTestRule
+            .onNodeWithText(resources.getString(R.string.feature_pokemondetail_impl_weakness))
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText(if (isKorean) "불꽃 ×2" else "Fire ×2")
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText(if (isKorean) "물 ×0.5" else "Water ×0.5")
+            .assertIsDisplayed()
+    }
+
+    @Test
     fun detail_showsAbilitiesWithHiddenLabel() {
         setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
 
-        composeTestRule.onNodeWithText(if (isKorean) "심록" else "Overgrow").assertIsDisplayed()
-        composeTestRule.onNodeWithText(if (isKorean) "엽록소" else "Chlorophyll").assertIsDisplayed()
+        // 상성까지 들어가 화면이 길어졌다. 특성은 스크롤해야 보인다.
+        composeTestRule
+            .onNodeWithText(if (isKorean) "심록" else "Overgrow")
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText(if (isKorean) "엽록소" else "Chlorophyll")
+            .performScrollTo()
+            .assertIsDisplayed()
         composeTestRule
             .onNodeWithText(resources.getString(R.string.feature_pokemondetail_impl_hidden_ability))
             .assertIsDisplayed()
