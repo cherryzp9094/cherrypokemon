@@ -113,4 +113,24 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate4To5_keepsTypeNamesAndAddsEmptyRelations() = runTest {
+        helper.createDatabase(version = 4).use { connection ->
+            connection.execSQL(
+                "INSERT INTO type_names (type, korean, english) VALUES ('Grass', '풀', 'Grass')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 5).use { connection ->
+            connection.prepare(
+                "SELECT korean, double_damage_from FROM type_names WHERE type = 'Grass'"
+            ).use { statement ->
+                assertTrue(statement.step())
+                assertEquals("풀", statement.getText(0))
+                // 상성은 비어 있고 다음 갱신 때 채워진다.
+                assertEquals("", statement.getText(1))
+            }
+        }
+    }
 }

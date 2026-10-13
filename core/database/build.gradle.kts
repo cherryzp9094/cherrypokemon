@@ -14,6 +14,8 @@ dependencies {
     api(libs.paging.common.ktx)
     api(libs.room.paging)
 
+    testImplementation(projects.core.testing)
+
     androidTestImplementation(projects.core.testing)
     androidTestImplementation(libs.room.testing)
     androidTestImplementation(libs.kotlinx.coroutines.test)

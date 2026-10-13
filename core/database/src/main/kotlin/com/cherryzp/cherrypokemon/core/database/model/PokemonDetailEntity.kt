@@ -52,7 +52,7 @@ data class PokemonStatsEntity(
  * @param abilityNames 특성 이름 캐시
  */
 fun PokemonDetailEntity.asExternalModel(
-    typeNames: Map<String, LocalizedText> = emptyMap(),
+    typeNames: Map<String, TypeNameEntity> = emptyMap(),
     abilityNames: Map<String, LocalizedText> = emptyMap(),
 ) = PokemonDetail(
     id = id,
@@ -64,7 +64,11 @@ fun PokemonDetailEntity.asExternalModel(
     heightMeters = heightMeters,
     weightKilograms = weightKilograms,
     types = types.map { type ->
-        PokemonTypeInfo(type = type, name = typeNames[type.name] ?: LocalizedText.Empty)
+        PokemonTypeInfo(
+            type = type,
+            name =
+                typeNames[type.name]?.asLocalizedText() ?: LocalizedText.Empty
+        )
     },
     baseExperience = baseExperience,
     stats = PokemonStats(
@@ -77,12 +81,13 @@ fun PokemonDetailEntity.asExternalModel(
     ),
     abilities = abilities.map { ability ->
         ability.copy(localizedName = abilityNames[ability.name] ?: LocalizedText.Empty)
-    }
+    },
+    typeMatchups = typeMatchups(defending = types, relations = typeNames)
 )
 
 private fun LocalizedTextEntity.asExternalModel() =
     LocalizedText(korean = korean, english = english)
 
-fun TypeNameEntity.asExternalModel() = type to LocalizedText(korean = korean, english = english)
+fun TypeNameEntity.asLocalizedText() = LocalizedText(korean = korean, english = english)
 
 fun AbilityNameEntity.asExternalModel() = name to LocalizedText(korean = korean, english = english)
