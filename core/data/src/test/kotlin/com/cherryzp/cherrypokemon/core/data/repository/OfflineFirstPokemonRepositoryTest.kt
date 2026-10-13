@@ -1,6 +1,7 @@
 package com.cherryzp.cherrypokemon.core.data.repository
 
 import com.cherryzp.cherrypokemon.core.data.FakeDatabaseTransactionRunner
+import com.cherryzp.cherrypokemon.core.data.FakeLocalizedNameDao
 import com.cherryzp.cherrypokemon.core.data.FakePokemonDao
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemonDetail
@@ -20,15 +21,18 @@ class OfflineFirstPokemonRepositoryTest {
 
     private lateinit var network: FakePokemonNetworkDataSource
     private lateinit var pokemonDao: FakePokemonDao
+    private lateinit var localizedNameDao: FakeLocalizedNameDao
     private lateinit var repository: OfflineFirstPokemonRepository
 
     @Before
     fun setUp() {
         network = FakePokemonNetworkDataSource()
         pokemonDao = FakePokemonDao()
+        localizedNameDao = FakeLocalizedNameDao()
         repository = OfflineFirstPokemonRepository(
             pokemonDao = pokemonDao,
             remoteKeyDao = FakeRemoteKeyDao(),
+            localizedNameDao = localizedNameDao,
             network = network,
             transaction = FakeDatabaseTransactionRunner()
         )
@@ -56,7 +60,36 @@ class OfflineFirstPokemonRepositoryTest {
         assertEquals("Bulbasaur", detail?.localizedName?.english)
         assertEquals("씨앗포켓몬", detail?.genus?.korean)
         assertEquals(0.7f, detail?.heightMeters)
-        assertEquals(listOf(PokemonType.Grass, PokemonType.Poison), detail?.types)
+        assertEquals(
+            listOf(PokemonType.Grass, PokemonType.Poison),
+            detail?.types?.map { it.type }
+        )
+    }
+
+    @Test
+    fun refreshPokemonDetail_savesTypeAndAbilityNames() = runTest {
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.species = networkPokemonSpecies(id = 1)
+
+        repository.refreshPokemonDetail(pokeId = 1)
+
+        val detail = repository.getPokemonDetailStream(pokeId = 1).first()
+        assertEquals("풀", detail?.types?.first()?.name?.korean)
+        assertEquals("심록", detail?.abilities?.first()?.localizedName?.korean)
+    }
+
+    @Test
+    fun refreshPokemonDetail_alreadySavedNames_doesNotCallAgain() = runTest {
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.species = networkPokemonSpecies(id = 1)
+        repository.refreshPokemonDetail(pokeId = 1)
+        val firstCalls = network.nameCallCount
+
+        repository.refreshPokemonDetail(pokeId = 1)
+
+        // 받아 둔 이름은 다시 받지 않는다.
+        assertEquals(firstCalls, network.nameCallCount)
+        assertTrue(firstCalls > 0)
     }
 
     @Test

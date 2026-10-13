@@ -88,4 +88,29 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate3To4_addsEmptyNameTables() = runTest {
+        helper.createDatabase(version = 3).use { connection ->
+            connection.execSQL(
+                "INSERT INTO pokemons (id, name, image_url) VALUES (1, 'bulbasaur', '')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 4).use { connection ->
+            // 이름 캐시는 비어 있는 채로 생기고, 다음 갱신 때 채워진다.
+            connection.prepare("SELECT COUNT(*) FROM type_names").use { statement ->
+                assertTrue(statement.step())
+                assertEquals(0, statement.getInt(0))
+            }
+            connection.prepare("SELECT COUNT(*) FROM ability_names").use { statement ->
+                assertTrue(statement.step())
+                assertEquals(0, statement.getInt(0))
+            }
+            connection.prepare("SELECT name FROM pokemons WHERE id = 1").use { statement ->
+                assertTrue(statement.step())
+                assertEquals("bulbasaur", statement.getText(0))
+            }
+        }
+    }
 }

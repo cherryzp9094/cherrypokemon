@@ -11,6 +11,7 @@ import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonStats
 import com.cherryzp.cherrypokemon.core.model.PokemonType
+import com.cherryzp.cherrypokemon.core.model.PokemonTypeInfo
 import com.cherryzp.cherrypokemon.core.testing.repository.FakePokemonRepository
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -48,7 +49,12 @@ class NavigationTest {
                 imageUrl = "",
                 heightMeters = 0.7f,
                 weightKilograms = 6.9f,
-                types = listOf(PokemonType.Grass),
+                types = listOf(
+                    PokemonTypeInfo(
+                        PokemonType.Grass,
+                        LocalizedText(korean = "풀", english = "Grass")
+                    )
+                ),
                 baseExperience = 64,
                 stats = PokemonStats(
                     hp = 45,
@@ -73,7 +79,8 @@ class NavigationTest {
     fun pokemonClick_opensDetail_andBackReturnsToList() {
         composeTestRule.onNodeWithText("bulbasaur").performClick()
 
-        composeTestRule.onNodeWithText("Grass").assertIsDisplayed()
+        val isKorean = composeTestRule.activity.resources.configuration.locales[0].language == "ko"
+        composeTestRule.onNodeWithText(if (isKorean) "풀" else "Grass").assertIsDisplayed()
         composeTestRule.onNodeWithText("0.7 m").assertIsDisplayed()
 
         Espresso.pressBack()

@@ -9,6 +9,7 @@ import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonStats
 import com.cherryzp.cherrypokemon.core.model.PokemonType
+import com.cherryzp.cherrypokemon.core.model.PokemonTypeInfo
 
 /** 상세 화면에 쓰는 포켓몬. */
 @Entity(tableName = "pokemon_details")
@@ -46,7 +47,14 @@ data class PokemonStatsEntity(
     @ColumnInfo(defaultValue = "0") val speed: Int,
 )
 
-fun PokemonDetailEntity.asExternalModel() = PokemonDetail(
+/**
+ * @param typeNames 타입 이름 캐시. 아직 받지 못한 타입은 이름이 빈 채로 나간다
+ * @param abilityNames 특성 이름 캐시
+ */
+fun PokemonDetailEntity.asExternalModel(
+    typeNames: Map<String, LocalizedText> = emptyMap(),
+    abilityNames: Map<String, LocalizedText> = emptyMap(),
+) = PokemonDetail(
     id = id,
     name = name,
     localizedName = localizedName.asExternalModel(),
@@ -55,7 +63,9 @@ fun PokemonDetailEntity.asExternalModel() = PokemonDetail(
     imageUrl = imageUrl,
     heightMeters = heightMeters,
     weightKilograms = weightKilograms,
-    types = types,
+    types = types.map { type ->
+        PokemonTypeInfo(type = type, name = typeNames[type.name] ?: LocalizedText.Empty)
+    },
     baseExperience = baseExperience,
     stats = PokemonStats(
         hp = stats.hp,
@@ -65,8 +75,14 @@ fun PokemonDetailEntity.asExternalModel() = PokemonDetail(
         specialDefense = stats.specialDefense,
         speed = stats.speed
     ),
-    abilities = abilities
+    abilities = abilities.map { ability ->
+        ability.copy(localizedName = abilityNames[ability.name] ?: LocalizedText.Empty)
+    }
 )
 
 private fun LocalizedTextEntity.asExternalModel() =
     LocalizedText(korean = korean, english = english)
+
+fun TypeNameEntity.asExternalModel() = type to LocalizedText(korean = korean, english = english)
+
+fun AbilityNameEntity.asExternalModel() = name to LocalizedText(korean = korean, english = english)

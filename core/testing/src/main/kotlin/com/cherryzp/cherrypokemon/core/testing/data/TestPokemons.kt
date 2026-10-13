@@ -6,6 +6,7 @@ import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonStats
 import com.cherryzp.cherrypokemon.core.model.PokemonType
+import com.cherryzp.cherrypokemon.core.model.PokemonTypeInfo
 
 /** 테스트에서 쓰는 포켓몬 목록. */
 val testPokemons = listOf(
@@ -27,7 +28,10 @@ val testPokemonDetail = PokemonDetail(
     imageUrl = testImageUrl(1),
     heightMeters = 0.7f,
     weightKilograms = 6.9f,
-    types = listOf(PokemonType.Grass, PokemonType.Poison),
+    types = listOf(
+        PokemonTypeInfo(PokemonType.Grass, LocalizedText(korean = "풀", english = "Grass")),
+        PokemonTypeInfo(PokemonType.Poison, LocalizedText(korean = "독", english = "Poison"))
+    ),
     baseExperience = 64,
     stats = PokemonStats(
         hp = 45,
@@ -38,8 +42,16 @@ val testPokemonDetail = PokemonDetail(
         speed = 45
     ),
     abilities = listOf(
-        PokemonAbility(name = "overgrow", isHidden = false),
-        PokemonAbility(name = "chlorophyll", isHidden = true)
+        PokemonAbility(
+            name = "overgrow",
+            isHidden = false,
+            localizedName = LocalizedText(korean = "심록", english = "Overgrow")
+        ),
+        PokemonAbility(
+            name = "chlorophyll",
+            isHidden = true,
+            localizedName = LocalizedText(korean = "엽록소", english = "Chlorophyll")
+        )
     )
 )
 

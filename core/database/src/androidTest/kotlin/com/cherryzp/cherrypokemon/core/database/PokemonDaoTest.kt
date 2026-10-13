@@ -115,7 +115,7 @@ class PokemonDaoTest {
 
         assertEquals(
             listOf(PokemonType.Grass, PokemonType.Poison),
-            saved?.asExternalModel()?.types
+            saved?.asExternalModel()?.types?.map { it.type }
         )
     }
 
