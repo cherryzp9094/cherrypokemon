@@ -24,4 +24,6 @@ data class PokemonDetail(
     val baseExperience: Int,
     val stats: PokemonStats,
     val abilities: List<PokemonAbility>,
+    /** 받을 때 1배가 아닌 타입들. 배율이 큰 순서다. */
+    val typeMatchups: List<TypeMatchup> = emptyList(),
 )
