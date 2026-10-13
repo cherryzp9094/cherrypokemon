@@ -11,6 +11,9 @@ data class NetworkPokemonSpecies(
     val genera: List<NetworkGenus> = emptyList(),
     @SerialName("flavor_text_entries")
     val flavorTextEntries: List<NetworkFlavorText> = emptyList(),
+    /** 진화 체인 주소. 끝의 숫자가 체인 ID 다. */
+    @SerialName("evolution_chain")
+    val evolutionChain: NetworkNamedResource? = null,
 )
 
 @Serializable

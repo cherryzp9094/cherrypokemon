@@ -26,4 +26,6 @@ data class PokemonDetail(
     val abilities: List<PokemonAbility>,
     /** 받을 때 1배가 아닌 타입들. 배율이 큰 순서다. */
     val typeMatchups: List<TypeMatchup> = emptyList(),
+    /** 진화 체인. 자기 자신도 들어 있다. 아직 받지 못했으면 비어 있다. */
+    val evolutionStages: List<EvolutionStage> = emptyList(),
 )
