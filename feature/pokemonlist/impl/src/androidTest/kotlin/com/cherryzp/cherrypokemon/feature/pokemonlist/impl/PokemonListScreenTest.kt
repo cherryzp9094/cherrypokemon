@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.paging.LoadState
 import androidx.paging.LoadStates
 import androidx.paging.PagingData
@@ -131,12 +132,50 @@ class PokemonListScreenTest {
             .assertIsDisplayed()
     }
 
+    @Test
+    fun typingInSearch_passesQuery() {
+        var typed: String? = null
+        composeTestRule.setContent {
+            PokemonListScreenWith(
+                pagingData = PagingData.from(
+                    listOf(Pokemon(id = 1, name = "bulbasaur", imageUrl = "")),
+                    loadedStates
+                ),
+                onQueryChange = { typed = it }
+            )
+        }
+
+        composeTestRule
+            .onNodeWithText(resources.getString(CoreUiR.string.core_ui_search_placeholder))
+            .performTextInput("pika")
+
+        assertEquals("pika", typed)
+    }
+
+    @Test
+    fun searchWithNoResult_showsEmptyMessageWithQuery() {
+        composeTestRule.setContent {
+            PokemonListScreenWith(
+                pagingData = PagingData.from(emptyList(), loadedStates),
+                query = "없는이름"
+            )
+        }
+
+        composeTestRule
+            .onNodeWithText(
+                resources.getString(CoreUiR.string.core_ui_search_empty, "없는이름")
+            )
+            .assertIsDisplayed()
+    }
+
     @Composable
     private fun PokemonListScreenWith(
         pagingData: PagingData<Pokemon>,
         language: AppLanguage = AppLanguage.KOREAN,
         onLanguageClick: (AppLanguage) -> Unit = {},
         onPokemonClick: (Int) -> Unit = {},
+        query: String = "",
+        onQueryChange: (String) -> Unit = {},
     ) {
         val pokemons: LazyPagingItems<Pokemon> = flowOf(pagingData).collectAsLazyPagingItems()
         CherryPokemonTheme {
@@ -144,7 +183,9 @@ class PokemonListScreenTest {
                 pokemons = pokemons,
                 language = language,
                 onLanguageClick = onLanguageClick,
-                onPokemonClick = onPokemonClick
+                onPokemonClick = onPokemonClick,
+                query = query,
+                onQueryChange = onQueryChange
             )
         }
     }

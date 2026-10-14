@@ -1,5 +1,6 @@
 package com.cherryzp.cherrypokemon.core.database
 
+import androidx.paging.PagingSource
 import androidx.room3.Room
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
@@ -148,6 +149,51 @@ class PokemonDaoTest {
         assertEquals("Bulbasaur", saved?.localizedName?.english)
         assertEquals("씨앗포켓몬", saved?.genus?.korean)
         assertEquals("A strange seed.", saved?.flavorText?.english)
+    }
+
+    @Test
+    fun searchPagingSource_findsByNameAndNumber() = runTest {
+        pokemonDao.insertPokemons(
+            listOf(
+                PokemonEntity(id = 25, name = "pikachu", imageUrl = ""),
+                PokemonEntity(id = 150, name = "mewtwo", imageUrl = ""),
+                PokemonEntity(id = 1500, name = "nothing", imageUrl = "")
+            )
+        )
+
+        // 이름은 가운데 글자도 찾는다.
+        assertEquals(listOf("pikachu"), pokemonDao.searchPagingSource("kach").names())
+        // 번호는 앞에서부터 맞춘다. 150 은 1500 도 찾는다.
+        assertEquals(listOf("mewtwo", "nothing"), pokemonDao.searchPagingSource("150").names())
+        assertEquals(emptyList<String>(), pokemonDao.searchPagingSource("없는이름").names())
+    }
+
+    @Test
+    fun searchPagingSource_isCaseInsensitive() = runTest {
+        pokemonDao.insertPokemons(listOf(PokemonEntity(id = 25, name = "pikachu", imageUrl = "")))
+
+        assertEquals(listOf("pikachu"), pokemonDao.searchPagingSource("PIKA").names())
+    }
+
+    @Test
+    fun countPokemons_returnsSavedCount() = runTest {
+        assertEquals(0, pokemonDao.countPokemons())
+
+        pokemonDao.insertPokemons(listOf(PokemonEntity(id = 1, name = "bulbasaur", imageUrl = "")))
+
+        assertEquals(1, pokemonDao.countPokemons())
+    }
+
+    /** PagingSource 를 한 번 읽어 이름만 꺼낸다. */
+    private suspend fun PagingSource<Int, PokemonEntity>.names(): List<String> {
+        val page = load(
+            PagingSource.LoadParams.Refresh(
+                key = null,
+                loadSize = 20,
+                placeholdersEnabled = false
+            )
+        )
+        return (page as PagingSource.LoadResult.Page).data.map { it.name }
     }
 
     private fun bulbasaurDetail() = PokemonDetailEntity(

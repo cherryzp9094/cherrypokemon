@@ -23,6 +23,17 @@ class FakePokemonDao : PokemonDao {
     override fun pagingSource(): PagingSource<Int, PokemonEntity> =
         pokemonsState.value.asPagingSourceFactory().invoke()
 
+    override fun searchPagingSource(query: String): PagingSource<Int, PokemonEntity> =
+        pokemonsState.value
+            .filter {
+                it.name.contains(query, ignoreCase = true) ||
+                    it.id.toString().startsWith(query)
+            }
+            .asPagingSourceFactory()
+            .invoke()
+
+    override suspend fun countPokemons(): Int = pokemonsState.value.size
+
     override fun getPokemonEntities(): Flow<List<PokemonEntity>> = pokemonsState
 
     override fun getPokemonDetailEntity(pokeId: Int): Flow<PokemonDetailEntity?> =

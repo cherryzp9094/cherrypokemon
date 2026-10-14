@@ -1,14 +1,18 @@
 package com.cherryzp.cherrypokemon.core.data.repository
 
+import androidx.paging.testing.asSnapshot
 import com.cherryzp.cherrypokemon.core.data.FakeDatabaseTransactionRunner
 import com.cherryzp.cherrypokemon.core.data.FakeEvolutionChainDao
 import com.cherryzp.cherrypokemon.core.data.FakeLocalizedNameDao
 import com.cherryzp.cherrypokemon.core.data.FakePokemonDao
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource
+import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemon
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemonDetail
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemonSpecies
 import com.cherryzp.cherrypokemon.core.data.FakeRemoteKeyDao
+import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
 import com.cherryzp.cherrypokemon.core.model.PokemonType
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
 import java.io.IOException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -45,6 +49,55 @@ class OfflineFirstPokemonRepositoryTest {
     @Test
     fun getPokemonDetailStream_emptyLocal_emitsNull() = runTest {
         assertNull(repository.getPokemonDetailStream(pokeId = 1).first())
+    }
+
+    @Test
+    fun searchPokemonsStream_findsByNameAndNumber() = runTest {
+        pokemonDao.insertPokemons(
+            listOf(
+                PokemonEntity(id = 25, name = "pikachu", imageUrl = ""),
+                PokemonEntity(id = 150, name = "mewtwo", imageUrl = "")
+            )
+        )
+
+        assertEquals(
+            listOf("pikachu"),
+            repository.searchPokemonsStream("pika").asSnapshot().map { it.name }
+        )
+        assertEquals(
+            listOf("mewtwo"),
+            repository.searchPokemonsStream("150").asSnapshot().map { it.name }
+        )
+    }
+
+    @Test
+    fun ensurePokemonIndex_savesEveryName() = runTest {
+        network.page = NetworkPokemonPage(
+            count = 2,
+            results = listOf(
+                networkPokemon(id = 25, name = "pikachu"),
+                networkPokemon(id = 150, name = "mewtwo")
+            )
+        )
+
+        repository.ensurePokemonIndex()
+
+        assertEquals(listOf("pikachu", "mewtwo"), pokemonDao.pokemons.map { it.name })
+    }
+
+    @Test
+    fun ensurePokemonIndex_alreadyComplete_doesNotWriteAgain() = runTest {
+        network.page = NetworkPokemonPage(
+            count = 1,
+            results = listOf(networkPokemon(id = 25, name = "pikachu"))
+        )
+        repository.ensurePokemonIndex()
+
+        network.page = NetworkPokemonPage(count = 1, results = emptyList())
+        repository.ensurePokemonIndex()
+
+        // 색인이 다 차 있으면 응답이 비어도 지우지 않는다.
+        assertEquals(1, pokemonDao.pokemons.size)
     }
 
     @Test
