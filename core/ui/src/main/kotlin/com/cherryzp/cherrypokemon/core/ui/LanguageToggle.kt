@@ -34,7 +34,8 @@ fun LanguageToggle(
             val label = stringResource(entry.labelId)
             Surface(
                 modifier = Modifier
-                    .size(width = 44.dp, height = 32.dp)
+                    // 터치 영역은 48dp 이상이어야 한다.
+                    .size(width = 48.dp, height = 48.dp)
                     .selectable(
                         selected = selected,
                         role = Role.RadioButton,
@@ -42,7 +43,7 @@ fun LanguageToggle(
                     )
                     // 국기 이모지만으로는 읽어 줄 수 없다.
                     .semantics { contentDescription = label },
-                shape = RoundedCornerShape(8.dp),
+                shape = MaterialTheme.shapes.small,
                 color = if (selected) {
                     MaterialTheme.colorScheme.secondaryContainer
                 } else {
@@ -50,7 +51,7 @@ fun LanguageToggle(
                 }
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Text(text = entry.flag, fontSize = 17.sp)
+                    Text(text = entry.flag, style = MaterialTheme.typography.titleMedium)
                 }
             }
         }

@@ -342,7 +342,7 @@ private fun EvolutionStageItem(
     Column(
         modifier = Modifier
             .width(84.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(MaterialTheme.shapes.small)
             .clickable(enabled = !isCurrent, onClick = onClick)
             .padding(vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
