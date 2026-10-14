@@ -14,6 +14,7 @@ dependencies {
     api(projects.core.designsystem)
     api(projects.core.model)
 
+    implementation(libs.androidx.material.icons.core)
     implementation(libs.landscapist.glide)
     implementation(libs.landscapist.palette)
 
