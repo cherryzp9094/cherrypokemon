@@ -124,10 +124,30 @@ PokemonNetworkDataSource (Retrofit + kotlinx.serialization)
             └─ ViewModel ──▶ UiState ──▶ Compose
 ```
 
+상세 하나를 갱신할 때 받는 것:
+
+| 호출 | 쓰는 것 | 다시 받는가 |
+|---|---|---|
+| `/pokemon/{id}` | 종족값, 특성, 타입, 키·몸무게 | 매번 |
+| `/pokemon-species/{id}` | 언어별 이름·분류·도감 설명, 체인 주소 | 매번 |
+| `/type/{name}` | 언어별 이름, 받는 쪽 상성 | 받지 않은 타입만 |
+| `/ability/{name}` | 언어별 이름 | 받지 않은 특성만 |
+| `/evolution-chain/{id}` | 진화 단계와 조건 | 받지 않은 체인만 |
+
+- 타입·특성 이름은 `type_names`·`ability_names` 에, 진화 체인은 `evolution_chain_members` 에 캐시한다. 상세를 읽을 때 `combine`·`flatMapLatest` 로 이어 붙인다.
+- **언어는 한국어와 영어를 함께 저장한다.** 한 응답에 둘 다 오므로 언어를 바꿔도 다시 받지 않는다. 모델은 `LocalizedText` 로 들고 화면이 `of(language)` 로 고른다.
+
 - 네트워크 모델(`Network*`)과 엔티티(`*Entity`)는 데이터 레이어 밖으로 나가지 않는다. 밖에는 `:core:model` 의 모델을 노출한다.
 - 단위 변환(PokeAPI 의 데시미터·헥토그램 → m·kg)과 ID·이미지 주소 계산은 `:core:data` 의 매퍼가 한다. 모델은 계산하지 않는다.
 - 데이터베이스 클래스는 모듈 밖으로 내보내지 않는다. 여러 DAO 를 한 트랜잭션으로 묶을 때는 `DatabaseTransactionRunner` 를 주입받는다.
 - 네트워크 실패는 예외로 던지고, 상태를 만드는 쪽(ViewModel)이 잡아 상태나 SideEffect 로 바꾼다.
+
+## 국제화
+
+- 앱 문자열은 기본이 **영어**(`values/`), 한국어는 `values-ko/` 다. 문자열을 추가하면 두 파일을 함께 고친다. 빠뜨리면 Lint 가 `MissingTranslation` 으로 잡는다.
+- 앱 안에서 국기로 언어를 고른다. 선택은 `:core:datastore` 에 저장하고, `ProvideAppLocale` 이 Compose 트리의 `LocalConfiguration`·`LocalResources` 를 바꾼다.
+- **`LocalContext` 는 바꾸지 않는다.** Activity 가 아닌 컨텍스트가 들어가면 `hiltViewModel()` 이 실패한다.
+- 포켓몬 이름·타입·특성 같은 API 데이터는 리소스가 아니라 Room 에 두 언어로 저장한다.
 
 ## 빌드 설정
 
@@ -152,4 +172,6 @@ PokemonNetworkDataSource (Retrofit + kotlinx.serialization)
 
 ## 기록
 
-지금 구조로 옮긴 과정과 그때 겪은 함정은 `docs/improvement-plan.md` 에 있다. 비슷한 작업을 할 때 먼저 읽는다.
+지금 구조로 옮긴 과정과 그때 겪은 함정은 `docs/improvement-plan.md`, 상세 화면을 채운 과정은 `docs/detail-feature-record.md` 에 있다. 비슷한 작업을 할 때 먼저 읽는다.
+
+**상세 화면을 건드리면 `./gradlew pixel5Api35Check` 로 먼저 확인한다.** CI 기기가 개발 기기보다 작아서, 화면이 길어지면 로컬에서는 보이던 것이 CI 에서 화면 밖으로 밀린다.
