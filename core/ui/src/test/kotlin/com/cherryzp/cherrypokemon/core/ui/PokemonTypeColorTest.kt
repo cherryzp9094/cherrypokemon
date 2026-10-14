@@ -1,6 +1,8 @@
 package com.cherryzp.cherrypokemon.core.ui
 
 import androidx.compose.ui.graphics.Color
+import com.cherryzp.cherrypokemon.core.designsystem.theme.contentColorOn
+import com.cherryzp.cherrypokemon.core.designsystem.theme.contrastRatio
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

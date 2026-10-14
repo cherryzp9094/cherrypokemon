@@ -21,6 +21,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cherryzp.cherrypokemon.core.designsystem.theme.contentColorOn
+import com.cherryzp.cherrypokemon.core.designsystem.theme.contrastRatio
 
 /**
  * 상세 화면의 구간 제목. 카드 대신 가는 선으로 구간을 끊는다.
@@ -30,10 +32,9 @@ fun DetailSectionLabel(text: String, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth().padding(top = 22.dp, bottom = 10.dp)) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.4.sp,
-            color = MaterialTheme.colorScheme.outline,
+            // 자간은 labelMedium 토큰이 들고 있다.
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 6.dp)
         )
         Box(
@@ -101,13 +102,16 @@ fun StatBar(
             Modifier
                 .fillMaxWidth()
                 .height(3.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(2.dp))
+                .background(
+                    MaterialTheme.colorScheme.surfaceVariant,
+                    MaterialTheme.shapes.extraSmall
+                )
         ) {
             Box(
                 Modifier
                     .fillMaxWidth(fraction = (value.toFloat() / maxValue).coerceIn(0f, 1f))
                     .fillMaxHeight()
-                    .background(color, RoundedCornerShape(2.dp))
+                    .background(color, MaterialTheme.shapes.extraSmall)
             )
         }
     }
@@ -120,7 +124,7 @@ fun TypeChip(text: String, color: Color, modifier: Modifier = Modifier) {
         modifier = modifier,
         color = color,
         contentColor = contentColorOn(color),
-        shape = RoundedCornerShape(4.dp)
+        shape = MaterialTheme.shapes.extraSmall
     ) {
         Text(
             text = text,
