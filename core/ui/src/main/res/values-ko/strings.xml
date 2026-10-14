@@ -4,4 +4,7 @@
     <string name="core_ui_pokemon_image_description">%1$s 이미지</string>
     <string name="core_ui_language_korean">한국어</string>
     <string name="core_ui_language_english">영어</string>
+    <string name="core_ui_search_placeholder">이름이나 번호로 검색</string>
+    <string name="core_ui_search_clear">검색어 지우기</string>
+    <string name="core_ui_search_empty">\u201c%1$s\u201d 와 맞는 포켓몬이 없습니다</string>
 </resources>

@@ -11,6 +11,8 @@ import com.cherryzp.cherrypokemon.core.model.AppLanguage
 data class PokemonListUiState(
     /** 고른 적이 없으면 null. 화면이 기기 언어로 떨어뜨린다. */
     val language: AppLanguage? = null,
+    /** 검색어. 비어 있으면 전체 목록이다. */
+    val query: String = "",
 )
 
 /** 아직 보낼 일회성 이벤트가 없다. */

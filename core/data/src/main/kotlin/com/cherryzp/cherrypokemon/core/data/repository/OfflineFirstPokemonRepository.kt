@@ -50,6 +50,19 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
     ).flow.map { pagingData -> pagingData.map(PokemonEntity::asExternalModel) }
 
     @OptIn(ExperimentalCoroutinesApi::class)
+    override fun searchPokemonsStream(query: String): Flow<PagingData<Pokemon>> = Pager(
+        config = PagingConfig(pageSize = POKEMON_PAGE_SIZE),
+        // 색인이 이미 로컬에 있으므로 네트워크를 보지 않는다.
+        pagingSourceFactory = { pokemonDao.searchPagingSource(query) }
+    ).flow.map { pagingData -> pagingData.map(PokemonEntity::asExternalModel) }
+
+    override suspend fun ensurePokemonIndex() {
+        val page = network.getPokemons(offset = 0, limit = POKEMON_INDEX_LIMIT)
+        // 이미 다 받아 뒀으면 다시 쓰지 않는다.
+        if (pokemonDao.countPokemons() >= page.count) return
+        pokemonDao.insertPokemons(page.results.mapNotNull { it.asEntity() })
+    }
+
     override fun getPokemonDetailStream(pokeId: Int): Flow<PokemonDetail?> = combine(
         pokemonDao.getPokemonDetailEntity(pokeId),
         localizedNameDao.getTypeNames(),
@@ -136,5 +149,8 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
 
     private companion object {
         const val POKEMON_PAGE_SIZE = 20
+
+        /** 전체 포켓몬 수보다 넉넉하게. 한 번에 받아 이름 색인을 만든다. */
+        const val POKEMON_INDEX_LIMIT = 2000
     }
 }

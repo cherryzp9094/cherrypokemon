@@ -4,4 +4,7 @@
     <string name="core_ui_pokemon_image_description">%1$s image</string>
     <string name="core_ui_language_korean">Korean</string>
     <string name="core_ui_language_english">English</string>
+    <string name="core_ui_search_placeholder">Search by name or number</string>
+    <string name="core_ui_search_clear">Clear search</string>
+    <string name="core_ui_search_empty">Nothing matches \u201c%1$s\u201d</string>
 </resources>
