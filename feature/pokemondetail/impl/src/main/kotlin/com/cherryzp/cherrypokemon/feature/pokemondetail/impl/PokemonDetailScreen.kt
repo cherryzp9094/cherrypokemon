@@ -1,6 +1,8 @@
 package com.cherryzp.cherrypokemon.feature.pokemondetail.impl
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -34,16 +36,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.cherryzp.cherrypokemon.core.model.AppLanguage
+import com.cherryzp.cherrypokemon.core.model.EvolutionCondition
+import com.cherryzp.cherrypokemon.core.model.EvolutionStage
 import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonStats
@@ -62,6 +68,7 @@ import org.orbitmvi.orbit.compose.collectSideEffect
 internal fun PokemonDetailScreen(
     viewModel: PokemonDetailViewModel,
     onBackClick: () -> Unit,
+    onPokemonClick: (pokeId: Int) -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
@@ -80,6 +87,7 @@ internal fun PokemonDetailScreen(
         uiState = uiState,
         onRetryClick = viewModel::retry,
         onBackClick = onBackClick,
+        onPokemonClick = onPokemonClick,
         modifier = modifier
     )
 }
@@ -89,34 +97,51 @@ internal fun PokemonDetailScreen(
     uiState: PokemonDetailUiState,
     onRetryClick: () -> Unit,
     onBackClick: () -> Unit,
+    onPokemonClick: (pokeId: Int) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     // 머리말 띠가 상태 바까지 올라가야 해서 Scaffold 대신 직접 겹쳐 그린다.
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         when {
             uiState.showsLoading -> CircularProgressIndicator()
+
             uiState.showsError -> ErrorContent(onRetryClick = onRetryClick)
-            uiState.pokemonDetail != null -> PokemonDetailContent(uiState.pokemonDetail)
+
+            uiState.pokemonDetail != null -> PokemonDetailContent(
+                pokemonDetail = uiState.pokemonDetail,
+                onPokemonClick = onPokemonClick,
+                onBackClick = onBackClick
+            )
         }
 
-        IconButton(
-            onClick = onBackClick,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .statusBarsPadding()
-                .padding(4.dp)
-                .zIndex(2f)
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.feature_pokemondetail_impl_back)
-            )
+        // 로딩·에러일 때는 머리말이 없어서 뒤로가기를 따로 그린다.
+        if (uiState.pokemonDetail == null) {
+            BackButton(onBackClick = onBackClick, modifier = Modifier.align(Alignment.TopStart))
         }
     }
 }
 
 @Composable
-private fun PokemonDetailContent(pokemonDetail: PokemonDetail) {
+private fun BackButton(onBackClick: () -> Unit, modifier: Modifier = Modifier) {
+    IconButton(
+        onClick = onBackClick,
+        modifier = modifier
+            .statusBarsPadding()
+            .padding(4.dp)
+    ) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = stringResource(R.string.feature_pokemondetail_impl_back)
+        )
+    }
+}
+
+@Composable
+private fun PokemonDetailContent(
+    pokemonDetail: PokemonDetail,
+    onPokemonClick: (pokeId: Int) -> Unit,
+    onBackClick: () -> Unit,
+) {
     // 위에서 이미 고른 언어로 리소스를 읽고 있다.
     val language = AppLanguage.fromTag(LocalConfiguration.current.locales[0]?.toLanguageTag())
     // 첫 타입 색으로 머리말 띠를 칠한다. 포켓몬마다 인상이 달라진다.
@@ -133,7 +158,11 @@ private fun PokemonDetailContent(pokemonDetail: PokemonDetail) {
                 .background(accent.copy(alpha = 0.12f))
                 .verticalScroll(rememberScrollState())
         ) {
-            HeaderBand(pokemonDetail = pokemonDetail, accent = accent)
+            HeaderBand(
+                pokemonDetail = pokemonDetail,
+                accent = accent,
+                onBackClick = onBackClick
+            )
 
             // 내용은 위쪽 모서리를 둥글린 면에 올려 이미지 영역과 나눈다.
             Surface(
@@ -163,6 +192,18 @@ private fun PokemonDetailContent(pokemonDetail: PokemonDetail) {
                     )
                     StatsBlock(stats = pokemonDetail.stats, accent = accent)
 
+                    if (pokemonDetail.evolutionStages.size > 1) {
+                        DetailSectionLabel(
+                            stringResource(R.string.feature_pokemondetail_impl_section_evolution)
+                        )
+                        EvolutionBlock(
+                            stages = pokemonDetail.evolutionStages,
+                            currentId = pokemonDetail.id,
+                            language = language,
+                            onPokemonClick = onPokemonClick
+                        )
+                    }
+
                     if (pokemonDetail.typeMatchups.isNotEmpty()) {
                         DetailSectionLabel(
                             stringResource(R.string.feature_pokemondetail_impl_section_matchups)
@@ -187,7 +228,7 @@ private fun PokemonDetailContent(pokemonDetail: PokemonDetail) {
 private val BAND_HEIGHT = 300.dp
 
 @Composable
-private fun HeaderBand(pokemonDetail: PokemonDetail, accent: Color) {
+private fun HeaderBand(pokemonDetail: PokemonDetail, accent: Color, onBackClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -205,6 +246,8 @@ private fun HeaderBand(pokemonDetail: PokemonDetail, accent: Color) {
                 .align(Alignment.CenterStart)
                 .padding(start = 16.dp, top = 32.dp)
         )
+        // 머리말과 함께 올라간다. 고정하면 스크롤할 때 내용과 겹친다.
+        BackButton(onBackClick = onBackClick, modifier = Modifier.align(Alignment.TopStart))
         GlideImage(
             imageModel = { pokemonDetail.imageUrl },
             // 기본값인 Crop 은 이미지를 영역에 맞춰 잘라낸다. 전체가 보여야 한다.
@@ -252,6 +295,117 @@ private fun NameBlock(pokemonDetail: PokemonDetail, language: AppLanguage) {
                 )
             }
         }
+    }
+}
+
+/**
+ * 진화 단계를 가로로 늘어놓는다. 분기(이브이)는 같은 단계에 여럿이라 가로로 스크롤된다.
+ *
+ * 아직 열어보지 않은 포켓몬은 한국어 이름이 없어 식별자로 떨어뜨린다.
+ */
+@Composable
+private fun EvolutionBlock(
+    stages: List<EvolutionStage>,
+    currentId: Int,
+    language: AppLanguage,
+    onPokemonClick: (pokeId: Int) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        stages.forEachIndexed { index, stage ->
+            if (index > 0 && stage.stage != stages[index - 1].stage) {
+                EvolutionArrow(condition = stage.condition)
+            }
+            EvolutionStageItem(
+                stage = stage,
+                isCurrent = stage.pokemonId == currentId,
+                language = language,
+                onClick = { onPokemonClick(stage.pokemonId) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun EvolutionStageItem(
+    stage: EvolutionStage,
+    isCurrent: Boolean,
+    language: AppLanguage,
+    onClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .width(84.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(enabled = !isCurrent, onClick = onClick)
+            .padding(vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        GlideImage(
+            imageModel = { stage.imageUrl },
+            imageOptions = ImageOptions(contentScale = ContentScale.Fit),
+            modifier = Modifier.size(64.dp)
+        )
+        Text(
+            text = stage.localizedName.of(language).ifEmpty { stage.name },
+            style = MaterialTheme.typography.labelLarge,
+            // 보고 있는 포켓몬만 진하게.
+            fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
+            color = if (isCurrent) {
+                MaterialTheme.colorScheme.onSurface
+            } else {
+                MaterialTheme.colorScheme.outline
+            },
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 4.dp)
+        )
+    }
+}
+
+/** 단계 사이의 화살표와 조건. */
+@Composable
+private fun EvolutionArrow(condition: EvolutionCondition?) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(horizontal = 2.dp)
+    ) {
+        Text(
+            text = "▸",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.outline
+        )
+        condition?.label()?.let { label ->
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline,
+                maxLines = 1
+            )
+        }
+    }
+}
+
+/** 조건 글자. 도구 이름은 아직 영어 식별자다. */
+@Composable
+private fun EvolutionCondition.label(): String? {
+    val level = minLevel
+    val item = item
+    return when {
+        level != null -> stringResource(
+            R.string.feature_pokemondetail_impl_evolution_level,
+            level
+        )
+
+        item != null -> item.replace('-', ' ')
+
+        else -> null
     }
 }
 

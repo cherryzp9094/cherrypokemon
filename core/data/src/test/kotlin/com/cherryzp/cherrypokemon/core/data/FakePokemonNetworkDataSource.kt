@@ -1,7 +1,10 @@
 package com.cherryzp.cherrypokemon.core.data
 
 import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
+import com.cherryzp.cherrypokemon.core.network.model.NetworkChainLink
 import com.cherryzp.cherrypokemon.core.network.model.NetworkDamageRelations
+import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionChain
+import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkFlavorText
 import com.cherryzp.cherrypokemon.core.network.model.NetworkGenus
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
@@ -76,6 +79,35 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
         )
     }
 
+    /** 진화 체인 호출 횟수. 이미 받았으면 다시 받지 않는지 보는 데 쓴다. */
+    var chainCallCount: Int = 0
+        private set
+
+    var evolutionChain: NetworkEvolutionChain = NetworkEvolutionChain(
+        id = 1,
+        chain = NetworkChainLink(
+            species = NetworkNamedResource(
+                name = "bulbasaur",
+                url = "https://pokeapi.co/api/v2/pokemon-species/1/"
+            ),
+            evolvesTo = listOf(
+                NetworkChainLink(
+                    species = NetworkNamedResource(
+                        name = "ivysaur",
+                        url = "https://pokeapi.co/api/v2/pokemon-species/2/"
+                    ),
+                    evolutionDetails = listOf(NetworkEvolutionDetail(minLevel = 16))
+                )
+            )
+        )
+    )
+
+    override suspend fun getEvolutionChain(chainId: Int): NetworkEvolutionChain {
+        chainCallCount++
+        error?.let { throw it }
+        return evolutionChain
+    }
+
     override suspend fun getPokemonSpecies(pokeId: Int): NetworkPokemonSpecies {
         speciesCount++
         error?.let { throw it }
@@ -141,6 +173,9 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
             koreanFlavorTexts: List<String> = listOf("오래된 설명", "등의 씨앗에\n영양을\u000c섭취한다."),
         ) = NetworkPokemonSpecies(
             id = id,
+            evolutionChain = NetworkNamedResource(
+                url = "https://pokeapi.co/api/v2/evolution-chain/1/"
+            ),
             names = listOfNotNull(
                 koreanName?.let { NetworkSpeciesName(it, NetworkNamedResource(name = "ko")) },
                 englishName?.let { NetworkSpeciesName(it, NetworkNamedResource(name = "en")) },

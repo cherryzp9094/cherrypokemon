@@ -2,12 +2,16 @@ package com.cherryzp.cherrypokemon.feature.pokemondetail.impl
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cherryzp.cherrypokemon.core.designsystem.theme.CherryPokemonTheme
+import com.cherryzp.cherrypokemon.core.model.EvolutionCondition
+import com.cherryzp.cherrypokemon.core.model.EvolutionStage
 import com.cherryzp.cherrypokemon.core.model.LocalizedText
 import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
@@ -15,6 +19,7 @@ import com.cherryzp.cherrypokemon.core.model.PokemonStats
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import com.cherryzp.cherrypokemon.core.model.PokemonTypeInfo
 import com.cherryzp.cherrypokemon.core.model.TypeMatchup
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -51,6 +56,24 @@ class PokemonDetailScreenTest {
             specialDefense = 65,
             speed = 45
         ),
+        evolutionStages = listOf(
+            EvolutionStage(
+                pokemonId = 1,
+                name = "bulbasaur",
+                localizedName = LocalizedText(korean = "이상해씨", english = "Bulbasaur"),
+                imageUrl = "",
+                stage = 1,
+                condition = null
+            ),
+            EvolutionStage(
+                pokemonId = 2,
+                name = "ivysaur",
+                localizedName = LocalizedText(korean = "이상해풀", english = "Ivysaur"),
+                imageUrl = "",
+                stage = 2,
+                condition = EvolutionCondition(minLevel = 16)
+            )
+        ),
         typeMatchups = listOf(
             TypeMatchup(
                 type = PokemonTypeInfo(
@@ -85,8 +108,10 @@ class PokemonDetailScreenTest {
     fun detail_showsLocalizedNameGenusAndFlavorText() {
         setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
 
+        // 진화 체인에도 같은 이름이 있어 머리말의 첫 번째만 본다.
         composeTestRule
-            .onNodeWithText(if (isKorean) "이상해씨" else "Bulbasaur")
+            .onAllNodesWithText(if (isKorean) "이상해씨" else "Bulbasaur")
+            .onFirst()
             .assertIsDisplayed()
         composeTestRule
             .onNodeWithText(if (isKorean) "씨앗포켓몬" else "Seed Pokémon")
@@ -123,6 +148,29 @@ class PokemonDetailScreenTest {
             .assertIsDisplayed()
         // 45 + 49 + 49 + 65 + 65 + 45
         composeTestRule.onNodeWithText("318").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun evolutionClick_passesThatPokemonId() {
+        var clickedId: Int? = null
+        setScreen(
+            uiState = PokemonDetailUiState(pokemonDetail, RefreshState.Idle),
+            onPokemonClick = { clickedId = it }
+        )
+
+        composeTestRule
+            .onNodeWithText(if (isKorean) "이상해풀" else "Ivysaur")
+            .performScrollTo()
+            .performClick()
+
+        assertEquals(2, clickedId)
+    }
+
+    @Test
+    fun evolution_showsLevelCondition() {
+        setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
+
+        composeTestRule.onNodeWithText("Lv. 16").performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -208,13 +256,15 @@ class PokemonDetailScreenTest {
         uiState: PokemonDetailUiState,
         onRetryClick: () -> Unit = {},
         onBackClick: () -> Unit = {},
+        onPokemonClick: (Int) -> Unit = {},
     ) {
         composeTestRule.setContent {
             CherryPokemonTheme {
                 PokemonDetailScreen(
                     uiState = uiState,
                     onRetryClick = onRetryClick,
-                    onBackClick = onBackClick
+                    onBackClick = onBackClick,
+                    onPokemonClick = onPokemonClick
                 )
             }
         }

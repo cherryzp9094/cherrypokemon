@@ -29,6 +29,8 @@ data class PokemonDetailEntity(
     @Embedded(prefix = "stat_") val stats: PokemonStatsEntity,
     /** 특성 목록. 순서를 유지해 쉼표로 잇고 숨겨진 특성은 이름 뒤에 표시를 붙인다. */
     @ColumnInfo(defaultValue = "") val abilities: List<PokemonAbility>,
+    /** 진화 체인 ID. 아직 받지 못했으면 0 이다. */
+    @ColumnInfo(name = "evolution_chain_id", defaultValue = "0") val evolutionChainId: Int = 0,
 )
 
 /** 언어별 문자열. 언어를 바꿔도 다시 받지 않도록 둘 다 저장한다. */

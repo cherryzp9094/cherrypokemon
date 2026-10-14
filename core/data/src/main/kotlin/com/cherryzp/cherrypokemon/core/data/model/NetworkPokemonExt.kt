@@ -20,6 +20,7 @@ fun NetworkNamedResource.asEntity(): PokemonEntity? {
 }
 
 fun NetworkPokemonDetail.asEntity(species: NetworkPokemonSpecies) = PokemonDetailEntity(
+    evolutionChainId = species.evolutionChain?.url?.chainId() ?: 0,
     id = id,
     name = name,
     localizedName = species.localizedName(),

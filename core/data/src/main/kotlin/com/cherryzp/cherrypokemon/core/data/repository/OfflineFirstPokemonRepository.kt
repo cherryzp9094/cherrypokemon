@@ -5,10 +5,13 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
+import com.cherryzp.cherrypokemon.core.data.model.asEntities
 import com.cherryzp.cherrypokemon.core.data.model.asEntity
 import com.cherryzp.cherrypokemon.core.data.model.asPokemonType
+import com.cherryzp.cherrypokemon.core.data.model.chainId
 import com.cherryzp.cherrypokemon.core.data.paging.PokemonRemoteMediator
 import com.cherryzp.cherrypokemon.core.database.DatabaseTransactionRunner
+import com.cherryzp.cherrypokemon.core.database.dao.EvolutionChainDao
 import com.cherryzp.cherrypokemon.core.database.dao.LocalizedNameDao
 import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.dao.RemoteKeyDao
@@ -20,9 +23,13 @@ import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonSpecies
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 /** 읽기는 항상 로컬에서 하고, 네트워크는 로컬을 갱신하는 데만 쓴다. */
@@ -30,6 +37,7 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
     private val pokemonDao: PokemonDao,
     private val remoteKeyDao: RemoteKeyDao,
     private val localizedNameDao: LocalizedNameDao,
+    private val evolutionChainDao: EvolutionChainDao,
     private val network: PokemonNetworkDataSource,
     private val transaction: DatabaseTransactionRunner,
 ) : PokemonRepository {
@@ -41,15 +49,25 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         pagingSourceFactory = pokemonDao::pagingSource
     ).flow.map { pagingData -> pagingData.map(PokemonEntity::asExternalModel) }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun getPokemonDetailStream(pokeId: Int): Flow<PokemonDetail?> = combine(
         pokemonDao.getPokemonDetailEntity(pokeId),
         localizedNameDao.getTypeNames(),
         localizedNameDao.getAbilityNames()
-    ) { detail, typeNames, abilityNames ->
-        detail?.asExternalModel(
+    ) { entity, typeNames, abilityNames ->
+        entity to entity?.asExternalModel(
             typeNames = typeNames.associateBy { it.type },
             abilityNames = abilityNames.associate { it.asExternalModel() }
         )
+    }.flatMapLatest { (entity, detail) ->
+        // 체인 ID 는 상세에 들어 있어서 먼저 읽어야 구성원을 읽을 수 있다.
+        val chainId = entity?.evolutionChainId ?: 0
+        if (detail == null || chainId == 0) {
+            flowOf(detail)
+        } else {
+            evolutionChainDao.getChainMembers(chainId)
+                .map { members -> detail.copy(evolutionStages = members.asExternalModel()) }
+        }
     }
 
     override suspend fun refreshPokemonDetail(pokeId: Int) {
@@ -58,6 +76,22 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         val species = network.getPokemonSpecies(pokeId)
         pokemonDao.insertPokemonDetail(detail.asEntity(species))
         refreshMissingNames(detail)
+        refreshEvolutionChain(species)
+    }
+
+    /**
+     * 진화 체인을 아직 받지 않았으면 받아 둔다.
+     *
+     * 같은 체인의 포켓몬은 하나만 열어보면 나머지도 함께 들어온다.
+     * 체인을 받지 못해도 상세는 이미 저장했으므로 실패를 삼킨다.
+     */
+    private suspend fun refreshEvolutionChain(species: NetworkPokemonSpecies) {
+        val chainId = species.evolutionChain?.url?.chainId() ?: return
+        if (evolutionChainDao.countChainMembers(chainId) > 0) return
+
+        runCatching {
+            evolutionChainDao.insertChainMembers(network.getEvolutionChain(chainId).asEntities())
+        }
     }
 
     /**

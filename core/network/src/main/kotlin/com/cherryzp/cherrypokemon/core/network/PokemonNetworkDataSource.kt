@@ -1,5 +1,6 @@
 package com.cherryzp.cherrypokemon.core.network
 
+import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionChain
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
@@ -20,4 +21,7 @@ interface PokemonNetworkDataSource {
 
     /** 특성의 언어별 이름. */
     suspend fun getAbility(name: String): NetworkNamedEntry
+
+    /** 진화 체인. 종 정보의 `evolution_chain` 주소에서 ID 를 꺼내 부른다. */
+    suspend fun getEvolutionChain(chainId: Int): NetworkEvolutionChain
 }
