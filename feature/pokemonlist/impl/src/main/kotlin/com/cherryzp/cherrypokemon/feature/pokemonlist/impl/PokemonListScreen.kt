@@ -5,8 +5,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -23,7 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -33,7 +39,18 @@ import com.cherryzp.cherrypokemon.core.model.AppLanguage
 import com.cherryzp.cherrypokemon.core.model.Pokemon
 import com.cherryzp.cherrypokemon.core.ui.LanguageToggle
 import com.cherryzp.cherrypokemon.core.ui.PokemonCard
+import com.cherryzp.cherrypokemon.core.ui.PokemonSearchField
+import com.cherryzp.cherrypokemon.core.ui.R as CoreUiR
 import org.orbitmvi.orbit.compose.collectAsState
+
+/** 두 여백을 합친다. `PaddingValues` 끼리는 더할 수 없어 직접 만든다. */
+private operator fun PaddingValues.plus(other: PaddingValues): PaddingValues = PaddingValues(
+    start = calculateStartPadding(LayoutDirection.Ltr) +
+        other.calculateStartPadding(LayoutDirection.Ltr),
+    top = calculateTopPadding() + other.calculateTopPadding(),
+    end = calculateEndPadding(LayoutDirection.Ltr) + other.calculateEndPadding(LayoutDirection.Ltr),
+    bottom = calculateBottomPadding() + other.calculateBottomPadding()
+)
 
 @Composable
 internal fun PokemonListScreen(
@@ -50,6 +67,8 @@ internal fun PokemonListScreen(
     PokemonListScreen(
         pokemons = viewModel.pokemons.collectAsLazyPagingItems(),
         language = uiState.language ?: currentLanguage,
+        query = uiState.query,
+        onQueryChange = viewModel::setQuery,
         onLanguageClick = viewModel::setLanguage,
         onPokemonClick = onPokemonClick,
         modifier = modifier
@@ -62,13 +81,20 @@ internal fun PokemonListScreen(
     language: AppLanguage,
     onLanguageClick: (AppLanguage) -> Unit,
     onPokemonClick: (pokeId: Int) -> Unit,
+    query: String = "",
+    onQueryChange: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     // 로컬 캐시(source)와 네트워크(mediator)를 나눠 본다. 캐시가 있으면 목록을 보여준다.
     val localRefresh = pokemons.loadState.source.refresh
     val remoteRefresh = pokemons.loadState.mediator?.refresh
     val header: @Composable () -> Unit = {
-        ListHeader(language = language, onLanguageClick = onLanguageClick)
+        ListHeader(
+            language = language,
+            onLanguageClick = onLanguageClick,
+            query = query,
+            onQueryChange = onQueryChange
+        )
     }
 
     when {
@@ -84,7 +110,15 @@ internal fun PokemonListScreen(
         }
 
         pokemons.itemCount == 0 -> HeaderedBox(header, modifier) {
-            Text(stringResource(R.string.feature_pokemonlist_impl_empty))
+            Text(
+                text = if (query.isBlank()) {
+                    stringResource(R.string.feature_pokemonlist_impl_empty)
+                } else {
+                    stringResource(CoreUiR.string.core_ui_search_empty, query)
+                },
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 32.dp)
+            )
         }
 
         else -> PokemonGrid(
@@ -98,21 +132,34 @@ internal fun PokemonListScreen(
 
 /** 제목과 언어 토글. 앱 바 대신 목록과 함께 스크롤되어 올라간다. */
 @Composable
-private fun ListHeader(language: AppLanguage, onLanguageClick: (AppLanguage) -> Unit) {
-    Row(
+private fun ListHeader(
+    language: AppLanguage,
+    onLanguageClick: (AppLanguage) -> Unit,
+    query: String,
+    onQueryChange: (String) -> Unit,
+) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 10.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .padding(start = 16.dp, end = 8.dp, bottom = 10.dp)
     ) {
-        Text(
-            text = stringResource(R.string.feature_pokemonlist_impl_title),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.feature_pokemonlist_impl_title),
+                style = MaterialTheme.typography.headlineSmall
+            )
+            LanguageToggle(language = language, onLanguageClick = onLanguageClick)
+        }
+        PokemonSearchField(
+            query = query,
+            onQueryChange = onQueryChange,
+            modifier = Modifier.padding(end = 8.dp, top = 2.dp)
         )
-        LanguageToggle(language = language, onLanguageClick = onLanguageClick)
     }
 }
 
@@ -125,7 +172,9 @@ private fun PokemonGrid(
 ) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 160.dp),
-        contentPadding = PaddingValues(bottom = 8.dp),
+        // 아래 제스처 바에 마지막 카드가 가리지 않게 한다.
+        contentPadding =
+            WindowInsets.navigationBars.asPaddingValues() + PaddingValues(bottom = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
