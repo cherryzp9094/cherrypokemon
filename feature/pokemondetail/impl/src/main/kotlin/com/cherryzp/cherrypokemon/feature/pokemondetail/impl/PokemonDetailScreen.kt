@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -224,6 +225,12 @@ private fun PokemonDetailContent(
     }
 }
 
+/** 한 구간 안에서 줄과 줄 사이. 구간 사이(28dp)보다 확실히 좁아야 묶여 보인다. */
+private val DETAIL_ROW_GAP = 8.dp
+
+/** 이 수까지는 진화 단계를 폭에 고르게 펼친다. 넘으면 가로로 스크롤한다. */
+private const val MAX_EVOLUTION_STAGES_WITHOUT_SCROLL = 4
+
 /** 머리말 띠 높이. 상태 바와 뒤로가기 버튼까지 덮는다. */
 private val BAND_HEIGHT = 300.dp
 
@@ -244,7 +251,7 @@ private fun HeaderBand(pokemonDetail: PokemonDetail, accent: Color, onBackClick:
             maxLines = 1,
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(start = 16.dp, top = 32.dp)
+                .padding(start = 24.dp, top = 32.dp)
         )
         // 머리말과 함께 올라간다. 고정하면 스크롤할 때 내용과 겹친다.
         BackButton(onBackClick = onBackClick, modifier = Modifier.align(Alignment.TopStart))
@@ -273,7 +280,7 @@ private fun NameBlock(pokemonDetail: PokemonDetail, language: AppLanguage) {
         Text(
             text = pokemonDetail.genus.of(language),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.outline,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 2.dp)
         )
     }
@@ -285,7 +292,7 @@ private fun NameBlock(pokemonDetail: PokemonDetail, language: AppLanguage) {
         Text(
             text = stringResource(R.string.feature_pokemondetail_impl_number, pokemonDetail.id),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.outline
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             pokemonDetail.types.forEach { type ->
@@ -310,13 +317,16 @@ private fun EvolutionBlock(
     language: AppLanguage,
     onPokemonClick: (pokeId: Int) -> Unit,
 ) {
+    // 서너 단계면 폭에 고르게 펼친다. 왼쪽에 몰리면 오른쪽이 비어 보인다.
+    // 이브이처럼 많으면 폭에 다 들어가지 않으므로 가로로 스크롤한다.
+    val fits = stages.size <= MAX_EVOLUTION_STAGES_WITHOUT_SCROLL
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(vertical = 10.dp),
+            .then(if (fits) Modifier else Modifier.horizontalScroll(rememberScrollState()))
+            .padding(top = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = if (fits) Arrangement.SpaceBetween else Arrangement.spacedBy(4.dp)
     ) {
         stages.forEachIndexed { index, stage ->
             if (index > 0 && stage.stage != stages[index - 1].stage) {
@@ -344,7 +354,7 @@ private fun EvolutionStageItem(
             .width(84.dp)
             .clip(MaterialTheme.shapes.small)
             .clickable(enabled = !isCurrent, onClick = onClick)
-            .padding(vertical = 6.dp),
+            .padding(top = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         GlideImage(
@@ -360,7 +370,7 @@ private fun EvolutionStageItem(
             color = if (isCurrent) {
                 MaterialTheme.colorScheme.onSurface
             } else {
-                MaterialTheme.colorScheme.outline
+                MaterialTheme.colorScheme.onSurfaceVariant
             },
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -376,16 +386,17 @@ private fun EvolutionArrow(condition: EvolutionCondition?) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(horizontal = 2.dp)
     ) {
-        Text(
-            text = "▸",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.outline
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            // 옆의 조건 글자가 뜻을 전한다.
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
         condition?.label()?.let { label ->
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1
             )
         }
@@ -418,27 +429,29 @@ private fun MatchupBlock(matchups: List<TypeMatchup>, language: AppLanguage) {
         R.string.feature_pokemondetail_impl_immunity to matchups.filter { it.isImmunity }
     )
 
-    groups.forEach { (labelId, group) ->
-        if (group.isEmpty()) return@forEach
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-            verticalAlignment = Alignment.Top
-        ) {
-            Text(
-                text = stringResource(labelId),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.width(56.dp).padding(top = 4.dp)
-            )
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+    Column(verticalArrangement = Arrangement.spacedBy(DETAIL_ROW_GAP)) {
+        groups.forEach { (labelId, group) ->
+            if (group.isEmpty()) return@forEach
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
             ) {
-                group.forEach { matchup ->
-                    TypeChip(
-                        text = matchup.label(language),
-                        color = matchup.type.type.color
-                    )
+                Text(
+                    text = stringResource(labelId),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.width(56.dp).padding(top = 4.dp)
+                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    group.forEach { matchup ->
+                        TypeChip(
+                            text = matchup.label(language),
+                            color = matchup.type.type.color
+                        )
+                    }
                 }
             }
         }
@@ -493,30 +506,32 @@ private fun StatsBlock(stats: PokemonStats, accent: Color) {
 
 @Composable
 private fun BasicsBlock(pokemonDetail: PokemonDetail, language: AppLanguage) {
-    DetailRow(
-        label = stringResource(R.string.feature_pokemondetail_impl_height),
-        value = stringResource(
-            R.string.feature_pokemondetail_impl_height_value,
-            pokemonDetail.heightMeters
-        )
-    )
-    DetailRow(
-        label = stringResource(R.string.feature_pokemondetail_impl_weight),
-        value = stringResource(
-            R.string.feature_pokemondetail_impl_weight_value,
-            pokemonDetail.weightKilograms
-        )
-    )
-    DetailRow(
-        label = stringResource(R.string.feature_pokemondetail_impl_base_experience),
-        value = pokemonDetail.baseExperience.toString()
-    )
-    pokemonDetail.abilities.forEach { ability ->
+    Column(verticalArrangement = Arrangement.spacedBy(DETAIL_ROW_GAP)) {
         DetailRow(
-            label = ability.label(),
-            // 이름을 아직 받지 못했으면 식별자를 그대로 보여준다.
-            value = ability.localizedName.of(language).ifEmpty { ability.name }
+            label = stringResource(R.string.feature_pokemondetail_impl_height),
+            value = stringResource(
+                R.string.feature_pokemondetail_impl_height_value,
+                pokemonDetail.heightMeters
+            )
         )
+        DetailRow(
+            label = stringResource(R.string.feature_pokemondetail_impl_weight),
+            value = stringResource(
+                R.string.feature_pokemondetail_impl_weight_value,
+                pokemonDetail.weightKilograms
+            )
+        )
+        DetailRow(
+            label = stringResource(R.string.feature_pokemondetail_impl_base_experience),
+            value = pokemonDetail.baseExperience.toString()
+        )
+        pokemonDetail.abilities.forEach { ability ->
+            DetailRow(
+                label = ability.label(),
+                // 이름을 아직 받지 못했으면 식별자를 그대로 보여준다.
+                value = ability.localizedName.of(language).ifEmpty { ability.name }
+            )
+        }
     }
 }
 
