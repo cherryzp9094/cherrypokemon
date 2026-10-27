@@ -29,7 +29,8 @@ import com.cherryzp.cherrypokemon.core.designsystem.theme.contrastRatio
  */
 @Composable
 fun DetailSectionLabel(text: String, modifier: Modifier = Modifier) {
-    Column(modifier.fillMaxWidth().padding(top = 22.dp, bottom = 10.dp)) {
+    // 구간 사이는 넉넉하게, 제목과 내용 사이는 촘촘하게. 그래야 제목이 아래 내용에 붙어 보인다.
+    Column(modifier.fillMaxWidth().padding(top = 28.dp, bottom = 12.dp)) {
         Text(
             text = text,
             // 자간은 labelMedium 토큰이 들고 있다.
@@ -52,13 +53,15 @@ fun DetailSectionLabel(text: String, modifier: Modifier = Modifier) {
 @Composable
 fun DetailRow(label: String, value: String, modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier.fillMaxWidth().padding(bottom = 8.dp),
+        // 줄 사이 간격은 묶는 쪽이 정한다. 여기서 아래 여백을 넣으면 마지막 줄 뒤에도 남아
+        // 다음 구간과의 간격이 들쭉날쭉해진다.
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.outline
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(text = value, style = MaterialTheme.typography.bodyMedium)
     }
@@ -91,7 +94,7 @@ fun StatBar(
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.outline
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
                 text = value.toString(),

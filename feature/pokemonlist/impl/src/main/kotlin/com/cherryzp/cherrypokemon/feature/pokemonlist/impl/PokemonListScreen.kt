@@ -43,6 +43,12 @@ import com.cherryzp.cherrypokemon.core.ui.PokemonSearchField
 import com.cherryzp.cherrypokemon.core.ui.R as CoreUiR
 import org.orbitmvi.orbit.compose.collectAsState
 
+/** 화면 좌우 여백. 제목·검색·카드가 모두 같은 선에서 시작하고 끝난다. */
+private val ScreenGutter = 16.dp
+
+/** 카드 사이 간격. 색 면끼리 붙으면 경계가 뭉개진다. */
+private val CardGap = 12.dp
+
 /** 두 여백을 합친다. `PaddingValues` 끼리는 더할 수 없어 직접 만든다. */
 private operator fun PaddingValues.plus(other: PaddingValues): PaddingValues = PaddingValues(
     start = calculateStartPadding(LayoutDirection.Ltr) +
@@ -142,7 +148,8 @@ private fun ListHeader(
         modifier = Modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(start = 16.dp, end = 8.dp, bottom = 10.dp)
+            // 좌우 여백은 그리드와 빈 화면이 정한다. 여기서 또 넣으면 카드와 줄이 어긋난다.
+            .padding(bottom = 4.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -158,7 +165,7 @@ private fun ListHeader(
         PokemonSearchField(
             query = query,
             onQueryChange = onQueryChange,
-            modifier = Modifier.padding(end = 8.dp, top = 2.dp)
+            modifier = Modifier.padding(top = 4.dp)
         )
     }
 }
@@ -173,13 +180,11 @@ private fun PokemonGrid(
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 160.dp),
         // 아래 제스처 바에 마지막 카드가 가리지 않게 한다.
-        contentPadding =
-            WindowInsets.navigationBars.asPaddingValues() + PaddingValues(bottom = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 8.dp)
+        contentPadding = WindowInsets.navigationBars.asPaddingValues() +
+            PaddingValues(start = ScreenGutter, end = ScreenGutter, bottom = CardGap),
+        horizontalArrangement = Arrangement.spacedBy(CardGap),
+        verticalArrangement = Arrangement.spacedBy(CardGap),
+        modifier = modifier.fillMaxSize()
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) { header() }
 
@@ -238,7 +243,7 @@ private fun HeaderedBox(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(modifier = modifier.fillMaxSize().padding(horizontal = ScreenGutter)) {
         header()
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             content()

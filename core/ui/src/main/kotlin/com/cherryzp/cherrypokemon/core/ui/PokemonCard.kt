@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -51,11 +52,19 @@ fun PokemonCard(
     val contentColor = contentColorOn(cardColor)
     val shape = MaterialTheme.shapes.large
 
+    // 어두운 배경에서는 색 그림자가 카드 둘레에 빛나는 테두리처럼 번진다. 밝은 테마에서만 쓴다.
+    val isLightTheme = MaterialTheme.colorScheme.surface.luminance() > 0.5f
+
     Card(
         onClick = onClick,
-        modifier = modifier
-            // 그림자도 카드 색을 따라가야 색 면이 떠 보인다. 회색 그림자는 색을 탁하게 만든다.
-            .shadow(6.dp, shape, ambientColor = cardColor, spotColor = cardColor),
+        modifier = modifier.then(
+            if (isLightTheme) {
+                // 그림자도 카드 색을 따라가야 색 면이 떠 보인다. 회색 그림자는 색을 탁하게 만든다.
+                Modifier.shadow(6.dp, shape, ambientColor = cardColor, spotColor = cardColor)
+            } else {
+                Modifier
+            }
+        ),
         shape = shape,
         colors = CardDefaults.cardColors(
             containerColor = cardColor,
