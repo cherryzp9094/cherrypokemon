@@ -11,6 +11,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.OrbitContainerHost
 import org.orbitmvi.orbit.annotation.OrbitExperimental
+import org.orbitmvi.orbit.syntax.Syntax
 import org.orbitmvi.orbit.viewmodel.orbitContainer
 
 /**
@@ -41,7 +42,13 @@ internal class PokemonDetailViewModel @AssistedInject constructor(
     private suspend fun observePokemonDetail() = subIntent {
         repeatOnSubscription {
             pokemonRepository.getPokemonDetailStream(pokeId).collect { detail ->
+                // 오프라인이면 갱신이 캐시보다 먼저 실패할 수 있다. 그때 refresh() 는 캐시가 없다고 보고
+                // 메시지를 건너뛰므로, 실패한 뒤 캐시가 처음 도착하는 이 순간에 대신 알린다.
+                val cacheArrivedAfterFailure = state.pokemonDetail == null &&
+                    detail != null &&
+                    state.refreshState == RefreshState.Failed
                 reduce { state.copy(pokemonDetail = detail) }
+                if (cacheArrivedAfterFailure) postRefreshFailedMessage()
             }
         }
     }
@@ -54,18 +61,19 @@ internal class PokemonDetailViewModel @AssistedInject constructor(
         } catch (e: IOException) {
             reduce { state.copy(refreshState = RefreshState.Failed) }
             // 캐시를 보여주는 중이면 화면을 바꾸지 않고 메시지만 띄운다.
-            if (state.pokemonDetail != null) {
-                postSideEffect(
-                    PokemonDetailSideEffect.ShowMessage(
-                        R.string.feature_pokemondetail_impl_error_refresh
-                    )
-                )
-            }
+            // 캐시가 아직 안 왔으면 observePokemonDetail() 이 도착할 때 띄운다.
+            if (state.pokemonDetail != null) postRefreshFailedMessage()
         }
     }
+
+    private suspend fun DetailSyntax.postRefreshFailedMessage() = postSideEffect(
+        PokemonDetailSideEffect.ShowMessage(R.string.feature_pokemondetail_impl_error_refresh)
+    )
 
     @AssistedFactory
     interface Factory {
         fun create(pokeId: Int): PokemonDetailViewModel
     }
 }
+
+private typealias DetailSyntax = Syntax<PokemonDetailUiState, PokemonDetailSideEffect>
