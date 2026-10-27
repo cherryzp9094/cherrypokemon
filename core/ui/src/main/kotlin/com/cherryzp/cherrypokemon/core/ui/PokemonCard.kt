@@ -1,5 +1,6 @@
 package com.cherryzp.cherrypokemon.core.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -21,6 +22,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -46,6 +49,7 @@ fun PokemonCard(
     imageUrl: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    selected: Boolean = false,
 ) {
     var backgroundColor by remember(imageUrl) { mutableStateOf<Color?>(null) }
     val cardColor = backgroundColor ?: MaterialTheme.colorScheme.surfaceVariant
@@ -57,7 +61,7 @@ fun PokemonCard(
 
     Card(
         onClick = onClick,
-        modifier = modifier.then(
+        modifier = modifier.semantics { this.selected = selected }.then(
             if (isLightTheme) {
                 // 그림자도 카드 색을 따라가야 색 면이 떠 보인다. 회색 그림자는 색을 탁하게 만든다.
                 Modifier.shadow(6.dp, shape, ambientColor = cardColor, spotColor = cardColor)
@@ -66,6 +70,8 @@ fun PokemonCard(
             }
         ),
         shape = shape,
+        // 두 칸 화면에서 오른쪽에 열린 포켓몬. 어떤 카드 색 위에서도 보이도록 화면 글자색으로 두른다.
+        border = if (selected) BorderStroke(3.dp, MaterialTheme.colorScheme.onSurface) else null,
         colors = CardDefaults.cardColors(
             containerColor = cardColor,
             contentColor = contentColor

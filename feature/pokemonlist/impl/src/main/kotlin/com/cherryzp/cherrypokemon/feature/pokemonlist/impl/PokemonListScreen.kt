@@ -61,6 +61,7 @@ private operator fun PaddingValues.plus(other: PaddingValues): PaddingValues = P
 @Composable
 internal fun PokemonListScreen(
     viewModel: PokemonListViewModel,
+    selectedPokeId: Int?,
     onPokemonClick: (pokeId: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -77,6 +78,7 @@ internal fun PokemonListScreen(
         onQueryChange = viewModel::setQuery,
         onLanguageClick = viewModel::setLanguage,
         onPokemonClick = onPokemonClick,
+        selectedPokeId = selectedPokeId,
         modifier = modifier
     )
 }
@@ -89,6 +91,7 @@ internal fun PokemonListScreen(
     onPokemonClick: (pokeId: Int) -> Unit,
     query: String = "",
     onQueryChange: (String) -> Unit = {},
+    selectedPokeId: Int? = null,
     modifier: Modifier = Modifier,
 ) {
     // 로컬 캐시(source)와 네트워크(mediator)를 나눠 본다. 캐시가 있으면 목록을 보여준다.
@@ -130,6 +133,7 @@ internal fun PokemonListScreen(
         else -> PokemonGrid(
             pokemons = pokemons,
             onPokemonClick = onPokemonClick,
+            selectedPokeId = selectedPokeId,
             header = header,
             modifier = modifier
         )
@@ -174,6 +178,7 @@ private fun ListHeader(
 private fun PokemonGrid(
     pokemons: LazyPagingItems<Pokemon>,
     onPokemonClick: (pokeId: Int) -> Unit,
+    selectedPokeId: Int?,
     header: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -201,7 +206,8 @@ private fun PokemonGrid(
                     name = pokemon.name,
                     number = pokemon.id,
                     imageUrl = pokemon.imageUrl,
-                    onClick = { onPokemonClick(pokemon.id) }
+                    onClick = { onPokemonClick(pokemon.id) },
+                    selected = pokemon.id == selectedPokeId
                 )
             }
         }
