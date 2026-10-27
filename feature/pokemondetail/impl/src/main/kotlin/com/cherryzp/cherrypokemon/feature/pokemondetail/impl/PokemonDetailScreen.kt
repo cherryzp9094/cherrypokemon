@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -45,6 +46,7 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -150,8 +152,11 @@ private fun PokemonDetailContent(
         ?: MaterialTheme.colorScheme.primary
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        // 가로 모드나 두 패널처럼 높이가 낮으면 머리말이 화면을 다 먹지 않게 줄인다.
+        // 세로 폰(높이 800dp 대)에서는 상한에 걸려 지금과 같다.
+        val bandHeight = (maxHeight * BAND_HEIGHT_RATIO).coerceIn(BAND_HEIGHT_MIN, BAND_HEIGHT_MAX)
         // 내용이 짧아도 둥근 면이 화면 끝까지 닿아야 띠 색이 아래에 남지 않는다.
-        val minContentHeight = maxHeight - BAND_HEIGHT
+        val minContentHeight = maxHeight - bandHeight
 
         Column(
             modifier = Modifier
@@ -162,6 +167,7 @@ private fun PokemonDetailContent(
             HeaderBand(
                 pokemonDetail = pokemonDetail,
                 accent = accent,
+                height = bandHeight,
                 onBackClick = onBackClick
             )
 
@@ -172,56 +178,76 @@ private fun PokemonDetailContent(
                     .defaultMinSize(minHeight = minContentHeight),
                 shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .padding(horizontal = 24.dp, vertical = 22.dp)
-                ) {
-                    NameBlock(pokemonDetail = pokemonDetail, language = language)
-
-                    if (!pokemonDetail.flavorText.isEmpty) {
-                        Text(
-                            text = pokemonDetail.flavorText.of(language),
-                            style = MaterialTheme.typography.bodyMedium,
-                            lineHeight = 22.sp,
-                            modifier = Modifier.padding(top = 14.dp)
-                        )
-                    }
-
-                    DetailSectionLabel(
-                        stringResource(R.string.feature_pokemondetail_impl_section_stats)
+                // 넓은 패널(펼친 폴드, 태블릿)에서 도감 설명 한 줄이 100자를 넘지 않게 폭을 묶는다.
+                Box(contentAlignment = Alignment.TopCenter) {
+                    DetailBody(
+                        pokemonDetail = pokemonDetail,
+                        language = language,
+                        accent = accent,
+                        onPokemonClick = onPokemonClick,
+                        modifier = Modifier
+                            .widthIn(max = CONTENT_MAX_WIDTH)
+                            .navigationBarsPadding()
+                            .padding(horizontal = 24.dp, vertical = 22.dp)
                     )
-                    StatsBlock(stats = pokemonDetail.stats, accent = accent)
-
-                    if (pokemonDetail.evolutionStages.size > 1) {
-                        DetailSectionLabel(
-                            stringResource(R.string.feature_pokemondetail_impl_section_evolution)
-                        )
-                        EvolutionBlock(
-                            stages = pokemonDetail.evolutionStages,
-                            currentId = pokemonDetail.id,
-                            language = language,
-                            onPokemonClick = onPokemonClick
-                        )
-                    }
-
-                    if (pokemonDetail.typeMatchups.isNotEmpty()) {
-                        DetailSectionLabel(
-                            stringResource(R.string.feature_pokemondetail_impl_section_matchups)
-                        )
-                        MatchupBlock(
-                            matchups = pokemonDetail.typeMatchups,
-                            language = language
-                        )
-                    }
-
-                    DetailSectionLabel(
-                        stringResource(R.string.feature_pokemondetail_impl_section_basics)
-                    )
-                    BasicsBlock(pokemonDetail = pokemonDetail, language = language)
                 }
             }
         }
+    }
+}
+
+/** 둥근 면 위의 본문. 이름부터 기본 정보까지 위에서 아래로 놓는다. */
+@Composable
+private fun DetailBody(
+    pokemonDetail: PokemonDetail,
+    language: AppLanguage,
+    accent: Color,
+    onPokemonClick: (pokeId: Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        NameBlock(pokemonDetail = pokemonDetail, language = language)
+
+        if (!pokemonDetail.flavorText.isEmpty) {
+            Text(
+                text = pokemonDetail.flavorText.of(language),
+                style = MaterialTheme.typography.bodyMedium,
+                lineHeight = 22.sp,
+                modifier = Modifier.padding(top = 14.dp)
+            )
+        }
+
+        DetailSectionLabel(
+            stringResource(R.string.feature_pokemondetail_impl_section_stats)
+        )
+        StatsBlock(stats = pokemonDetail.stats, accent = accent)
+
+        if (pokemonDetail.evolutionStages.size > 1) {
+            DetailSectionLabel(
+                stringResource(R.string.feature_pokemondetail_impl_section_evolution)
+            )
+            EvolutionBlock(
+                stages = pokemonDetail.evolutionStages,
+                currentId = pokemonDetail.id,
+                language = language,
+                onPokemonClick = onPokemonClick
+            )
+        }
+
+        if (pokemonDetail.typeMatchups.isNotEmpty()) {
+            DetailSectionLabel(
+                stringResource(R.string.feature_pokemondetail_impl_section_matchups)
+            )
+            MatchupBlock(
+                matchups = pokemonDetail.typeMatchups,
+                language = language
+            )
+        }
+
+        DetailSectionLabel(
+            stringResource(R.string.feature_pokemondetail_impl_section_basics)
+        )
+        BasicsBlock(pokemonDetail = pokemonDetail, language = language)
     }
 }
 
@@ -231,27 +257,54 @@ private val DETAIL_ROW_GAP = 8.dp
 /** 이 수까지는 진화 단계를 폭에 고르게 펼친다. 넘으면 가로로 스크롤한다. */
 private const val MAX_EVOLUTION_STAGES_WITHOUT_SCROLL = 4
 
-/** 머리말 띠 높이. 상태 바와 뒤로가기 버튼까지 덮는다. */
-private val BAND_HEIGHT = 300.dp
+/** 머리말 띠 높이. 화면 높이의 40% 를 쓰되 이 범위를 넘지 않는다. 상태 바와 뒤로가기 버튼까지 덮는다. */
+private const val BAND_HEIGHT_RATIO = 0.4f
+private val BAND_HEIGHT_MIN = 168.dp
+private val BAND_HEIGHT_MAX = 300.dp
+
+/** 이보다 낮은 머리말에서는 번호를 작게 쓴다. */
+private val COMPACT_BAND_HEIGHT = 220.dp
+
+/** 이미지는 머리말 높이의 72% 다. 300dp 띠에서 216dp. */
+private const val IMAGE_TO_BAND_RATIO = 0.72f
+
+/** 본문 최대 폭. 넘으면 가운데 놓는다. */
+private val CONTENT_MAX_WIDTH = 640.dp
 
 @Composable
-private fun HeaderBand(pokemonDetail: PokemonDetail, accent: Color, onBackClick: () -> Unit) {
+private fun HeaderBand(
+    pokemonDetail: PokemonDetail,
+    accent: Color,
+    height: Dp,
+    onBackClick: () -> Unit,
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(BAND_HEIGHT)
+            .height(height)
             // 아래 둥근 면보다 나중에 그려야 걸친 이미지가 가려지지 않는다.
             .zIndex(1f)
     ) {
         Text(
             text = "%03d".format(pokemonDetail.id),
-            style = MaterialTheme.typography.displayLarge,
+            // 낮은 머리말에서는 큰 번호가 뒤로가기 버튼까지 올라온다.
+            style = if (height < COMPACT_BAND_HEIGHT) {
+                MaterialTheme.typography.displaySmall
+            } else {
+                MaterialTheme.typography.displayLarge
+            },
             fontWeight = FontWeight.Black,
             color = accent.copy(alpha = 0.30f),
             maxLines = 1,
+            // 가운데 두면 머리말이 낮을 때(가로 모드) 뒤로가기 버튼과 겹친다. 아래쪽에 붙인다.
+            // 아래 여백은 둥근 면이 덮는 28dp 에 간격을 더한 값이다.
+            // 낮은 머리말에서는 뒤로가기 버튼(48dp) 오른쪽에서 시작해 겹칠 여지를 없앤다.
             modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(start = 24.dp, top = 32.dp)
+                .align(Alignment.BottomStart)
+                .padding(
+                    start = if (height < COMPACT_BAND_HEIGHT) 64.dp else 24.dp,
+                    bottom = 44.dp
+                )
         )
         // 머리말과 함께 올라간다. 고정하면 스크롤할 때 내용과 겹친다.
         BackButton(onBackClick = onBackClick, modifier = Modifier.align(Alignment.TopStart))
@@ -262,7 +315,7 @@ private fun HeaderBand(pokemonDetail: PokemonDetail, accent: Color, onBackClick:
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 16.dp)
-                .size(216.dp)
+                .size(height * IMAGE_TO_BAND_RATIO)
                 // 둥근 면 위로 걸치게 해서 두 영역이 이어져 보이게 한다.
                 .offset(y = 16.dp)
         )

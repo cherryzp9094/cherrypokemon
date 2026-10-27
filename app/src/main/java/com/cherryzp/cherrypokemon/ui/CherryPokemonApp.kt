@@ -7,10 +7,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.layout.PaneScaffoldDirective
+import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
@@ -59,9 +65,30 @@ fun CherryPokemonApp(
                 rememberViewModelStoreNavEntryDecorator()
             ),
             // 창이 넓으면 목록과 상세를 나란히 보여준다.
-            sceneStrategies = listOf(rememberListDetailSceneStrategy()),
+            sceneStrategies = listOf(rememberListDetailSceneStrategy(directive = paneDirective())),
             onBack = { navigator.goBack() },
             modifier = Modifier.padding(padding)
         )
     }
 }
+
+/**
+ * 몇 칸으로 나눌지 정한다.
+ *
+ * Material 기본값은 창 너비 840dp 부터 두 칸이다. 그러면 펼친 폴드(약 823dp)는 한 칸이 되어
+ * 폰 가로(923dp)보다 큰 화면이 더 나쁘게 나온다. 목록(약 320dp)과 상세(약 400dp)가 함께
+ * 들어가는 720dp 부터 두 칸으로 나눈다.
+ */
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+@Composable
+private fun paneDirective(): PaneScaffoldDirective {
+    val default = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo())
+    val widthDp = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp() }
+    return if (widthDp >= TWO_PANE_MIN_WIDTH && default.maxHorizontalPartitions < 2) {
+        default.copy(maxHorizontalPartitions = 2)
+    } else {
+        default
+    }
+}
+
+private val TWO_PANE_MIN_WIDTH = 720.dp

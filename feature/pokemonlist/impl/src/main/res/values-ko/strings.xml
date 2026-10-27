@@ -3,4 +3,6 @@
     <string name="feature_pokemonlist_impl_error_load">목록을 불러오지 못했습니다</string>
     <string name="feature_pokemonlist_impl_retry">다시 시도</string>
     <string name="feature_pokemonlist_impl_empty">표시할 포켓몬이 없습니다</string>
+    <string name="feature_pokemonlist_impl_detail_placeholder_title">포켓몬을 골라 보세요</string>
+    <string name="feature_pokemonlist_impl_detail_placeholder_body">종족값, 진화, 약점이 여기에 나옵니다.</string>
 </resources>

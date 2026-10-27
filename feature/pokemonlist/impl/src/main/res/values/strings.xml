@@ -4,4 +4,6 @@
     <string name="feature_pokemonlist_impl_error_load">Couldn\'t load the list</string>
     <string name="feature_pokemonlist_impl_retry">Retry</string>
     <string name="feature_pokemonlist_impl_empty">No Pokémon to show</string>
+    <string name="feature_pokemonlist_impl_detail_placeholder_title">Pick a Pokémon</string>
+    <string name="feature_pokemonlist_impl_detail_placeholder_body">Its stats, evolutions and weaknesses show up here.</string>
 </resources>
