@@ -24,6 +24,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.cherryzp.cherrypokemon.core.navigation.NavigationState
 import com.cherryzp.cherrypokemon.core.navigation.Navigator
 import com.cherryzp.cherrypokemon.core.navigation.rememberNavigationState
+import com.cherryzp.cherrypokemon.feature.pokemondetail.api.PokemonDetailNavKey
 import com.cherryzp.cherrypokemon.feature.pokemondetail.api.navigateToPokemonDetail
 import com.cherryzp.cherrypokemon.feature.pokemondetail.impl.navigation.pokemonDetailEntryBuilder
 import com.cherryzp.cherrypokemon.feature.pokemonlist.api.PokemonListNavKey
@@ -39,7 +40,11 @@ fun CherryPokemonApp(
     val snackbarHostState = remember { SnackbarHostState() }
 
     val entryProvider = entryProvider {
-        pokemonListEntryBuilder(onPokemonClick = navigator::navigateToPokemonDetail)
+        pokemonListEntryBuilder(
+            // 맨 위가 상세면 그 번호를 목록에 알려 준다. 한 칸 화면에서는 목록이 가려져 있어 상관없다.
+            selectedPokeId = { (navigationState.currentKey as? PokemonDetailNavKey)?.pokeId },
+            onPokemonClick = navigator::navigateToPokemonDetail
+        )
         pokemonDetailEntryBuilder(
             onBackClick = navigator::goBack,
             // 진화 체인에서 다른 포켓몬으로 간다. 뒤로가기로 돌아온다.
