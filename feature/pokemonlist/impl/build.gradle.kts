@@ -9,6 +9,7 @@ android {
 dependencies {
     implementation(projects.feature.pokemonlist.api)
 
+    implementation(libs.androidx.material.icons.core)
     implementation(libs.paging.compose)
     testImplementation(libs.paging.testing)
 

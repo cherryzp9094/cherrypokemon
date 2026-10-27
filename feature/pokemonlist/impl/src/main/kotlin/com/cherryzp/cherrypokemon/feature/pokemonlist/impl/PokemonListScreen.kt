@@ -178,7 +178,9 @@ private fun PokemonGrid(
     modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 160.dp),
+        // 두 칸 화면의 목록 칸은 360dp 남짓이다. 160dp 로 잡으면 여백을 빼고 한 열만 나와
+        // 카드 하나가 칸을 다 차지한다.
+        columns = GridCells.Adaptive(minSize = 150.dp),
         // 아래 제스처 바에 마지막 카드가 가리지 않게 한다.
         contentPadding = WindowInsets.navigationBars.asPaddingValues() +
             PaddingValues(start = ScreenGutter, end = ScreenGutter, bottom = CardGap),
