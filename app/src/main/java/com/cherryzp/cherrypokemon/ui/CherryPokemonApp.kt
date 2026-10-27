@@ -1,5 +1,6 @@
 package com.cherryzp.cherrypokemon.ui
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -40,7 +41,11 @@ fun CherryPokemonApp(
         )
     }
 
-    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { padding ->
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        // 화면마다 제 여백을 넣는다. 여기서 또 넣으면 상태 바 아래가 두 번 밀린다.
+        contentWindowInsets = WindowInsets(0)
+    ) { padding ->
         NavDisplay(
             backStack = navigationState.backStack,
             entryProvider = entryProvider,

@@ -1,6 +1,6 @@
 package com.cherryzp.cherrypokemon.core.ui
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,21 +14,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.cherryzp.cherrypokemon.core.designsystem.theme.contentColorOn
-import com.cherryzp.cherrypokemon.core.designsystem.theme.contrastRatio
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.components.rememberImageComponent
 import com.skydoves.landscapist.glide.GlideImage
 import com.skydoves.landscapist.palette.PalettePlugin
 
 /**
- * 목록에 쓰는 포켓몬 카드. 배경색은 이미지에서 뽑은 대표 색이다.
+ * 목록에 쓰는 포켓몬 카드.
  *
+ * 카드 전체를 이미지에서 뽑은 대표 색으로 칠한다. 도감 번호는 상세 화면 머리말처럼
+ * 큰 워터마크로 깔아 두 화면이 한 가족으로 보이게 하고, 이름은 아래에 둬 그림이 위를 차지하게 한다.
+ *
+ * 글자색은 배경에서 계산해 대비를 지킨다. 보조 글자는 회색이 아니라 같은 전경색을 옅게 쓴다.
  * 도메인 모델이 아니라 필요한 값만 받는다.
  */
 @Composable
@@ -42,26 +49,30 @@ fun PokemonCard(
     var backgroundColor by remember(imageUrl) { mutableStateOf<Color?>(null) }
     val cardColor = backgroundColor ?: MaterialTheme.colorScheme.surfaceVariant
     val contentColor = contentColorOn(cardColor)
+    val shape = MaterialTheme.shapes.large
 
     Card(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier
+            // 그림자도 카드 색을 따라가야 색 면이 떠 보인다. 회색 그림자는 색을 탁하게 만든다.
+            .shadow(6.dp, shape, ambientColor = cardColor, spotColor = cardColor),
+        shape = shape,
         colors = CardDefaults.cardColors(
             containerColor = cardColor,
             contentColor = contentColor
         )
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
+        // 카드 높이를 고정해야 이름 길이가 달라도 줄이 가지런하다.
+        Box(modifier = Modifier.fillMaxWidth().aspectRatio(0.8f)) {
             Text(
-                text = stringResource(R.string.core_ui_pokemon_number, number),
-                style = MaterialTheme.typography.labelLarge
-            )
-            Text(
-                text = name,
-                style = MaterialTheme.typography.titleMedium
+                text = "%03d".format(number),
+                style = MaterialTheme.typography.displayMedium,
+                fontWeight = FontWeight.Black,
+                color = contentColor.copy(alpha = 0.16f),
+                maxLines = 1,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(end = 10.dp, top = 2.dp)
             )
             GlideImage(
                 imageModel = { imageUrl },
@@ -77,11 +88,31 @@ fun PokemonCard(
                 },
                 // 기본값인 Crop 은 이미지를 영역에 맞춰 잘라낸다.
                 imageOptions = ImageOptions(contentScale = ContentScale.Fit),
-                // 로딩 전후 크기가 같아야 목록이 튀지 않는다.
+                // 그림은 위 3/4 에 둔다. 이름 자리를 침범하면 글자가 그림에 묻힌다.
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .padding(top = 22.dp)
+                    .fillMaxWidth(0.8f)
                     .aspectRatio(1f)
             )
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(14.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.core_ui_pokemon_number, number),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = contentColor.copy(alpha = 0.72f)
+                )
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }

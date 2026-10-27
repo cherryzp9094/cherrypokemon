@@ -40,6 +40,16 @@ class FakePokemonRepository @Inject constructor() : PokemonRepository {
 
     override fun getPokemonsStream(): Flow<PagingData<Pokemon>> = pokemons
 
+    override fun searchPokemonsStream(query: String): Flow<PagingData<Pokemon>> = pokemons
+
+    /** 몇 번 불렸는지. 검색이 색인을 채우는지 본다. */
+    var indexCount: Int = 0
+        private set
+
+    override suspend fun ensurePokemonIndex() {
+        indexCount++
+    }
+
     private companion object {
         val loadedStates = LoadStates(
             refresh = LoadState.NotLoading(endOfPaginationReached = true),

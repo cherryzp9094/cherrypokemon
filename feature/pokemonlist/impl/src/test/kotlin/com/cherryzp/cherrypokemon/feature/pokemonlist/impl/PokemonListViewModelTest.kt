@@ -56,6 +56,41 @@ class PokemonListViewModelTest {
     }
 
     @Test
+    fun setQuery_showsQueryAndFillsIndex() = runTest {
+        val viewModel = PokemonListViewModel(pokemonRepository, userDataRepository)
+
+        viewModel.test(this) {
+            runOnCreate()
+            expectInitialState()
+
+            viewModel.setQuery("pika")
+
+            expectState { copy(query = "pika") }
+            cancelAndIgnoreRemainingItems()
+        }
+        // 검색은 로컬에서만 하므로 전체 색인이 있어야 한다.
+        assertEquals(1, pokemonRepository.indexCount)
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
+    fun setQuery_blank_doesNotFillIndex() = runTest {
+        val viewModel = PokemonListViewModel(pokemonRepository, userDataRepository)
+
+        viewModel.test(this) {
+            runOnCreate()
+            expectInitialState()
+
+            viewModel.setQuery("   ")
+
+            expectState { copy(query = "   ") }
+            cancelAndIgnoreRemainingItems()
+        }
+        assertEquals(0, pokemonRepository.indexCount)
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
     fun pokemons_repositoryEmpty_emitsNothing() = runTest {
         pokemonRepository.sendPokemons(emptyList())
         val viewModel = PokemonListViewModel(pokemonRepository, userDataRepository)
