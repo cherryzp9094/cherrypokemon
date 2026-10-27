@@ -52,6 +52,54 @@ class PokemonDetailViewModelTest {
     }
 
     @Test
+    fun onCreate_networkFailsBeforeCacheArrives_stillSendsMessage() = runTest {
+        // 오프라인이면 갱신은 수십 ms 만에 실패하고, 로컬 캐시는 그 뒤에 도착할 수 있다.
+        pokemonRepository.refreshError = IOException()
+        val viewModel = PokemonDetailViewModel(pokeId = 1, pokemonRepository = pokemonRepository)
+
+        viewModel.test(this) {
+            runOnCreate()
+            expectState { copy(refreshState = RefreshState.Failed) }
+            expectNoItems()
+
+            pokemonRepository.sendPokemonDetail(testPokemonDetail)
+
+            expectState { copy(pokemonDetail = testPokemonDetail) }
+            expectSideEffect(
+                PokemonDetailSideEffect.ShowMessage(
+                    R.string.feature_pokemondetail_impl_error_refresh
+                )
+            )
+            cancelAndIgnoreRemainingItems()
+        }
+    }
+
+    @Test
+    fun cacheUpdatedAgainAfterFailure_doesNotRepeatMessage() = runTest {
+        pokemonRepository.refreshError = IOException()
+        val viewModel = PokemonDetailViewModel(pokeId = 1, pokemonRepository = pokemonRepository)
+
+        viewModel.test(this) {
+            runOnCreate()
+            expectState { copy(refreshState = RefreshState.Failed) }
+            pokemonRepository.sendPokemonDetail(testPokemonDetail)
+            expectState { copy(pokemonDetail = testPokemonDetail) }
+            expectSideEffect(
+                PokemonDetailSideEffect.ShowMessage(
+                    R.string.feature_pokemondetail_impl_error_refresh
+                )
+            )
+
+            // 캐시가 다시 흘러와도(이름 캐시가 채워지는 등) 메시지는 한 번만 뜬다.
+            val renamed = testPokemonDetail.copy(baseExperience = 65)
+            pokemonRepository.sendPokemonDetail(renamed)
+            expectState { copy(pokemonDetail = renamed) }
+            expectNoItems()
+            cancelAndIgnoreRemainingItems()
+        }
+    }
+
+    @Test
     fun retry_networkErrorWithCache_keepsCacheAndSendsMessage() = runTest {
         val viewModel = PokemonDetailViewModel(pokeId = 1, pokemonRepository = pokemonRepository)
 
