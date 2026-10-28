@@ -25,6 +25,7 @@ class AndroidFeatureImplConventionPlugin : Plugin<Project> {
                     libs.findLibrary("androidx-hilt-lifecycle-viewmodel-compose").get()
                 )
                 "implementation"(libs.findLibrary("androidx-lifecycle-runtime-ktx").get())
+                "implementation"(libs.findLibrary("androidx-lifecycle-viewmodel-savedstate").get())
 
                 "implementation"(libs.findLibrary("orbit-viewmodel").get())
                 "implementation"(libs.findLibrary("orbit-compose").get())

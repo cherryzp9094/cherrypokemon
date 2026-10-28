@@ -1,5 +1,6 @@
 package com.cherryzp.cherrypokemon.feature.pokemonlist.impl
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -13,7 +14,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -24,11 +24,15 @@ import org.orbitmvi.orbit.viewmodel.orbitContainer
 class PokemonListViewModel @Inject constructor(
     private val pokemonRepository: PokemonRepository,
     private val userDataRepository: UserDataRepository,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel(),
     OrbitContainerHost<PokemonListUiState, PokemonListUiState, PokemonListSideEffect> {
 
+    // 검색어는 프로세스가 죽었다 살아나도 남아야 한다. 회전만 버티는 메모리 값으로는 모자라다.
+    private val query = savedStateHandle.getMutableStateFlow(QUERY_KEY, "")
+
     override val container = orbitContainer<PokemonListUiState, PokemonListSideEffect>(
-        initialState = PokemonListUiState()
+        initialState = PokemonListUiState(query = query.value)
     ) {
         repeatOnSubscription {
             userDataRepository.userData.collect { userData ->
@@ -37,8 +41,6 @@ class PokemonListViewModel @Inject constructor(
             }
         }
     }
-
-    private val query = MutableStateFlow("")
 
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     val pokemons: Flow<PagingData<Pokemon>> = query
@@ -74,5 +76,6 @@ class PokemonListViewModel @Inject constructor(
 
     private companion object {
         const val SEARCH_DEBOUNCE_MILLIS = 250L
+        const val QUERY_KEY = "query"
     }
 }

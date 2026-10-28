@@ -1,5 +1,6 @@
 package com.cherryzp.cherrypokemon.feature.pokemonlist.impl
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.paging.testing.asSnapshot
 import com.cherryzp.cherrypokemon.core.model.AppLanguage
@@ -30,7 +31,8 @@ class PokemonListViewModelTest {
                 Pokemon(id = 4, name = "charmander", imageUrl = "https://example.com/4.png")
             )
         )
-        val viewModel = PokemonListViewModel(pokemonRepository, userDataRepository)
+        val viewModel =
+            PokemonListViewModel(pokemonRepository, userDataRepository, SavedStateHandle())
 
         val items = viewModel.pokemons.asSnapshot()
 
@@ -41,7 +43,8 @@ class PokemonListViewModelTest {
 
     @Test
     fun setLanguage_savesAndShowsChosenLanguage() = runTest {
-        val viewModel = PokemonListViewModel(pokemonRepository, userDataRepository)
+        val viewModel =
+            PokemonListViewModel(pokemonRepository, userDataRepository, SavedStateHandle())
 
         viewModel.test(this) {
             runOnCreate()
@@ -57,7 +60,8 @@ class PokemonListViewModelTest {
 
     @Test
     fun setQuery_showsQueryAndFillsIndex() = runTest {
-        val viewModel = PokemonListViewModel(pokemonRepository, userDataRepository)
+        val viewModel =
+            PokemonListViewModel(pokemonRepository, userDataRepository, SavedStateHandle())
 
         viewModel.test(this) {
             runOnCreate()
@@ -75,7 +79,8 @@ class PokemonListViewModelTest {
 
     @Test
     fun setQuery_blank_doesNotFillIndex() = runTest {
-        val viewModel = PokemonListViewModel(pokemonRepository, userDataRepository)
+        val viewModel =
+            PokemonListViewModel(pokemonRepository, userDataRepository, SavedStateHandle())
 
         viewModel.test(this) {
             runOnCreate()
@@ -91,9 +96,41 @@ class PokemonListViewModelTest {
     }
 
     @Test
+    fun savedQuery_isRestoredIntoState() = runTest {
+        // 프로세스가 죽었다 살아나면 시스템이 저장해 둔 값으로 핸들을 채워 준다.
+        val viewModel = PokemonListViewModel(
+            pokemonRepository,
+            userDataRepository,
+            SavedStateHandle(mapOf("query" to "pika"))
+        )
+
+        assertEquals("pika", viewModel.container.stateFlow.value.query)
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
+    fun setQuery_writesToSavedStateHandle() = runTest {
+        val savedStateHandle = SavedStateHandle()
+        val viewModel =
+            PokemonListViewModel(pokemonRepository, userDataRepository, savedStateHandle)
+
+        viewModel.test(this) {
+            runOnCreate()
+            expectInitialState()
+            viewModel.setQuery("mew")
+            expectState { copy(query = "mew") }
+            cancelAndIgnoreRemainingItems()
+        }
+
+        assertEquals("mew", savedStateHandle.get<String>("query"))
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
     fun pokemons_repositoryEmpty_emitsNothing() = runTest {
         pokemonRepository.sendPokemons(emptyList())
-        val viewModel = PokemonListViewModel(pokemonRepository, userDataRepository)
+        val viewModel =
+            PokemonListViewModel(pokemonRepository, userDataRepository, SavedStateHandle())
 
         assertEquals(emptyList<Pokemon>(), viewModel.pokemons.asSnapshot())
         viewModel.viewModelScope.cancel()
