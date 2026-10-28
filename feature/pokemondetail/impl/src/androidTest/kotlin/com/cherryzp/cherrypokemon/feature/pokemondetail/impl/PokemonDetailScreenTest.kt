@@ -252,11 +252,40 @@ class PokemonDetailScreenTest {
         assertTrue(backed)
     }
 
+    @Test
+    fun twoPane_hidesBackButton() {
+        setScreen(
+            uiState = PokemonDetailUiState(pokemonDetail, RefreshState.Idle),
+            showBackButton = false
+        )
+
+        composeTestRule
+            .onNodeWithContentDescription(
+                resources.getString(R.string.feature_pokemondetail_impl_back)
+            )
+            .assertDoesNotExist()
+    }
+
+    @Test
+    fun twoPane_loading_hidesBackButton() {
+        setScreen(
+            uiState = PokemonDetailUiState(pokemonDetail = null, RefreshState.Refreshing),
+            showBackButton = false
+        )
+
+        composeTestRule
+            .onNodeWithContentDescription(
+                resources.getString(R.string.feature_pokemondetail_impl_back)
+            )
+            .assertDoesNotExist()
+    }
+
     private fun setScreen(
         uiState: PokemonDetailUiState,
         onRetryClick: () -> Unit = {},
         onBackClick: () -> Unit = {},
         onPokemonClick: (Int) -> Unit = {},
+        showBackButton: Boolean = true,
     ) {
         composeTestRule.setContent {
             CherryPokemonTheme {
@@ -264,7 +293,8 @@ class PokemonDetailScreenTest {
                     uiState = uiState,
                     onRetryClick = onRetryClick,
                     onBackClick = onBackClick,
-                    onPokemonClick = onPokemonClick
+                    onPokemonClick = onPokemonClick,
+                    showBackButton = showBackButton
                 )
             }
         }
