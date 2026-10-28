@@ -74,6 +74,7 @@ internal fun PokemonDetailScreen(
     onPokemonClick: (pokeId: Int) -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
+    showBackButton: Boolean = true,
 ) {
     val uiState by viewModel.collectAsState()
     // 설정이 바뀌면 문자열도 다시 읽어야 한다.
@@ -91,10 +92,15 @@ internal fun PokemonDetailScreen(
         onRetryClick = viewModel::retry,
         onBackClick = onBackClick,
         onPokemonClick = onPokemonClick,
-        modifier = modifier
+        modifier = modifier,
+        showBackButton = showBackButton
     )
 }
 
+/**
+ * @param showBackButton 두 칸 화면에서는 false. 목록이 옆에 있어 돌아갈 곳이 없고,
+ * 화살표를 누르면 안내 화면만 남아 오히려 길을 잃는다.
+ */
 @Composable
 internal fun PokemonDetailScreen(
     uiState: PokemonDetailUiState,
@@ -102,6 +108,7 @@ internal fun PokemonDetailScreen(
     onBackClick: () -> Unit,
     onPokemonClick: (pokeId: Int) -> Unit = {},
     modifier: Modifier = Modifier,
+    showBackButton: Boolean = true,
 ) {
     // 머리말 띠가 상태 바까지 올라가야 해서 Scaffold 대신 직접 겹쳐 그린다.
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -113,12 +120,13 @@ internal fun PokemonDetailScreen(
             uiState.pokemonDetail != null -> PokemonDetailContent(
                 pokemonDetail = uiState.pokemonDetail,
                 onPokemonClick = onPokemonClick,
-                onBackClick = onBackClick
+                onBackClick = onBackClick,
+                showBackButton = showBackButton
             )
         }
 
         // 로딩·에러일 때는 머리말이 없어서 뒤로가기를 따로 그린다.
-        if (uiState.pokemonDetail == null) {
+        if (showBackButton && uiState.pokemonDetail == null) {
             BackButton(onBackClick = onBackClick, modifier = Modifier.align(Alignment.TopStart))
         }
     }
@@ -144,6 +152,7 @@ private fun PokemonDetailContent(
     pokemonDetail: PokemonDetail,
     onPokemonClick: (pokeId: Int) -> Unit,
     onBackClick: () -> Unit,
+    showBackButton: Boolean,
 ) {
     // 위에서 이미 고른 언어로 리소스를 읽고 있다.
     val language = AppLanguage.fromTag(LocalConfiguration.current.locales[0]?.toLanguageTag())
@@ -168,7 +177,8 @@ private fun PokemonDetailContent(
                 pokemonDetail = pokemonDetail,
                 accent = accent,
                 height = bandHeight,
-                onBackClick = onBackClick
+                onBackClick = onBackClick,
+                showBackButton = showBackButton
             )
 
             // 내용은 위쪽 모서리를 둥글린 면에 올려 이미지 영역과 나눈다.
@@ -277,6 +287,7 @@ private fun HeaderBand(
     accent: Color,
     height: Dp,
     onBackClick: () -> Unit,
+    showBackButton: Boolean,
 ) {
     Box(
         modifier = Modifier
@@ -302,12 +313,14 @@ private fun HeaderBand(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(
-                    start = if (height < COMPACT_BAND_HEIGHT) 64.dp else 24.dp,
+                    start = if (showBackButton && height < COMPACT_BAND_HEIGHT) 64.dp else 24.dp,
                     bottom = 44.dp
                 )
         )
         // 머리말과 함께 올라간다. 고정하면 스크롤할 때 내용과 겹친다.
-        BackButton(onBackClick = onBackClick, modifier = Modifier.align(Alignment.TopStart))
+        if (showBackButton) {
+            BackButton(onBackClick = onBackClick, modifier = Modifier.align(Alignment.TopStart))
+        }
         GlideImage(
             imageModel = { pokemonDetail.imageUrl },
             // 기본값인 Crop 은 이미지를 영역에 맞춰 잘라낸다. 전체가 보여야 한다.

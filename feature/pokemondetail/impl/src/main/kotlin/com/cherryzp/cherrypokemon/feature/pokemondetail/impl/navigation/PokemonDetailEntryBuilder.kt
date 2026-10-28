@@ -10,9 +10,14 @@ import com.cherryzp.cherrypokemon.feature.pokemondetail.api.PokemonDetailNavKey
 import com.cherryzp.cherrypokemon.feature.pokemondetail.impl.PokemonDetailScreen
 import com.cherryzp.cherrypokemon.feature.pokemondetail.impl.PokemonDetailViewModel
 
-/** 상세 화면 진입점. NavKey 의 도감 번호를 ViewModel 에 넘긴다. */
+/**
+ * 상세 화면 진입점. NavKey 의 도감 번호를 ViewModel 에 넘긴다.
+ *
+ * @param isTwoPane 목록과 나란히 그려지는지. 그러면 뒤로가기 화살표를 숨긴다.
+ */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 fun EntryProviderScope<NavKey>.pokemonDetailEntryBuilder(
+    isTwoPane: () -> Boolean,
     onBackClick: () -> Unit,
     onPokemonClick: (pokeId: Int) -> Unit,
     snackbarHostState: SnackbarHostState,
@@ -24,7 +29,8 @@ fun EntryProviderScope<NavKey>.pokemonDetailEntryBuilder(
             ) { factory -> factory.create(key.pokeId) },
             onBackClick = onBackClick,
             onPokemonClick = onPokemonClick,
-            snackbarHostState = snackbarHostState
+            snackbarHostState = snackbarHostState,
+            showBackButton = !isTwoPane()
         )
     }
 }

@@ -38,6 +38,9 @@ fun CherryPokemonApp(
 ) {
     val navigator = remember(navigationState) { Navigator(navigationState) }
     val snackbarHostState = remember { SnackbarHostState() }
+    val directive = paneDirective()
+    // 목록은 항상 백스택 바닥에 있으므로, 두 칸이 허용되면 상세는 목록 옆에 그려진다.
+    val isTwoPane = directive.maxHorizontalPartitions >= 2
 
     val entryProvider = entryProvider {
         pokemonListEntryBuilder(
@@ -46,6 +49,7 @@ fun CherryPokemonApp(
             onPokemonClick = navigator::navigateToPokemonDetail
         )
         pokemonDetailEntryBuilder(
+            isTwoPane = { isTwoPane },
             onBackClick = navigator::goBack,
             // 진화 체인에서 다른 포켓몬으로 간다. 뒤로가기로 돌아온다.
             onPokemonClick = navigator::navigateToPokemonDetail,
@@ -70,7 +74,7 @@ fun CherryPokemonApp(
                 rememberViewModelStoreNavEntryDecorator()
             ),
             // 창이 넓으면 목록과 상세를 나란히 보여준다.
-            sceneStrategies = listOf(rememberListDetailSceneStrategy(directive = paneDirective())),
+            sceneStrategies = listOf(rememberListDetailSceneStrategy(directive = directive)),
             onBack = { navigator.goBack() },
             modifier = Modifier.padding(padding)
         )
