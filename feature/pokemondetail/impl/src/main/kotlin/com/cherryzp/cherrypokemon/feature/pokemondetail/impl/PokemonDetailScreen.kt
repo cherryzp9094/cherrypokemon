@@ -9,17 +9,23 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -35,13 +41,16 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -60,6 +69,7 @@ import com.cherryzp.cherrypokemon.core.model.TypeMatchup
 import com.cherryzp.cherrypokemon.core.ui.DetailRow
 import com.cherryzp.cherrypokemon.core.ui.DetailSectionLabel
 import com.cherryzp.cherrypokemon.core.ui.StatBar
+import com.cherryzp.cherrypokemon.core.ui.StatusBarProtection
 import com.cherryzp.cherrypokemon.core.ui.TypeChip
 import com.cherryzp.cherrypokemon.core.ui.color
 import com.skydoves.landscapist.ImageOptions
@@ -167,11 +177,21 @@ private fun PokemonDetailContent(
         // 내용이 짧아도 둥근 면이 화면 끝까지 닿아야 띠 색이 아래에 남지 않는다.
         val minContentHeight = maxHeight - bandHeight
 
+        val scrollState = rememberScrollState()
+        // 둥근 면이 상태 바까지 올라오면 글이 시계와 겹친다. 그때부터 보호막을 깐다.
+        // 머리말 띠가 상태 바 뒤에 있을 때는 띠 색이 아니라서 끈다.
+        val density = LocalDensity.current
+        val statusBarTop = WindowInsets.statusBars.getTop(density)
+        val bandHeightPx = with(density) { bandHeight.roundToPx() }
+        val contentReachesStatusBar by remember(bandHeightPx, statusBarTop) {
+            derivedStateOf { scrollState.value >= bandHeightPx - statusBarTop }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(accent.copy(alpha = 0.12f))
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
         ) {
             HeaderBand(
                 pokemonDetail = pokemonDetail,
@@ -203,6 +223,14 @@ private fun PokemonDetailContent(
                 }
             }
         }
+
+        StatusBarProtection(
+            visible = contentReachesStatusBar,
+            // 머리말 띠보다 위에 그려야 한다.
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .zIndex(2f)
+        )
     }
 }
 
@@ -295,6 +323,9 @@ private fun HeaderBand(
             .height(height)
             // 아래 둥근 면보다 나중에 그려야 걸친 이미지가 가려지지 않는다.
             .zIndex(1f)
+            // 가로 모드에서 3버튼 내비게이션 바나 카메라 구멍이 옆에 온다. 띠 색은 그 뒤까지 칠하되
+            // 번호·버튼·이미지는 피한다.
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
     ) {
         Text(
             text = "%03d".format(pokemonDetail.id),

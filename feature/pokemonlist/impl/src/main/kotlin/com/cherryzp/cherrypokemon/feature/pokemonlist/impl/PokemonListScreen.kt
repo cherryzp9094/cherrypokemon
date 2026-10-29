@@ -11,9 +11,12 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -41,6 +44,7 @@ import com.cherryzp.cherrypokemon.core.ui.LanguageToggle
 import com.cherryzp.cherrypokemon.core.ui.PokemonCard
 import com.cherryzp.cherrypokemon.core.ui.PokemonSearchField
 import com.cherryzp.cherrypokemon.core.ui.R as CoreUiR
+import com.cherryzp.cherrypokemon.core.ui.StatusBarProtection
 import org.orbitmvi.orbit.compose.collectAsState
 
 /** 화면 좌우 여백. 제목·검색·카드가 모두 같은 선에서 시작하고 끝난다. */
@@ -94,9 +98,6 @@ internal fun PokemonListScreen(
     selectedPokeId: Int? = null,
     modifier: Modifier = Modifier,
 ) {
-    // 로컬 캐시(source)와 네트워크(mediator)를 나눠 본다. 캐시가 있으면 목록을 보여준다.
-    val localRefresh = pokemons.loadState.source.refresh
-    val remoteRefresh = pokemons.loadState.mediator?.refresh
     val header: @Composable () -> Unit = {
         ListHeader(
             language = language,
@@ -106,19 +107,41 @@ internal fun PokemonListScreen(
         )
     }
 
+    Box(modifier = modifier) {
+        PokemonListBody(
+            pokemons = pokemons,
+            header = header,
+            query = query,
+            onPokemonClick = onPokemonClick,
+            selectedPokeId = selectedPokeId
+        )
+        // 머리말이 스크롤되어 올라가면 카드가 상태 바 아이콘과 겹친다.
+        StatusBarProtection(modifier = Modifier.align(Alignment.TopCenter))
+    }
+}
+
+@Composable
+private fun PokemonListBody(
+    pokemons: LazyPagingItems<Pokemon>,
+    header: @Composable () -> Unit,
+    query: String,
+    onPokemonClick: (pokeId: Int) -> Unit,
+    selectedPokeId: Int?,
+) {
+    // 로컬 캐시(source)와 네트워크(mediator)를 나눠 본다. 캐시가 있으면 목록을 보여준다.
+    val localRefresh = pokemons.loadState.source.refresh
+    val remoteRefresh = pokemons.loadState.mediator?.refresh
+
     when {
-        localRefresh is LoadState.Loading -> HeaderedBox(header, modifier) {
+        localRefresh is LoadState.Loading -> HeaderedBox(header) {
             CircularProgressIndicator()
         }
 
-        pokemons.itemCount == 0 && remoteRefresh is LoadState.Error -> HeaderedBox(
-            header,
-            modifier
-        ) {
+        pokemons.itemCount == 0 && remoteRefresh is LoadState.Error -> HeaderedBox(header) {
             ErrorContent(onRetryClick = pokemons::retry)
         }
 
-        pokemons.itemCount == 0 -> HeaderedBox(header, modifier) {
+        pokemons.itemCount == 0 -> HeaderedBox(header) {
             Text(
                 text = if (query.isBlank()) {
                     stringResource(R.string.feature_pokemonlist_impl_empty)
@@ -134,8 +157,7 @@ internal fun PokemonListScreen(
             pokemons = pokemons,
             onPokemonClick = onPokemonClick,
             selectedPokeId = selectedPokeId,
-            header = header,
-            modifier = modifier
+            header = header
         )
     }
 }
@@ -186,8 +208,9 @@ private fun PokemonGrid(
         // 두 칸 화면의 목록 칸은 360dp 남짓이다. 160dp 로 잡으면 여백을 빼고 한 열만 나와
         // 카드 하나가 칸을 다 차지한다.
         columns = GridCells.Adaptive(minSize = 150.dp),
-        // 아래 제스처 바에 마지막 카드가 가리지 않게 한다.
-        contentPadding = WindowInsets.navigationBars.asPaddingValues() +
+        // 아래 제스처 바와 키보드에 마지막 카드가 가리지 않게 한다. 창은 키보드에 맞춰 줄지 않으므로
+        // 여기서 비워 두지 않으면 검색 중에 마지막 줄까지 올릴 수 없다.
+        contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime).asPaddingValues() +
             PaddingValues(start = ScreenGutter, end = ScreenGutter, bottom = CardGap),
         horizontalArrangement = Arrangement.spacedBy(CardGap),
         verticalArrangement = Arrangement.spacedBy(CardGap),
@@ -246,12 +269,14 @@ private fun ErrorContent(onRetryClick: () -> Unit) {
 
 /** 목록이 없을 때도 제목과 토글은 보여야 한다. */
 @Composable
-private fun HeaderedBox(
-    header: @Composable () -> Unit,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
-    Column(modifier = modifier.fillMaxSize().padding(horizontal = ScreenGutter)) {
+private fun HeaderedBox(header: @Composable () -> Unit, content: @Composable () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            // 키보드가 열려 있으면 그 위 남은 영역의 가운데에 둔다.
+            .imePadding()
+            .padding(horizontal = ScreenGutter)
+    ) {
         header()
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             content()
