@@ -60,6 +60,8 @@ data class EvolutionChainMemberWithName(
     @ColumnInfo(name = "known_move_type_korean") val knownMoveTypeKorean: String? = null,
     @ColumnInfo(name = "known_move_type_english") val knownMoveTypeEnglish: String? = null,
     val location: String? = null,
+    @ColumnInfo(name = "known_move_korean") val knownMoveKorean: String? = null,
+    @ColumnInfo(name = "known_move_english") val knownMoveEnglish: String? = null,
 )
 
 fun List<EvolutionChainMemberWithName>.asExternalModel(): List<EvolutionStage> = map { member ->
@@ -93,6 +95,10 @@ private fun EvolutionChainMemberWithName.condition(): EvolutionCondition? {
         minAffection = minAffection,
         timeOfDay = timeOfDay,
         knownMove = knownMove,
+        knownMoveName = LocalizedText(
+            korean = knownMoveKorean.orEmpty(),
+            english = knownMoveEnglish.orEmpty()
+        ),
         knownMoveType = PokemonType.entries.firstOrNull { it.name == knownMoveType },
         knownMoveTypeName = LocalizedText(
             korean = knownMoveTypeKorean.orEmpty(),

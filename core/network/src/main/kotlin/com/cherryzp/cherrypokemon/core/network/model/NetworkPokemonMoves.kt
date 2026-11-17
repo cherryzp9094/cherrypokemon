@@ -50,3 +50,15 @@ data class NetworkGraphQlLanguageName(
     val name: String = "",
     @SerialName("language_id") val languageId: Int = 0,
 )
+
+/** `/move/{name}` 응답. 진화 조건에 나오는 기술처럼 하나만 필요할 때 쓴다. */
+@Serializable
+data class NetworkMoveDetail(
+    val name: String = "",
+    val power: Int? = null,
+    val accuracy: Int? = null,
+    val pp: Int? = null,
+    val type: NetworkNamedResource? = null,
+    @SerialName("damage_class") val damageClass: NetworkNamedResource? = null,
+    val names: List<NetworkSpeciesName> = emptyList(),
+)

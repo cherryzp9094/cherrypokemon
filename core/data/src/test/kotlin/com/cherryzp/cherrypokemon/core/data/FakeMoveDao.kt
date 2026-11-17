@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.combine
 class FakeMoveDao : MoveDao {
 
     private val moves = MutableStateFlow(emptyMap<String, MoveEntity>())
+
+    val savedMoves: Map<String, MoveEntity> get() = moves.value
     private val pokemonMoves = MutableStateFlow(emptySet<PokemonMoveEntity>())
 
     override fun getPokemonMoves(pokemonId: Int): Flow<List<PokemonMoveWithDetail>> =

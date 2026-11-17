@@ -2,6 +2,7 @@ package com.cherryzp.cherrypokemon.core.network
 
 import com.cherryzp.cherrypokemon.core.network.model.NetworkAbility
 import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionChain
+import com.cherryzp.cherrypokemon.core.network.model.NetworkMoveDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonMoves
@@ -33,6 +34,9 @@ interface PokemonNetworkDataSource {
 
     /** 진화 도구 같은 아이템의 언어별 이름. */
     suspend fun getItem(name: String): NetworkNamedEntry
+
+    /** 기술 하나의 언어별 이름과 정보. */
+    suspend fun getMove(name: String): NetworkMoveDetail
 
     /** 레벨업으로 배우는 기술과 그 기술 정보. 본편 게임 것만 GraphQL 한 번으로 받는다. */
     suspend fun getPokemonMoves(pokeId: Int): NetworkPokemonMoves

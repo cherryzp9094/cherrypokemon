@@ -3,6 +3,7 @@ package com.cherryzp.cherrypokemon.core.data.model
 import com.cherryzp.cherrypokemon.core.database.model.MoveEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonMoveEntity
 import com.cherryzp.cherrypokemon.core.model.PokemonType
+import com.cherryzp.cherrypokemon.core.network.model.NetworkMoveDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonMoves
 
 /** 최신 본편부터. 이 포켓몬 기술이 있는 가장 앞 게임 것만 쓴다. 게임마다 레벨과 기술이 다르다. */
@@ -61,3 +62,14 @@ internal fun NetworkPokemonMoves.asEntities(pokemonId: Int): MoveEntities {
             .distinct()
     )
 }
+
+internal fun NetworkMoveDetail.asEntity() = MoveEntity(
+    name = name,
+    korean = names.firstOrNull { it.language.name == "ko" }?.name.orEmpty(),
+    english = names.firstOrNull { it.language.name == "en" }?.name.orEmpty(),
+    type = type?.name?.asPokemonType()?.name ?: PokemonType.Unknown.name,
+    power = power,
+    accuracy = accuracy,
+    pp = pp,
+    damageClass = damageClass?.name
+)

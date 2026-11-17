@@ -51,4 +51,5 @@
     <string name="feature_pokemondetail_impl_move_name">기술</string>
     <string name="feature_pokemondetail_impl_move_power">위력</string>
     <string name="feature_pokemondetail_impl_move_on_evolution">진화</string>
+    <string name="feature_pokemondetail_impl_evolution_knows_move">%1$s 배운 상태</string>
 </resources>

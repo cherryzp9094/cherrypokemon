@@ -11,6 +11,7 @@ import com.cherryzp.cherrypokemon.core.network.model.NetworkGenus
 import com.cherryzp.cherrypokemon.core.network.model.NetworkGraphQlLanguageName
 import com.cherryzp.cherrypokemon.core.network.model.NetworkGraphQlName
 import com.cherryzp.cherrypokemon.core.network.model.NetworkMove
+import com.cherryzp.cherrypokemon.core.network.model.NetworkMoveDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedResource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkOfficialArtwork
@@ -174,6 +175,27 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
             pokemonMove("sword-shield", 5, "tail-whip", "꼬리흔들기", "normal", power = null)
         )
     )
+
+    /** 기술 하나 호출 횟수. */
+    var moveCallCount: Int = 0
+        private set
+
+    override suspend fun getMove(name: String): NetworkMoveDetail {
+        moveCallCount++
+        error?.let { throw it }
+        return NetworkMoveDetail(
+            name = name,
+            power = 60,
+            accuracy = 100,
+            pp = 5,
+            type = NetworkNamedResource(name = "rock"),
+            damageClass = NetworkNamedResource(name = "special"),
+            names = listOf(
+                NetworkSpeciesName("원시의힘", NetworkNamedResource(name = "ko")),
+                NetworkSpeciesName("Ancient Power", NetworkNamedResource(name = "en"))
+            )
+        )
+    }
 
     /** 기술 호출 횟수. 한 번만 받는지 보는 데 쓴다. */
     var movesCallCount: Int = 0

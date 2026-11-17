@@ -8,8 +8,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 
-/** 메모리에만 담는 진화 체인 대역. 이름 join 은 비워 둔다. */
-class FakeEvolutionChainDao : EvolutionChainDao {
+/**
+ * 메모리에만 담는 진화 체인 대역. 이름 join 은 비워 둔다.
+ *
+ * @param savedMoves 기술 표에 있는 기술. 실제 DAO 의 기술 표 join 을 흉내 낸다
+ */
+class FakeEvolutionChainDao(private val savedMoves: () -> Set<String> = { emptySet() }) :
+    EvolutionChainDao {
 
     private val members = MutableStateFlow(emptyList<EvolutionChainMemberEntity>())
 
@@ -39,6 +44,12 @@ class FakeEvolutionChainDao : EvolutionChainDao {
         members.value.filter { it.chainId == chainId }
             .flatMap { listOfNotNull(it.item, it.heldItem) }
             .distinct()
+
+    override suspend fun getMissingChainMoves(chainId: Int): List<String> =
+        members.value.filter { it.chainId == chainId }
+            .mapNotNull { it.knownMove }
+            .distinct()
+            .filter { it !in savedMoves() }
 
     override suspend fun getChainMoveTypes(chainId: Int): List<String> =
         members.value.filter { it.chainId == chainId }.mapNotNull { it.knownMoveType }.distinct()
