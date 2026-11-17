@@ -1,6 +1,8 @@
 package com.cherryzp.cherrypokemon.feature.pokemondetail.impl
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
@@ -276,6 +278,43 @@ class PokemonDetailScreenTest {
             )
             .performScrollTo()
             .assertIsDisplayed()
+    }
+
+    @Test
+    fun header_withShinyAndCry_showsBothButtons() {
+        val withExtras = pokemonDetail.copy(
+            shinyImageUrl = "https://example.com/shiny/1.png",
+            cryUrl = "https://example.com/1.ogg"
+        )
+        setScreen(PokemonDetailUiState(withExtras, RefreshState.Idle))
+
+        val shiny = composeTestRule.onNodeWithContentDescription(
+            resources.getString(R.string.feature_pokemondetail_impl_shiny)
+        )
+        shiny.assertIsOff()
+        shiny.performClick()
+        shiny.assertIsOn()
+        composeTestRule
+            .onNodeWithContentDescription(
+                resources.getString(R.string.feature_pokemondetail_impl_play_cry)
+            )
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun header_withoutShinyOrCry_hidesButtons() {
+        setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
+
+        composeTestRule
+            .onNodeWithContentDescription(
+                resources.getString(R.string.feature_pokemondetail_impl_shiny)
+            )
+            .assertDoesNotExist()
+        composeTestRule
+            .onNodeWithContentDescription(
+                resources.getString(R.string.feature_pokemondetail_impl_play_cry)
+            )
+            .assertDoesNotExist()
     }
 
     @Test

@@ -222,4 +222,20 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate9To10_addsEmptyShinyAndCryColumns() = runTest {
+        helper.createDatabase(version = 9).use { connection ->
+            connection.execSQL(
+                "INSERT INTO pokemons (id, name, image_url) VALUES (25, 'pikachu', '')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 10).use { connection ->
+            connection.prepare("SELECT name FROM pokemons WHERE id = 25").use { statement ->
+                assertTrue(statement.step())
+                assertEquals("pikachu", statement.getText(0))
+            }
+        }
+    }
 }

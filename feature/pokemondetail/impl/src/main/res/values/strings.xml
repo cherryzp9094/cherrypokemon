@@ -37,4 +37,6 @@
     <string name="feature_pokemondetail_impl_evolution_move_type">Knows a %1$s move</string>
     <string name="feature_pokemondetail_impl_evolution_known_move">Knows a move</string>
     <string name="feature_pokemondetail_impl_evolution_location">Special place</string>
+    <string name="feature_pokemondetail_impl_play_cry">Play cry</string>
+    <string name="feature_pokemondetail_impl_shiny">Shiny form</string>
 </resources>

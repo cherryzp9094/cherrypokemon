@@ -1,5 +1,7 @@
 package com.cherryzp.cherrypokemon.feature.pokemondetail.impl
 
+import android.media.AudioAttributes
+import android.media.MediaPlayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -36,14 +38,19 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,6 +59,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -178,6 +186,9 @@ private fun PokemonDetailContent(
         // 내용이 짧아도 둥근 면이 화면 끝까지 닿아야 띠 색이 아래에 남지 않는다.
         val minContentHeight = maxHeight - bandHeight
 
+        // 다른 포켓몬으로 가면 원래 모습부터 보여준다.
+        var showShiny by rememberSaveable(pokemonDetail.id) { mutableStateOf(false) }
+
         val scrollState = rememberScrollState()
         // 둥근 면이 상태 바까지 올라오면 글이 시계와 겹친다. 그때부터 보호막을 깐다.
         // 머리말 띠가 상태 바 뒤에 있을 때는 띠 색이 아니라서 끈다.
@@ -199,7 +210,9 @@ private fun PokemonDetailContent(
                 accent = accent,
                 height = bandHeight,
                 onBackClick = onBackClick,
-                showBackButton = showBackButton
+                showBackButton = showBackButton,
+                showShiny = showShiny,
+                onShinyToggle = { showShiny = it }
             )
 
             // 내용은 위쪽 모서리를 둥글린 면에 올려 이미지 영역과 나눈다.
@@ -317,6 +330,8 @@ private fun HeaderBand(
     height: Dp,
     onBackClick: () -> Unit,
     showBackButton: Boolean,
+    showShiny: Boolean,
+    onShinyToggle: (Boolean) -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -353,8 +368,21 @@ private fun HeaderBand(
         if (showBackButton) {
             BackButton(onBackClick = onBackClick, modifier = Modifier.align(Alignment.TopStart))
         }
+        HeaderActions(
+            shinyAvailable = pokemonDetail.shinyImageUrl.isNotEmpty(),
+            showShiny = showShiny,
+            onShinyToggle = onShinyToggle,
+            cryUrl = pokemonDetail.cryUrl,
+            modifier = Modifier.align(Alignment.TopEnd)
+        )
         GlideImage(
-            imageModel = { pokemonDetail.imageUrl },
+            imageModel = {
+                if (showShiny && pokemonDetail.shinyImageUrl.isNotEmpty()) {
+                    pokemonDetail.shinyImageUrl
+                } else {
+                    pokemonDetail.imageUrl
+                }
+            },
             // 기본값인 Crop 은 이미지를 영역에 맞춰 잘라낸다. 전체가 보여야 한다.
             imageOptions = ImageOptions(contentScale = ContentScale.Fit),
             modifier = Modifier
@@ -364,6 +392,81 @@ private fun HeaderBand(
                 // 둥근 면 위로 걸치게 해서 두 영역이 이어져 보이게 한다.
                 .offset(y = 16.dp)
         )
+    }
+}
+
+/** 머리말 오른쪽 위의 단추. 색이 다른 모습 전환과 울음소리. 받지 못한 것은 숨긴다. */
+@Composable
+private fun HeaderActions(
+    shinyAvailable: Boolean,
+    showShiny: Boolean,
+    onShinyToggle: (Boolean) -> Unit,
+    cryUrl: String,
+    modifier: Modifier = Modifier,
+) {
+    val playCry = rememberCryPlayer()
+    Row(
+        modifier = modifier
+            .statusBarsPadding()
+            .padding(4.dp)
+    ) {
+        if (cryUrl.isNotEmpty()) {
+            IconButton(onClick = { playCry(cryUrl) }) {
+                Icon(
+                    painter = painterResource(R.drawable.feature_pokemondetail_impl_ic_cry),
+                    contentDescription = stringResource(
+                        R.string.feature_pokemondetail_impl_play_cry
+                    )
+                )
+            }
+        }
+        if (shinyAvailable) {
+            IconToggleButton(checked = showShiny, onCheckedChange = onShinyToggle) {
+                Icon(
+                    painter = painterResource(R.drawable.feature_pokemondetail_impl_ic_shiny),
+                    contentDescription = stringResource(R.string.feature_pokemondetail_impl_shiny),
+                    // 켜져 있을 때만 진하게. 지금 어느 모습인지 단추만 봐도 알 수 있게 한다.
+                    tint = if (showShiny) {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    }
+                )
+            }
+        }
+    }
+}
+
+/**
+ * 울음소리를 한 번 재생하는 함수를 돌려준다.
+ *
+ * 누를 때마다 새로 받아 재생하고, 앞의 소리는 멈춘다. 화면을 떠나면 정리한다.
+ * 받지 못하면 조용히 넘어간다. 소리는 부가 기능이라 오류를 알릴 만큼 중요하지 않다.
+ */
+@Composable
+private fun rememberCryPlayer(): (String) -> Unit {
+    val current = remember { mutableStateOf<MediaPlayer?>(null) }
+    DisposableEffect(Unit) {
+        onDispose { current.value?.release() }
+    }
+    return remember {
+        { url ->
+            current.value?.release()
+            current.value = MediaPlayer().apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+                setOnPreparedListener { it.start() }
+                setOnErrorListener { _, _, _ -> true }
+                runCatching {
+                    setDataSource(url)
+                    prepareAsync()
+                }
+            }
+        }
     }
 }
 

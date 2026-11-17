@@ -27,6 +27,8 @@ fun NetworkPokemonDetail.asEntity(species: NetworkPokemonSpecies) = PokemonDetai
     genus = species.localizedGenus(),
     flavorText = species.localizedFlavorText(),
     imageUrl = sprites.other?.officialArtwork?.frontDefault ?: officialArtworkUrl(id),
+    shinyImageUrl = sprites.other?.officialArtwork?.frontShiny.orEmpty(),
+    cryUrl = cries.latest ?: cries.legacy.orEmpty(),
     // PokeAPI 는 키를 데시미터, 몸무게를 헥토그램으로 준다.
     heightMeters = height / 10f,
     weightKilograms = weight / 10f,
