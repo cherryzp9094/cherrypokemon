@@ -11,21 +11,24 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.saveable.Saver
@@ -36,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
@@ -126,6 +130,12 @@ internal fun PokemonListScreen(
     }
 }
 
+/**
+ * 목록의 상태별 화면. 로딩·빈 결과·에러도 그리드 안의 칸으로 그린다.
+ *
+ * 상태마다 다른 레이아웃으로 바꾸면 검색창이 든 머리말이 새로 만들어진다. 글자를 칠 때마다
+ * 검색 결과가 잠깐 로딩이 되므로, 그때마다 입력란이 포커스를 잃고 키보드가 닫힌다.
+ */
 @Composable
 private fun PokemonListBody(
     pokemons: LazyPagingItems<Pokemon>,
@@ -134,43 +144,48 @@ private fun PokemonListBody(
     onPokemonClick: (pokeId: Int) -> Unit,
     selectedPokeId: Int?,
 ) {
-    // 카드마다 이미지에서 뽑은 대표 색. 그리드보다 위에 둬야 검색 결과가 비었다 돌아오거나
-    // 상세에 다녀와도 남는다. 없으면 카드가 회색으로 그려졌다가 다시 칠해진다.
+    // 카드마다 이미지에서 뽑은 대표 색. 카드 밖에 둬야 스크롤로 다시 보이거나 상세에 다녀와도
+    // 남는다. 없으면 카드가 회색으로 그려졌다가 다시 칠해진다.
     val cardColors = rememberSaveable(saver = CardColorsSaver) { mutableStateMapOf() }
 
     // 로컬 캐시(source)와 네트워크(mediator)를 나눠 본다. 캐시가 있으면 목록을 보여준다.
     val localRefresh = pokemons.loadState.source.refresh
     val remoteRefresh = pokemons.loadState.mediator?.refresh
 
-    when {
-        localRefresh is LoadState.Loading -> HeaderedBox(header) {
-            CircularProgressIndicator()
+    val placeholder: (@Composable () -> Unit)? = when {
+        localRefresh is LoadState.Loading -> {
+            { CircularProgressIndicator() }
         }
 
-        pokemons.itemCount == 0 && remoteRefresh is LoadState.Error -> HeaderedBox(header) {
-            ErrorContent(onRetryClick = pokemons::retry)
+        pokemons.itemCount == 0 && remoteRefresh is LoadState.Error -> {
+            { ErrorContent(onRetryClick = pokemons::retry) }
         }
 
-        pokemons.itemCount == 0 -> HeaderedBox(header) {
-            Text(
-                text = if (query.isBlank()) {
-                    stringResource(R.string.feature_pokemonlist_impl_empty)
-                } else {
-                    stringResource(CoreUiR.string.core_ui_search_empty, query)
-                },
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 32.dp)
-            )
+        pokemons.itemCount == 0 -> {
+            {
+                Text(
+                    text = if (query.isBlank()) {
+                        stringResource(R.string.feature_pokemonlist_impl_empty)
+                    } else {
+                        stringResource(CoreUiR.string.core_ui_search_empty, query)
+                    },
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 32.dp)
+                )
+            }
         }
 
-        else -> PokemonGrid(
-            pokemons = pokemons,
-            cardColors = cardColors,
-            onPokemonClick = onPokemonClick,
-            selectedPokeId = selectedPokeId,
-            header = header
-        )
+        else -> null
     }
+
+    PokemonGrid(
+        pokemons = pokemons,
+        cardColors = cardColors,
+        onPokemonClick = onPokemonClick,
+        selectedPokeId = selectedPokeId,
+        header = header,
+        placeholder = placeholder
+    )
 }
 
 /** 제목과 언어 토글. 앱 바 대신 목록과 함께 스크롤되어 올라간다. */
@@ -214,9 +229,18 @@ private fun PokemonGrid(
     onPokemonClick: (pokeId: Int) -> Unit,
     selectedPokeId: Int?,
     header: @Composable () -> Unit,
+    placeholder: (@Composable () -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
+    val gridState = rememberLazyGridState()
+    // 검색어가 바뀌면 결과가 잠깐 로딩이 된다. 내려 둔 위치가 남으면 머리말(검색창)이 화면 위로
+    // 밀려난 채 안내 칸만 보이므로 맨 위로 돌린다. 새 결과도 처음부터 보인다.
+    val showsPlaceholder = placeholder != null
+    LaunchedEffect(showsPlaceholder) {
+        if (showsPlaceholder) gridState.scrollToItem(0)
+    }
     LazyVerticalGrid(
+        state = gridState,
         // 두 칸 화면의 목록 칸은 360dp 남짓이다. 160dp 로 잡으면 여백을 빼고 한 열만 나와
         // 카드 하나가 칸을 다 차지한다.
         columns = GridCells.Adaptive(minSize = 150.dp),
@@ -228,7 +252,15 @@ private fun PokemonGrid(
         verticalArrangement = Arrangement.spacedBy(CardGap),
         modifier = modifier.fillMaxSize()
     ) {
-        item(span = { GridItemSpan(maxLineSpan) }) { header() }
+        // 같은 key 로 두어야 아래 칸이 바뀌어도 머리말(검색창)이 그대로 남는다.
+        item(key = HEADER_KEY, span = { GridItemSpan(maxLineSpan) }) { header() }
+
+        if (placeholder != null) {
+            item(key = PLACEHOLDER_KEY, span = { GridItemSpan(maxLineSpan) }) {
+                PlaceholderCell(gridState = gridState, content = placeholder)
+            }
+            return@LazyVerticalGrid
+        }
 
         items(
             count = pokemons.itemCount,
@@ -284,20 +316,28 @@ private fun ErrorContent(onRetryClick: () -> Unit) {
     }
 }
 
-/** 목록이 없을 때도 제목과 토글은 보여야 한다. */
+/**
+ * 머리말 아래 남은 화면의 가운데에 [content] 를 둔다. 키보드가 열려 있으면 그 위 영역의 가운데다.
+ *
+ * 남은 높이는 그리드가 잰 값으로 구한다. 그리드 안의 칸은 부모 높이를 채울 수 없다.
+ */
 @Composable
-private fun HeaderedBox(header: @Composable () -> Unit, content: @Composable () -> Unit) {
-    Column(
+private fun PlaceholderCell(gridState: LazyGridState, content: @Composable () -> Unit) {
+    val layoutInfo = gridState.layoutInfo
+    val headerBottom = layoutInfo.visibleItemsInfo
+        .firstOrNull { it.key == HEADER_KEY }
+        ?.let { it.offset.y + it.size.height + layoutInfo.mainAxisItemSpacing }
+        ?: 0
+    val remaining = layoutInfo.viewportSize.height - headerBottom - layoutInfo.afterContentPadding
+    val minHeight = with(LocalDensity.current) { PLACEHOLDER_MIN_HEIGHT.roundToPx() }
+
+    Box(
         modifier = Modifier
-            .fillMaxSize()
-            // 키보드가 열려 있으면 그 위 남은 영역의 가운데에 둔다.
-            .imePadding()
-            .padding(horizontal = ScreenGutter)
+            .fillMaxWidth()
+            .height(with(LocalDensity.current) { remaining.coerceAtLeast(minHeight).toDp() }),
+        contentAlignment = Alignment.Center
     ) {
-        header()
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            content()
-        }
+        content()
     }
 }
 
@@ -317,3 +357,9 @@ internal val CardColorsSaver = Saver<SnapshotStateMap<Int, Color>, IntArray>(
         }
     }
 )
+
+private const val HEADER_KEY = "header"
+private const val PLACEHOLDER_KEY = "placeholder"
+
+/** 키보드가 화면 대부분을 가려도 안내 글이 들어갈 높이. */
+private val PLACEHOLDER_MIN_HEIGHT = 160.dp
