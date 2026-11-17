@@ -46,8 +46,12 @@ class FakePokemonRepository @Inject constructor() : PokemonRepository {
     var indexCount: Int = 0
         private set
 
+    /** `ensurePokemonIndex` 가 던질 예외. null 이면 성공한다. */
+    var indexError: Throwable? = null
+
     override suspend fun ensurePokemonIndex() {
         indexCount++
+        indexError?.let { throw it }
     }
 
     private companion object {
