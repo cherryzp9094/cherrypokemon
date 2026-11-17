@@ -19,7 +19,6 @@ import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.dao.RemoteKeyDao
 import com.cherryzp.cherrypokemon.core.database.model.PokemonWithName
 import com.cherryzp.cherrypokemon.core.database.model.RemoteKeyEntity
-import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.asExternalModel
 import com.cherryzp.cherrypokemon.core.model.LocalizedText
 import com.cherryzp.cherrypokemon.core.model.Pokemon
@@ -37,6 +36,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -210,11 +210,18 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         runCatching {
             coroutineScope {
                 launch {
-                    val saved = refreshTypes(detail.types.map { it.type.name })
+                    val ownTypes = detail.types.map { it.type.name }
+                    refreshTypes(ownTypes)
                     // 약점·저항으로 나올 타입의 이름도 있어야 칩에 글자를 적을 수 있다.
-                    // 그 목록은 자기 타입을 받아야 알 수 있어서 이 둘만은 차례로 받는다.
+                    // 그 목록은 자기 타입의 상성을 봐야 알 수 있어서 이 둘만은 차례로 받는다.
+                    // 이번에 받은 것만 보면 안 된다. 자기 타입이 다른 포켓몬의 약점 칩 때문에 이름만
+                    // 먼저 저장돼 있으면, 그 타입의 약점은 영영 받지 않아 칩이 영어로 남는다.
+                    val ownTypeNames = ownTypes.map { it.asPokemonType().name }.toSet()
+                    val relations = localizedNameDao.getTypeNames().first()
+                        .filter { it.type in ownTypeNames }
                     refreshTypes(
-                        saved.flatMap { it.doubleDamageFrom + it.halfDamageFrom + it.noDamageFrom }
+                        relations
+                            .flatMap { it.doubleDamageFrom + it.halfDamageFrom + it.noDamageFrom }
                             .map { it.name.lowercase() }
                     )
                 }
@@ -237,20 +244,19 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         localizedNameDao.insertAbilityNames(entities)
     }
 
-    /** 저장되지 않은 타입만 받아 쓰고, 이번에 받은 것들을 돌려준다. */
-    private suspend fun refreshTypes(typeNames: List<String>): List<TypeNameEntity> {
+    /** 저장되지 않은 타입만 받아 쓴다. */
+    private suspend fun refreshTypes(typeNames: List<String>) {
         val savedTypes = localizedNameDao.getSavedTypes().toSet()
         val missing = typeNames
             .distinct()
             .filter { it.asPokemonType() != PokemonType.Unknown }
             .filter { it.asPokemonType().name !in savedTypes }
-        if (missing.isEmpty()) return emptyList()
+        if (missing.isEmpty()) return
 
         val entities = coroutineScope {
             missing.map { async { network.getType(it).asEntity(it.asPokemonType()) } }.awaitAll()
         }
         localizedNameDao.insertTypeNames(entities)
-        return entities
     }
 
     private companion object {

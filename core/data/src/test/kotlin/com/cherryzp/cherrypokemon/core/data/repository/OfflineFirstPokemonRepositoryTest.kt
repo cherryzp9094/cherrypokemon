@@ -12,6 +12,7 @@ import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Compani
 import com.cherryzp.cherrypokemon.core.data.FakeRemoteKeyDao
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
+import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
 import com.cherryzp.cherrypokemon.core.model.LocalizedText
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonType
@@ -247,6 +248,32 @@ class OfflineFirstPokemonRepositoryTest {
         val detail = repository.getPokemonDetailStream(pokeId = 1).first()
         assertEquals("풀", detail?.types?.first()?.name?.korean)
         assertEquals("심록", detail?.abilities?.first()?.localizedName?.korean)
+    }
+
+    @Test
+    fun refreshPokemonDetail_ownTypeSavedEarlier_stillSavesMatchupTypeNames() = runTest {
+        // 풀 타입 이름은 다른 포켓몬의 약점 칩 때문에 이미 받아 두었다. 그때 풀의 약점(불꽃)은 받지 않았다.
+        localizedNameDao.insertTypeNames(
+            listOf(
+                TypeNameEntity(
+                    type = PokemonType.Grass.name,
+                    korean = "풀",
+                    english = "Grass",
+                    doubleDamageFrom = listOf(PokemonType.Fire),
+                    halfDamageFrom = listOf(PokemonType.Water)
+                )
+            )
+        )
+        network.detail =
+            networkPokemonDetail(id = 1, name = "bulbasaur", typeNames = listOf("grass"))
+        network.species = networkPokemonSpecies(id = 1)
+
+        repository.refreshPokemonDetail(pokeId = 1)
+
+        // 약점 칩에 "Fire" 가 영어로 남지 않으려면 불꽃·물 이름도 있어야 한다.
+        val saved = localizedNameDao.getSavedTypes()
+        assertTrue(PokemonType.Fire.name in saved)
+        assertTrue(PokemonType.Water.name in saved)
     }
 
     @Test
