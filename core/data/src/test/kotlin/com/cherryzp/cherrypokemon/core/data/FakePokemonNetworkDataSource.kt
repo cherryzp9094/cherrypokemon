@@ -20,6 +20,7 @@ import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonTypeSlot
 import com.cherryzp.cherrypokemon.core.network.model.NetworkSpeciesName
 import com.cherryzp.cherrypokemon.core.network.model.NetworkSprites
 import com.cherryzp.cherrypokemon.core.network.model.NetworkType
+import kotlinx.coroutines.delay
 
 /** 테스트가 응답과 실패를 지정할 수 있는 네트워크 대역. */
 class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
@@ -28,6 +29,9 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
     var page: NetworkPokemonPage = NetworkPokemonPage()
     var detail: NetworkPokemonDetail = NetworkPokemonDetail()
     var species: NetworkPokemonSpecies = NetworkPokemonSpecies(id = 0)
+
+    /** 상세·종·타입·특성·체인 호출마다 걸리는 시간. 병렬로 부르는지 보는 데 쓴다. */
+    var callDelayMillis: Long = 0
 
     /** 종 정보만 실패시킬 때 쓴다. */
     var speciesError: Throwable? = null
@@ -42,6 +46,7 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
     }
 
     override suspend fun getPokemonDetail(pokeId: Int): NetworkPokemonDetail {
+        delay(callDelayMillis)
         error?.let { throw it }
         return detail
     }
@@ -51,6 +56,7 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
         private set
 
     override suspend fun getType(name: String): NetworkType {
+        delay(callDelayMillis)
         nameCallCount++
         error?.let { throw it }
         return NetworkType(
@@ -68,6 +74,7 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
     }
 
     override suspend fun getAbility(name: String): NetworkNamedEntry {
+        delay(callDelayMillis)
         nameCallCount++
         error?.let { throw it }
         return NetworkNamedEntry(
@@ -103,12 +110,14 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
     )
 
     override suspend fun getEvolutionChain(chainId: Int): NetworkEvolutionChain {
+        delay(callDelayMillis)
         chainCallCount++
         error?.let { throw it }
         return evolutionChain
     }
 
     override suspend fun getPokemonSpecies(pokeId: Int): NetworkPokemonSpecies {
+        delay(callDelayMillis)
         speciesCount++
         error?.let { throw it }
         speciesError?.let { throw it }

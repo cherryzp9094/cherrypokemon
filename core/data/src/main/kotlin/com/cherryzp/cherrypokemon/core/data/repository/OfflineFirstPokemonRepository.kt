@@ -26,11 +26,15 @@ import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonSpecies
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 /** 읽기는 항상 로컬에서 하고, 네트워크는 로컬을 갱신하는 데만 쓴다. */
 internal class OfflineFirstPokemonRepository @Inject constructor(
@@ -84,12 +88,18 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
     }
 
     override suspend fun refreshPokemonDetail(pokeId: Int) {
-        // 상세와 종 정보를 함께 받는다. 하나라도 실패하면 아무것도 쓰지 않는다.
-        val detail = network.getPokemonDetail(pokeId)
-        val species = network.getPokemonSpecies(pokeId)
+        // 상세와 종 정보를 함께 받는다. 하나라도 실패하면 다른 쪽도 취소하고 아무것도 쓰지 않는다.
+        val (detail, species) = coroutineScope {
+            val detail = async { network.getPokemonDetail(pokeId) }
+            val species = async { network.getPokemonSpecies(pokeId) }
+            detail.await() to species.await()
+        }
         pokemonDao.insertPokemonDetail(detail.asEntity(species))
-        refreshMissingNames(detail)
-        refreshEvolutionChain(species)
+        // 이름과 진화 체인은 서로 기다릴 이유가 없다.
+        coroutineScope {
+            launch { refreshMissingNames(detail) }
+            launch { refreshEvolutionChain(species) }
+        }
     }
 
     /**
@@ -111,26 +121,38 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
      * 아직 받지 않은 타입·특성 이름과 상성을 받아 둔다.
      *
      * 타입은 20여 개, 특성은 포켓몬당 한둘이라 쓸수록 호출이 사라진다.
+     * 처음 여는 포켓몬은 약점·저항 타입까지 열 개 넘게 받을 수 있어 한꺼번에 요청한다.
      * 이름을 받지 못해도 상성 없이 상세는 보이므로 실패를 삼킨다.
      */
     private suspend fun refreshMissingNames(detail: NetworkPokemonDetail) {
+        runCatching {
+            coroutineScope {
+                launch {
+                    val saved = refreshTypes(detail.types.map { it.type.name })
+                    // 약점·저항으로 나올 타입의 이름도 있어야 칩에 글자를 적을 수 있다.
+                    // 그 목록은 자기 타입을 받아야 알 수 있어서 이 둘만은 차례로 받는다.
+                    refreshTypes(
+                        saved.flatMap { it.doubleDamageFrom + it.halfDamageFrom + it.noDamageFrom }
+                            .map { it.name.lowercase() }
+                    )
+                }
+                launch { refreshAbilities(detail) }
+            }
+        }
+    }
+
+    private suspend fun refreshAbilities(detail: NetworkPokemonDetail) {
         val savedAbilities = localizedNameDao.getSavedAbilities().toSet()
-        val missingAbilities = detail.abilities
+        val missing = detail.abilities
             .map { it.ability.name }
             .filter { it !in savedAbilities }
             .distinct()
+        if (missing.isEmpty()) return
 
-        runCatching {
-            val saved = refreshTypes(detail.types.map { it.type.name })
-            // 약점·저항으로 나올 타입의 이름도 있어야 칩에 글자를 적을 수 있다.
-            refreshTypes(
-                saved.flatMap { it.doubleDamageFrom + it.halfDamageFrom + it.noDamageFrom }
-                    .map { it.name.lowercase() }
-            )
-            localizedNameDao.insertAbilityNames(
-                missingAbilities.map { network.getAbility(it).asEntity() }
-            )
+        val entities = coroutineScope {
+            missing.map { async { network.getAbility(it).asEntity() } }.awaitAll()
         }
+        localizedNameDao.insertAbilityNames(entities)
     }
 
     /** 저장되지 않은 타입만 받아 쓰고, 이번에 받은 것들을 돌려준다. */
@@ -142,7 +164,9 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
             .filter { it.asPokemonType().name !in savedTypes }
         if (missing.isEmpty()) return emptyList()
 
-        val entities = missing.map { network.getType(it).asEntity(it.asPokemonType()) }
+        val entities = coroutineScope {
+            missing.map { async { network.getType(it).asEntity(it.asPokemonType()) } }.awaitAll()
+        }
         localizedNameDao.insertTypeNames(entities)
         return entities
     }

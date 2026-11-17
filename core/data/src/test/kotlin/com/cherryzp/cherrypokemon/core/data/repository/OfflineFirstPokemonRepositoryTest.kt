@@ -175,6 +175,19 @@ class OfflineFirstPokemonRepositoryTest {
     }
 
     @Test
+    fun refreshPokemonDetail_firstOpen_callsNetworkInParallel() = runTest {
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.species = networkPokemonSpecies(id = 1)
+        network.callDelayMillis = 100
+
+        repository.refreshPokemonDetail(pokeId = 1)
+
+        // 상세·종(100) 다음에 자기 타입 → 약점·저항 타입(200)이 가장 길다. 특성 둘과 체인은
+        // 그동안 함께 받는다. 하나씩 기다리면 800 이 걸린다.
+        assertEquals(300, testScheduler.currentTime)
+    }
+
+    @Test
     fun refreshPokemonDetail_speciesFails_throwsAndWritesNothing() = runTest {
         network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
         network.speciesError = IOException()
