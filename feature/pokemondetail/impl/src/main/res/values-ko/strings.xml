@@ -39,4 +39,11 @@
     <string name="feature_pokemondetail_impl_evolution_location">특정 장소</string>
     <string name="feature_pokemondetail_impl_play_cry">울음소리 듣기</string>
     <string name="feature_pokemondetail_impl_shiny">색이 다른 모습</string>
+    <string name="feature_pokemondetail_impl_legendary">전설</string>
+    <string name="feature_pokemondetail_impl_mythical">환상</string>
+    <string name="feature_pokemondetail_impl_capture_rate">포획률</string>
+    <string name="feature_pokemondetail_impl_gender">성비</string>
+    <string name="feature_pokemondetail_impl_gender_value">♂ %1$s%% · ♀ %2$s%%</string>
+    <string name="feature_pokemondetail_impl_genderless">성별 없음</string>
+    <string name="feature_pokemondetail_impl_egg_groups">알 그룹</string>
 </resources>

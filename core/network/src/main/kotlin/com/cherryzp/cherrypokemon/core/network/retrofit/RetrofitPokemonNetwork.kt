@@ -49,6 +49,9 @@ private interface RetrofitPokemonNetworkApi {
     @GET("evolution-chain/{id}")
     suspend fun getEvolutionChain(@Path("id") chainId: Int): NetworkEvolutionChain
 
+    @GET("egg-group/{name}")
+    suspend fun getEggGroup(@Path("name") name: String): NetworkNamedEntry
+
     @GET("item/{name}")
     suspend fun getItem(@Path("name") name: String): NetworkNamedEntry
 
@@ -92,6 +95,9 @@ internal class RetrofitPokemonNetwork @Inject constructor(
         networkApi.getEvolutionChain(chainId = chainId)
 
     override suspend fun getItem(name: String): NetworkNamedEntry = networkApi.getItem(name = name)
+
+    override suspend fun getEggGroup(name: String): NetworkNamedEntry =
+        networkApi.getEggGroup(name = name)
 
     override suspend fun getPokemonNames(): NetworkPokemonNames = networkApi
         .getPokemonNames(

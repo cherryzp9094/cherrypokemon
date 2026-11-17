@@ -27,6 +27,9 @@ interface PokemonNetworkDataSource {
     /** 진화 체인. 종 정보의 `evolution_chain` 주소에서 ID 를 꺼내 부른다. */
     suspend fun getEvolutionChain(chainId: Int): NetworkEvolutionChain
 
+    /** 알 그룹의 언어별 이름. 15 개뿐이다. */
+    suspend fun getEggGroup(name: String): NetworkNamedEntry
+
     /** 진화 도구 같은 아이템의 언어별 이름. */
     suspend fun getItem(name: String): NetworkNamedEntry
 

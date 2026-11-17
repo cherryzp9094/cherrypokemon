@@ -5,6 +5,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
+import com.cherryzp.cherrypokemon.core.data.model.asEggGroupEntity
 import com.cherryzp.cherrypokemon.core.data.model.asEntities
 import com.cherryzp.cherrypokemon.core.data.model.asEntity
 import com.cherryzp.cherrypokemon.core.data.model.asItemEntity
@@ -92,11 +93,13 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
             entity,
             localizedNameDao.getTypeNames(),
             localizedNameDao.getAbilityNames(),
-            localizedNameDao.getPokemonName(pokeId)
-        ) { entity, typeNames, abilityNames, name ->
+            localizedNameDao.getPokemonName(pokeId),
+            localizedNameDao.getEggGroupNames()
+        ) { entity, typeNames, abilityNames, name, eggGroupNames ->
             val detail = entity?.asExternalModel(
                 typeNames = typeNames.associateBy { it.type },
-                abilityNames = abilityNames.associateBy { it.name }
+                abilityNames = abilityNames.associateBy { it.name },
+                eggGroupNames = eggGroupNames.associateBy { it.name }
             )
             // 종 정보의 이름은 종 이름(리자몽)이라 폼(메가리자몽X)에는 맞지 않는다. 받아 둔 이름을 쓴다.
             if (detail != null && name != null && name.korean.isNotEmpty()) {
@@ -131,6 +134,7 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         // 이름과 진화 체인은 서로 기다릴 이유가 없다.
         coroutineScope {
             launch { refreshMissingNames(detail) }
+            launch { refreshEggGroupNames(species) }
             launch { refreshEvolutionChain(species) }
         }
     }
@@ -186,6 +190,23 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
             refreshItemNames(chainId)
             // "페어리 기술" 처럼 조건에 나오는 타입도 이름이 있어야 한국어로 적는다.
             refreshTypes(evolutionChainDao.getChainMoveTypes(chainId).map { it.lowercase() })
+        }
+    }
+
+    /**
+     * 알 그룹 중 이름을 아직 받지 않은 것만 받는다. 15 개뿐이라 몇 마리만 열면 더 부르지 않는다.
+     * 받지 못해도 식별자로 보이므로 실패를 삼킨다.
+     */
+    private suspend fun refreshEggGroupNames(species: NetworkPokemonSpecies) {
+        runCatching {
+            val saved = localizedNameDao.getSavedEggGroups().toSet()
+            val missing = species.eggGroups.map { it.name }.filter { it !in saved }.distinct()
+            if (missing.isEmpty()) return@runCatching
+
+            val entities = coroutineScope {
+                missing.map { async { network.getEggGroup(it).asEggGroupEntity() } }.awaitAll()
+            }
+            localizedNameDao.insertEggGroupNames(entities)
         }
     }
 

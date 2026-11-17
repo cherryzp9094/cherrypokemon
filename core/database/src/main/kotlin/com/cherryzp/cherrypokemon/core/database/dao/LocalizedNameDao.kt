@@ -5,6 +5,7 @@ import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
 import com.cherryzp.cherrypokemon.core.database.model.AbilityNameEntity
+import com.cherryzp.cherrypokemon.core.database.model.EggGroupNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.ItemNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
@@ -52,4 +53,13 @@ interface LocalizedNameDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertItemNames(names: List<ItemNameEntity>)
+
+    @Query("SELECT * FROM egg_group_names")
+    fun getEggGroupNames(): Flow<List<EggGroupNameEntity>>
+
+    @Query("SELECT name FROM egg_group_names")
+    suspend fun getSavedEggGroups(): List<String>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertEggGroupNames(names: List<EggGroupNameEntity>)
 }

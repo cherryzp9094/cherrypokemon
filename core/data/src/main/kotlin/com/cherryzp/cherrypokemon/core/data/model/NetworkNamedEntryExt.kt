@@ -1,9 +1,11 @@
 package com.cherryzp.cherrypokemon.core.data.model
 
 import com.cherryzp.cherrypokemon.core.database.model.AbilityNameEntity
+import com.cherryzp.cherrypokemon.core.database.model.EggGroupNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import com.cherryzp.cherrypokemon.core.network.model.NetworkAbility
+import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedResource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkSpeciesName
 import com.cherryzp.cherrypokemon.core.network.model.NetworkType
@@ -40,3 +42,9 @@ private fun List<NetworkSpeciesName>.english() =
 private fun List<NetworkNamedResource>.toTypes(): List<PokemonType> = mapNotNull { resource ->
     PokemonType.entries.firstOrNull { it.name.equals(resource.name, ignoreCase = true) }
 }
+
+internal fun NetworkNamedEntry.asEggGroupEntity() = EggGroupNameEntity(
+    name = name,
+    korean = names.korean(),
+    english = names.english()
+)

@@ -66,3 +66,15 @@ data class ItemNameEntity(
     @ColumnInfo(defaultValue = "") val korean: String,
     @ColumnInfo(defaultValue = "") val english: String,
 )
+
+/**
+ * 알 그룹의 언어별 이름. 15 개뿐이라 한 번 받으면 모든 포켓몬이 재사용한다.
+ *
+ * @param name PokeAPI 식별자(`monster`)
+ */
+@Entity(tableName = "egg_group_names")
+data class EggGroupNameEntity(
+    @PrimaryKey val name: String,
+    @ColumnInfo(defaultValue = "") val korean: String,
+    @ColumnInfo(defaultValue = "") val english: String,
+)

@@ -4,6 +4,7 @@ import androidx.room3.ColumnInfo
 import androidx.room3.Embedded
 import androidx.room3.Entity
 import androidx.room3.PrimaryKey
+import com.cherryzp.cherrypokemon.core.model.EggGroup
 import com.cherryzp.cherrypokemon.core.model.LocalizedText
 import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
@@ -35,6 +36,14 @@ data class PokemonDetailEntity(
     @ColumnInfo(name = "shiny_image_url", defaultValue = "") val shinyImageUrl: String = "",
     /** 울음소리 OGG 파일. 없으면 빈 문자열이다. */
     @ColumnInfo(name = "cry_url", defaultValue = "") val cryUrl: String = "",
+    /** 포획률(0~255). 받기 전이면 null. */
+    @ColumnInfo(name = "capture_rate") val captureRate: Int? = null,
+    /** 암컷일 확률을 8 분의 몇으로. 성별이 없으면 -1, 받기 전이면 null. */
+    @ColumnInfo(name = "gender_rate") val genderRate: Int? = null,
+    /** 알 그룹 식별자. 순서를 유지해 쉼표로 잇는다. */
+    @ColumnInfo(name = "egg_groups", defaultValue = "") val eggGroups: String = "",
+    @ColumnInfo(name = "is_legendary", defaultValue = "0") val isLegendary: Boolean = false,
+    @ColumnInfo(name = "is_mythical", defaultValue = "0") val isMythical: Boolean = false,
 )
 
 /** 언어별 문자열. 언어를 바꿔도 다시 받지 않도록 둘 다 저장한다. */
@@ -56,10 +65,12 @@ data class PokemonStatsEntity(
 /**
  * @param typeNames 타입 이름 캐시. 아직 받지 못한 타입은 이름이 빈 채로 나간다
  * @param abilityNames 특성 이름 캐시
+ * @param eggGroupNames 알 그룹 이름 캐시
  */
 fun PokemonDetailEntity.asExternalModel(
     typeNames: Map<String, TypeNameEntity> = emptyMap(),
     abilityNames: Map<String, AbilityNameEntity> = emptyMap(),
+    eggGroupNames: Map<String, EggGroupNameEntity> = emptyMap(),
 ) = PokemonDetail(
     id = id,
     name = name,
@@ -69,6 +80,18 @@ fun PokemonDetailEntity.asExternalModel(
     imageUrl = imageUrl,
     shinyImageUrl = shinyImageUrl,
     cryUrl = cryUrl,
+    captureRate = captureRate,
+    genderRate = genderRate,
+    eggGroups = eggGroups.split(',').filter { it.isNotEmpty() }.map { group ->
+        EggGroup(
+            name = group,
+            localizedName = eggGroupNames[group]
+                ?.let { LocalizedText(korean = it.korean, english = it.english) }
+                ?: LocalizedText.Empty
+        )
+    },
+    isLegendary = isLegendary,
+    isMythical = isMythical,
     heightMeters = heightMeters,
     weightKilograms = weightKilograms,
     types = types.map { type ->

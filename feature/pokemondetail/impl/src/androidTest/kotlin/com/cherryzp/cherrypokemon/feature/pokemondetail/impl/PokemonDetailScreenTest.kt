@@ -12,6 +12,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cherryzp.cherrypokemon.core.designsystem.theme.CherryPokemonTheme
+import com.cherryzp.cherrypokemon.core.model.EggGroup
 import com.cherryzp.cherrypokemon.core.model.EvolutionCondition
 import com.cherryzp.cherrypokemon.core.model.EvolutionStage
 import com.cherryzp.cherrypokemon.core.model.LocalizedText
@@ -315,6 +316,55 @@ class PokemonDetailScreenTest {
                 resources.getString(R.string.feature_pokemondetail_impl_play_cry)
             )
             .assertDoesNotExist()
+    }
+
+    @Test
+    fun basics_showCaptureRateGenderAndEggGroups() {
+        val withBasics = pokemonDetail.copy(
+            captureRate = 190,
+            genderRate = 1,
+            eggGroups = listOf(
+                EggGroup("monster", LocalizedText(korean = "괴수", english = "Monster")),
+                EggGroup("plant", LocalizedText(korean = "식물", english = "Grass"))
+            )
+        )
+        setScreen(PokemonDetailUiState(withBasics, RefreshState.Idle))
+
+        composeTestRule.onNodeWithText("190").performScrollTo().assertIsDisplayed()
+        // 8 분의 1 이 암컷이면 87.5 : 12.5 다.
+        composeTestRule
+            .onNodeWithText(
+                resources.getString(
+                    R.string.feature_pokemondetail_impl_gender_value,
+                    "87.5",
+                    "12.5"
+                )
+            )
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText(if (isKorean) "괴수 · 식물" else "Monster · Grass")
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun basics_genderless_saysSo() {
+        setScreen(PokemonDetailUiState(pokemonDetail.copy(genderRate = -1), RefreshState.Idle))
+
+        composeTestRule
+            .onNodeWithText(resources.getString(R.string.feature_pokemondetail_impl_genderless))
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun legendary_isShownNextToGenus() {
+        setScreen(PokemonDetailUiState(pokemonDetail.copy(isLegendary = true), RefreshState.Idle))
+
+        val genus = if (isKorean) "씨앗포켓몬" else "Seed Pokémon"
+        val legendary = resources.getString(R.string.feature_pokemondetail_impl_legendary)
+        composeTestRule.onNodeWithText("$genus · $legendary").assertIsDisplayed()
     }
 
     @Test
