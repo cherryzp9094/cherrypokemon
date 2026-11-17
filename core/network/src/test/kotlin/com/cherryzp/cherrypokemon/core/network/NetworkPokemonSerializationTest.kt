@@ -1,6 +1,7 @@
 package com.cherryzp.cherrypokemon.core.network
 
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNamesResponse
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -21,6 +22,34 @@ class NetworkPokemonSerializationTest {
         assertEquals(3, page.results.size)
         assertEquals("bulbasaur", page.results.first().name)
         assertEquals("https://pokeapi.co/api/v2/pokemon/1/", page.results.first().url)
+    }
+
+    @Test
+    fun pokemonNames_realGraphQlResponse_parsesSpeciesAndForms() {
+        val names = json.decodeFromString<NetworkPokemonNamesResponse>(
+            readResource("pokemon_names.json")
+        ).data
+
+        assertEquals(
+            setOf("피카츄", "Pikachu"),
+            names?.speciesNames?.filter { it.speciesId == 25 }?.map { it.name }?.toSet()
+        )
+        val megaCharizard = names?.forms?.single { it.id == 10034 }
+        assertEquals(6, megaCharizard?.speciesId)
+        assertEquals(
+            "메가리자몽X",
+            megaCharizard?.forms?.single()?.names?.single { it.languageId == 3 }?.name
+        )
+    }
+
+    @Test
+    fun pokemonNames_graphQlError_hasNoData() {
+        val response = json.decodeFromString<NetworkPokemonNamesResponse>(
+            """{"errors":[{"message":"field not found"}]}"""
+        )
+
+        // 질의가 틀리면 HTTP 200 에 data 없이 온다. 네트워크 쪽이 예외로 바꾼다.
+        assertEquals(null, response.data)
     }
 
     @Test

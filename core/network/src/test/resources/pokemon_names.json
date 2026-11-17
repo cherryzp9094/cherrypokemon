@@ -1,0 +1,86 @@
+{
+  "data": {
+    "pokemonspeciesname": [
+      {
+        "name": "피카츄",
+        "pokemon_species_id": 25,
+        "language_id": 3
+      },
+      {
+        "name": "Pikachu",
+        "pokemon_species_id": 25,
+        "language_id": 9
+      },
+      {
+        "name": "테오키스",
+        "pokemon_species_id": 386,
+        "language_id": 3
+      },
+      {
+        "name": "Deoxys",
+        "pokemon_species_id": 386,
+        "language_id": 9
+      }
+    ],
+    "pokemon": [
+      {
+        "id": 10001,
+        "name": "deoxys-attack",
+        "pokemon_species_id": 386,
+        "pokemonforms": [
+          {
+            "pokemonformnames": [
+              {
+                "pokemon_name": "",
+                "name": "어택폼",
+                "language_id": 3
+              },
+              {
+                "pokemon_name": "Attack Deoxys",
+                "name": "Attack Forme",
+                "language_id": 9
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 10034,
+        "name": "charizard-mega-x",
+        "pokemon_species_id": 6,
+        "pokemonforms": [
+          {
+            "pokemonformnames": [
+              {
+                "pokemon_name": "",
+                "name": "메가리자몽X",
+                "language_id": 3
+              },
+              {
+                "pokemon_name": "Mega Charizard X",
+                "name": "Mega Charizard X",
+                "language_id": 9
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 10080,
+        "name": "pikachu-rock-star",
+        "pokemon_species_id": 25,
+        "pokemonforms": [
+          {
+            "pokemonformnames": [
+              {
+                "pokemon_name": "Pikachu Rock Star",
+                "name": "Pikachu Rock Star",
+                "language_id": 9
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

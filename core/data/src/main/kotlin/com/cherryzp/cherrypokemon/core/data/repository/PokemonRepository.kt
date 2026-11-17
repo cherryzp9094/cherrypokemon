@@ -20,6 +20,13 @@ interface PokemonRepository {
     /** 전체 이름 목록을 한 번 받아 둔다. 이미 있으면 아무것도 하지 않는다. */
     suspend fun ensurePokemonIndex()
 
+    /**
+     * 모든 포켓몬의 한국어·영어 이름을 한 번 받아 둔다. 이미 있으면 아무것도 하지 않는다.
+     *
+     * 목록 카드, 한국어 검색, 아직 열어보지 않은 진화 단계가 이 이름을 쓴다.
+     */
+    suspend fun ensurePokemonNames()
+
     fun getPokemonDetailStream(pokeId: Int): Flow<PokemonDetail?>
 
     /** 네트워크에서 받아 로컬에 쓴다. 실패하면 예외를 던진다. */

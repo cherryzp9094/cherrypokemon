@@ -13,6 +13,12 @@ android {
 
     defaultConfig {
         buildConfigField("String", "POKE_API_BASE_URL", "\"https://pokeapi.co/api/v2/\"")
+        // 모든 포켓몬 이름을 한 번에 받을 때만 쓴다.
+        buildConfigField(
+            "String",
+            "POKE_API_GRAPHQL_URL",
+            "\"https://graphql.pokeapi.co/v1beta2\""
+        )
     }
 }
 

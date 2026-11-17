@@ -43,7 +43,17 @@ class PokemonListViewModel @Inject constructor(
         coroutineScope {
             launch { observeLanguage() }
             launch { fillIndexOnFirstSearch() }
+            launch { fillNames() }
         }
+    }
+
+    /**
+     * 모든 포켓몬의 한국어·영어 이름을 받아 둔다. 처음 한 번만 받는다.
+     *
+     * 받지 못해도 목록은 식별자로 보이므로 실패를 삼킨다. 다음에 화면을 열 때 다시 해 본다.
+     */
+    private suspend fun fillNames() {
+        runCatching { pokemonRepository.ensurePokemonNames() }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)

@@ -24,9 +24,9 @@ data class EvolutionChainMemberEntity(
 )
 
 /**
- * 체인 구성원과, 로컬에 있으면 그 포켓몬의 언어별 이름.
+ * 체인 구성원과, 받아 두었으면 그 포켓몬과 진화 도구의 언어별 이름.
  *
- * 구성원마다 종 정보를 더 받지 않는다. 아직 열어보지 않은 포켓몬은 이름이 비어 있다.
+ * 구성원마다 종 정보를 더 받지 않는다. 이름은 한꺼번에 받아 둔 이름 표에서 붙인다.
  */
 data class EvolutionChainMemberWithName(
     @ColumnInfo(name = "pokemon_id") val pokemonId: Int,
@@ -37,6 +37,8 @@ data class EvolutionChainMemberWithName(
     val trigger: String?,
     @ColumnInfo(name = "korean") val korean: String?,
     @ColumnInfo(name = "english") val english: String?,
+    @ColumnInfo(name = "item_korean") val itemKorean: String? = null,
+    @ColumnInfo(name = "item_english") val itemEnglish: String? = null,
 )
 
 fun List<EvolutionChainMemberWithName>.asExternalModel(): List<EvolutionStage> = map { member ->
@@ -56,7 +58,12 @@ fun List<EvolutionChainMemberWithName>.asExternalModel(): List<EvolutionStage> =
 /** 1 단계는 조건이 없다. */
 private fun EvolutionChainMemberWithName.condition(): EvolutionCondition? {
     if (minLevel == null && item == null && trigger == null) return null
-    return EvolutionCondition(minLevel = minLevel, item = item, trigger = trigger)
+    return EvolutionCondition(
+        minLevel = minLevel,
+        item = item,
+        itemName = LocalizedText(korean = itemKorean.orEmpty(), english = itemEnglish.orEmpty()),
+        trigger = trigger
+    )
 }
 
 private fun officialArtworkUrl(id: Int) =

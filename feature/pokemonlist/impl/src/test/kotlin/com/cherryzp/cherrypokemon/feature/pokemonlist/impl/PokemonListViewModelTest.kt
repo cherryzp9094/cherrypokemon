@@ -151,6 +151,22 @@ class PokemonListViewModelTest {
     }
 
     @Test
+    fun onCreate_fillsPokemonNames() = runTest {
+        val viewModel =
+            PokemonListViewModel(pokemonRepository, userDataRepository, SavedStateHandle())
+
+        viewModel.test(this) {
+            runOnCreate()
+            expectInitialState()
+            testScheduler.runCurrent()
+            cancelAndIgnoreRemainingItems()
+        }
+        // 목록 카드가 언어별 이름으로 보이려면 이름을 받아 둬야 한다.
+        assertEquals(1, pokemonRepository.namesCount)
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
     fun setQuery_blank_doesNotFillIndex() = runTest {
         val viewModel =
             PokemonListViewModel(pokemonRepository, userDataRepository, SavedStateHandle())

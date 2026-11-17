@@ -137,6 +137,7 @@ internal fun PokemonListScreen(
     Box(modifier = modifier) {
         PokemonListBody(
             pokemons = pokemons,
+            language = language,
             header = header,
             query = query,
             onPokemonClick = onPokemonClick,
@@ -156,6 +157,7 @@ internal fun PokemonListScreen(
 @Composable
 private fun PokemonListBody(
     pokemons: LazyPagingItems<Pokemon>,
+    language: AppLanguage,
     header: @Composable () -> Unit,
     query: String,
     onPokemonClick: (pokeId: Int) -> Unit,
@@ -197,6 +199,7 @@ private fun PokemonListBody(
 
     PokemonGrid(
         pokemons = pokemons,
+        language = language,
         cardColors = cardColors,
         onPokemonClick = onPokemonClick,
         selectedPokeId = selectedPokeId,
@@ -242,6 +245,7 @@ private fun ListHeader(
 @Composable
 private fun PokemonGrid(
     pokemons: LazyPagingItems<Pokemon>,
+    language: AppLanguage,
     cardColors: SnapshotStateMap<Int, Color>,
     onPokemonClick: (pokeId: Int) -> Unit,
     selectedPokeId: Int?,
@@ -287,7 +291,8 @@ private fun PokemonGrid(
             val pokemon = pokemons[index]
             if (pokemon != null) {
                 PokemonCard(
-                    name = pokemon.name,
+                    // 이름을 아직 받지 못했으면(첫 실행에 오프라인) 식별자라도 보여준다.
+                    name = pokemon.localizedName.of(language).ifEmpty { pokemon.name },
                     number = pokemon.id,
                     imageUrl = pokemon.imageUrl,
                     onClick = { onPokemonClick(pokemon.id) },
