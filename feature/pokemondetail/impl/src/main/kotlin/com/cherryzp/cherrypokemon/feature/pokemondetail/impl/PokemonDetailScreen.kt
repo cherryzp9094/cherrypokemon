@@ -328,7 +328,7 @@ private fun HeaderBand(
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
     ) {
         Text(
-            text = "%03d".format(pokemonDetail.id),
+            text = pokemonDetail.id.toString().padStart(3, '0'),
             // 낮은 머리말에서는 큰 번호가 뒤로가기 버튼까지 올라온다.
             style = if (height < COMPACT_BAND_HEIGHT) {
                 MaterialTheme.typography.displaySmall

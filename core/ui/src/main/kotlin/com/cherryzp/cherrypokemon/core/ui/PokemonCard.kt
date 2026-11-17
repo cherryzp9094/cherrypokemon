@@ -80,7 +80,7 @@ fun PokemonCard(
         // 카드 높이를 고정해야 이름 길이가 달라도 줄이 가지런하다.
         Box(modifier = Modifier.fillMaxWidth().aspectRatio(0.8f)) {
             Text(
-                text = "%03d".format(number),
+                text = number.toString().padStart(3, '0'),
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.Black,
                 color = contentColor.copy(alpha = 0.16f),
