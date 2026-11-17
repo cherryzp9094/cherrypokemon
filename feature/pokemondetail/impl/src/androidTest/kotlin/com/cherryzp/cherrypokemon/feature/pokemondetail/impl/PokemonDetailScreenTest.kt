@@ -18,6 +18,7 @@ import com.cherryzp.cherrypokemon.core.model.EvolutionStage
 import com.cherryzp.cherrypokemon.core.model.LocalizedText
 import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
+import com.cherryzp.cherrypokemon.core.model.PokemonMove
 import com.cherryzp.cherrypokemon.core.model.PokemonStats
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import com.cherryzp.cherrypokemon.core.model.PokemonTypeInfo
@@ -365,6 +366,64 @@ class PokemonDetailScreenTest {
         val genus = if (isKorean) "씨앗포켓몬" else "Seed Pokémon"
         val legendary = resources.getString(R.string.feature_pokemondetail_impl_legendary)
         composeTestRule.onNodeWithText("$genus · $legendary").assertIsDisplayed()
+    }
+
+    @Test
+    fun moves_showLevelNameAndPower() {
+        val withMoves = pokemonDetail.copy(
+            moves = listOf(
+                PokemonMove(
+                    name = "vine-whip",
+                    localizedName = LocalizedText(korean = "덩굴채찍", english = "Vine Whip"),
+                    type = PokemonTypeInfo(
+                        PokemonType.Grass,
+                        LocalizedText(korean = "풀", english = "Grass")
+                    ),
+                    power = 77,
+                    accuracy = 100,
+                    pp = 25,
+                    damageClass = "physical",
+                    level = 3
+                ),
+                PokemonMove(
+                    name = "growth",
+                    localizedName = LocalizedText(korean = "성장", english = "Growth"),
+                    type = PokemonTypeInfo(
+                        PokemonType.Normal,
+                        LocalizedText(korean = "노말", english = "Normal")
+                    ),
+                    power = null,
+                    accuracy = null,
+                    pp = 20,
+                    damageClass = "status",
+                    level = 0
+                )
+            )
+        )
+        setScreen(PokemonDetailUiState(withMoves, RefreshState.Idle))
+
+        composeTestRule
+            .onNodeWithText(if (isKorean) "덩굴채찍" else "Vine Whip")
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeTestRule.onNodeWithText("77").performScrollTo().assertIsDisplayed()
+        // 변화 기술은 위력 대신 줄표, 진화할 때 배우는 기술은 레벨 대신 "진화".
+        composeTestRule.onNodeWithText("—").performScrollTo().assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText(
+                resources.getString(R.string.feature_pokemondetail_impl_move_on_evolution)
+            )
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun moves_empty_hidesSection() {
+        setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
+
+        composeTestRule
+            .onNodeWithText(resources.getString(R.string.feature_pokemondetail_impl_section_moves))
+            .assertDoesNotExist()
     }
 
     @Test

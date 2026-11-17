@@ -8,12 +8,17 @@ import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionChain
 import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkFlavorText
 import com.cherryzp.cherrypokemon.core.network.model.NetworkGenus
+import com.cherryzp.cherrypokemon.core.network.model.NetworkGraphQlLanguageName
+import com.cherryzp.cherrypokemon.core.network.model.NetworkGraphQlName
+import com.cherryzp.cherrypokemon.core.network.model.NetworkMove
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedResource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkOfficialArtwork
 import com.cherryzp.cherrypokemon.core.network.model.NetworkOtherSprites
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonAbility
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonMove
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonMoves
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNames
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonSpecies
@@ -161,6 +166,25 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
         )
     }
 
+    /** 레벨업 기술. 기본은 피카츄 스칼렛·바이올렛 두 개와 소드·실드 하나다. */
+    var pokemonMoves: NetworkPokemonMoves = NetworkPokemonMoves(
+        moves = listOf(
+            pokemonMove("scarlet-violet", 1, "thunder-shock", "전기쇼크", "electric", power = 40),
+            pokemonMove("scarlet-violet", 1, "growl", "울음소리", "normal", power = null),
+            pokemonMove("sword-shield", 5, "tail-whip", "꼬리흔들기", "normal", power = null)
+        )
+    )
+
+    /** 기술 호출 횟수. 한 번만 받는지 보는 데 쓴다. */
+    var movesCallCount: Int = 0
+        private set
+
+    override suspend fun getPokemonMoves(pokeId: Int): NetworkPokemonMoves {
+        movesCallCount++
+        error?.let { throw it }
+        return pokemonMoves
+    }
+
     var pokemonNames: NetworkPokemonNames = NetworkPokemonNames()
 
     /** 이름 전체 호출 횟수. 한 번만 받는지 보는 데 쓴다. */
@@ -186,6 +210,30 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
     }
 
     companion object {
+        fun pokemonMove(
+            versionGroup: String,
+            level: Int,
+            name: String,
+            korean: String,
+            type: String,
+            power: Int?,
+        ) = NetworkPokemonMove(
+            level = level,
+            versionGroup = NetworkGraphQlName(versionGroup),
+            move = NetworkMove(
+                name = name,
+                power = power,
+                accuracy = 100,
+                pp = 30,
+                type = NetworkGraphQlName(type),
+                damageClass = NetworkGraphQlName(if (power == null) "status" else "special"),
+                names = listOf(
+                    NetworkGraphQlLanguageName(korean, languageId = 3),
+                    NetworkGraphQlLanguageName(name, languageId = 9)
+                )
+            )
+        )
+
         fun networkPokemon(id: Int, name: String) = NetworkNamedResource(
             name = name,
             url = "https://pokeapi.co/api/v2/pokemon/$id/"

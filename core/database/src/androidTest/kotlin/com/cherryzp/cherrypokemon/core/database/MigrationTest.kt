@@ -254,4 +254,22 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate11To12_addsMoveTables() = runTest {
+        helper.createDatabase(version = 11).use { connection ->
+            connection.execSQL(
+                "INSERT INTO pokemons (id, name, image_url) VALUES (25, 'pikachu', '')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 12).use { connection ->
+            for (table in listOf("moves", "pokemon_moves")) {
+                connection.prepare("SELECT COUNT(*) FROM $table").use { statement ->
+                    assertTrue(statement.step())
+                    assertEquals(0, statement.getInt(0))
+                }
+            }
+        }
+    }
 }

@@ -73,6 +73,7 @@ import com.cherryzp.cherrypokemon.core.model.EvolutionCondition
 import com.cherryzp.cherrypokemon.core.model.EvolutionStage
 import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
+import com.cherryzp.cherrypokemon.core.model.PokemonMove
 import com.cherryzp.cherrypokemon.core.model.PokemonStats
 import com.cherryzp.cherrypokemon.core.model.TypeMatchup
 import com.cherryzp.cherrypokemon.core.ui.DetailRow
@@ -300,8 +301,93 @@ private fun DetailBody(
             stringResource(R.string.feature_pokemondetail_impl_section_basics)
         )
         BasicsBlock(pokemonDetail = pokemonDetail, language = language)
+
+        if (pokemonDetail.moves.isNotEmpty()) {
+            DetailSectionLabel(stringResource(R.string.feature_pokemondetail_impl_section_moves))
+            MovesBlock(moves = pokemonDetail.moves, language = language)
+        }
     }
 }
+
+/**
+ * 레벨업으로 배우는 기술. 레벨 · 이름 · 타입 · 위력을 한 줄에 놓는다.
+ *
+ * 명중·PP 까지 넣으면 폰 폭에서 이름이 잘린다. 고르는 데 가장 중요한 위력만 둔다.
+ */
+@Composable
+private fun MovesBlock(moves: List<PokemonMove>, language: AppLanguage) {
+    Column(verticalArrangement = Arrangement.spacedBy(DETAIL_ROW_GAP)) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            MoveHeader(
+                text = stringResource(R.string.feature_pokemondetail_impl_move_level),
+                width = MOVE_LEVEL_WIDTH
+            )
+            MoveHeader(
+                text = stringResource(R.string.feature_pokemondetail_impl_move_name),
+                modifier = Modifier.weight(1f)
+            )
+            MoveHeader(
+                text = stringResource(R.string.feature_pokemondetail_impl_move_power),
+                width = MOVE_POWER_WIDTH,
+                textAlign = TextAlign.End
+            )
+        }
+        moves.forEach { move -> MoveRow(move = move, language = language) }
+    }
+}
+
+@Composable
+private fun MoveHeader(
+    text: String,
+    modifier: Modifier = Modifier,
+    width: Dp? = null,
+    textAlign: TextAlign = TextAlign.Start,
+) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = textAlign,
+        modifier = if (width != null) modifier.width(width) else modifier
+    )
+}
+
+@Composable
+private fun MoveRow(move: PokemonMove, language: AppLanguage) {
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = if (move.level == 0) {
+                stringResource(R.string.feature_pokemondetail_impl_move_on_evolution)
+            } else {
+                move.level.toString()
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(MOVE_LEVEL_WIDTH)
+        )
+        Text(
+            text = move.localizedName.of(language).ifEmpty { move.name },
+            style = MaterialTheme.typography.bodyMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f).padding(end = 8.dp)
+        )
+        TypeChip(
+            text = move.type.name.of(language).ifEmpty { move.type.type.name },
+            color = move.type.type.color
+        )
+        Text(
+            // 변화 기술은 위력이 없다.
+            text = move.power?.toString() ?: "—",
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.End,
+            modifier = Modifier.width(MOVE_POWER_WIDTH)
+        )
+    }
+}
+
+private val MOVE_LEVEL_WIDTH = 44.dp
+private val MOVE_POWER_WIDTH = 44.dp
 
 /** 한 구간 안에서 줄과 줄 사이. 구간 사이(28dp)보다 확실히 좁아야 묶여 보인다. */
 private val DETAIL_ROW_GAP = 8.dp

@@ -46,4 +46,9 @@
     <string name="feature_pokemondetail_impl_gender_value">♂ %1$s%% · ♀ %2$s%%</string>
     <string name="feature_pokemondetail_impl_genderless">Genderless</string>
     <string name="feature_pokemondetail_impl_egg_groups">Egg groups</string>
+    <string name="feature_pokemondetail_impl_section_moves">Level-up moves</string>
+    <string name="feature_pokemondetail_impl_move_level">Lv.</string>
+    <string name="feature_pokemondetail_impl_move_name">Move</string>
+    <string name="feature_pokemondetail_impl_move_power">Power</string>
+    <string name="feature_pokemondetail_impl_move_on_evolution">Evo.</string>
 </resources>

@@ -7,6 +7,8 @@ import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionChain
 import com.cherryzp.cherrypokemon.core.network.model.NetworkGraphQlRequest
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonMoves
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonMovesResponse
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNames
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNamesResponse
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
@@ -61,6 +63,12 @@ private interface RetrofitPokemonNetworkApi {
         @Url url: String,
         @Body body: NetworkGraphQlRequest,
     ): NetworkPokemonNamesResponse
+
+    @POST
+    suspend fun getPokemonMoves(
+        @Url url: String,
+        @Body body: NetworkGraphQlRequest,
+    ): NetworkPokemonMovesResponse
 }
 
 @Singleton
@@ -108,9 +116,49 @@ internal class RetrofitPokemonNetwork @Inject constructor(
         // 질의 오류는 HTTP 200 에 errors 만 담아 온다. 다른 네트워크 실패처럼 다루게 예외로 바꾼다.
         ?: throw IOException("GraphQL 응답에 data 가 없다")
 
+    override suspend fun getPokemonMoves(pokeId: Int): NetworkPokemonMoves = networkApi
+        .getPokemonMoves(
+            url = BuildConfig.POKE_API_GRAPHQL_URL,
+            body = NetworkGraphQlRequest(POKEMON_MOVES_QUERY, variables = mapOf("id" to pokeId))
+        )
+        .data
+        ?: throw IOException("GraphQL 응답에 data 가 없다")
+
     private companion object {
         const val KOREAN = 3
         const val ENGLISH = 9
+
+        /**
+         * 본편 게임에서 레벨업으로 배우는 기술. 어느 게임 것을 쓸지는 데이터 레이어가 고른다.
+         *
+         * 버전 그룹 번호는 출시 순서가 아니다(28 은 옛 일본판 적·녹). 그래서 본편 게임 이름으로 거른다.
+         */
+        val POKEMON_MOVES_QUERY = """
+            query moves(${'$'}id: Int!) {
+              pokemonmove(where: {
+                pokemon_id: {_eq: ${'$'}id},
+                movelearnmethod: {name: {_eq: "level-up"}},
+                versiongroup: {name: {_in: [$MAIN_VERSION_GROUPS]}}
+              }) {
+                level
+                versiongroup { name }
+                move {
+                  name power accuracy pp
+                  type { name }
+                  movedamageclass { name }
+                  movenames(where: {language_id: {_in: [$KOREAN, $ENGLISH]}}) { name language_id }
+                }
+              }
+            }
+        """.trimIndent()
+
+        /** 최신 본편부터. 데이터 레이어도 이 순서로 고른다. */
+        const val MAIN_VERSION_GROUPS =
+            "\"scarlet-violet\", \"brilliant-diamond-shining-pearl\", \"sword-shield\", " +
+                "\"ultra-sun-ultra-moon\", \"sun-moon\", \"omega-ruby-alpha-sapphire\", " +
+                "\"x-y\", \"black-2-white-2\", \"black-white\", \"heartgold-soulsilver\", " +
+                "\"platinum\", \"diamond-pearl\", \"emerald\", \"firered-leafgreen\", " +
+                "\"ruby-sapphire\", \"crystal\", \"gold-silver\", \"yellow\", \"red-blue\""
 
         /** 종 이름은 1~1025 번, 폼은 10001 번부터. 폼은 기본 모양의 이름만 쓴다. */
         val POKEMON_NAMES_QUERY = """

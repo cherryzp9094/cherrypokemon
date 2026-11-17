@@ -3,6 +3,7 @@ package com.cherryzp.cherrypokemon.core.database.di
 import com.cherryzp.cherrypokemon.core.database.CherryPokemonDatabase
 import com.cherryzp.cherrypokemon.core.database.dao.EvolutionChainDao
 import com.cherryzp.cherrypokemon.core.database.dao.LocalizedNameDao
+import com.cherryzp.cherrypokemon.core.database.dao.MoveDao
 import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.dao.RemoteKeyDao
 import dagger.Module
@@ -27,4 +28,7 @@ internal object DaosModule {
     @Provides
     fun providesEvolutionChainDao(database: CherryPokemonDatabase): EvolutionChainDao =
         database.evolutionChainDao()
+
+    @Provides
+    fun providesMoveDao(database: CherryPokemonDatabase): MoveDao = database.moveDao()
 }
