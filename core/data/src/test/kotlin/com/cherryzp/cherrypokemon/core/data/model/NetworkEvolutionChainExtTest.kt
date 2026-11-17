@@ -56,6 +56,71 @@ class NetworkEvolutionChainExtTest {
     }
 
     @Test
+    fun asEntities_locationAndItemDetails_prefersItem() {
+        // 리피아: 옛 게임은 장소(이끼바위 근처), 최신 게임은 리프의돌. 장소는 게임마다 다르다.
+        val leafeon = withDetails(
+            470,
+            "leafeon",
+            NetworkEvolutionDetail(
+                trigger = resource("level-up"),
+                location = resource("eterna-forest")
+            ),
+            NetworkEvolutionDetail(trigger = resource("use-item"), item = resource("leaf-stone"))
+        )
+
+        assertEquals("leaf-stone", leafeon.item)
+        assertNull(leafeon.location)
+    }
+
+    @Test
+    fun asEntities_regionalFormDetail_isSkipped() {
+        // 야도킹: 두 번째 조건은 갈라르 야도킹으로 진화하는 것이라 기본 모습 체인과 맞지 않는다.
+        val slowking = withDetails(
+            199,
+            "slowking",
+            NetworkEvolutionDetail(trigger = resource("trade"), heldItem = resource("kings-rock")),
+            NetworkEvolutionDetail(
+                trigger = resource("use-item"),
+                item = resource("galarica-wreath"),
+                evolvedPokemonForm = resource("slowking-galar")
+            )
+        )
+
+        assertEquals("trade", slowking.trigger)
+        assertEquals("kings-rock", slowking.heldItem)
+        assertNull(slowking.item)
+    }
+
+    @Test
+    fun asEntities_friendshipTimeAndMoveType_areKept() {
+        val umbreon = withDetails(
+            197,
+            "umbreon",
+            NetworkEvolutionDetail(
+                trigger = resource("level-up"),
+                minHappiness = 160,
+                timeOfDay = "night"
+            )
+        )
+        val sylveon = withDetails(
+            700,
+            "sylveon",
+            NetworkEvolutionDetail(
+                trigger = resource("level-up"),
+                minAffection = 2,
+                knownMoveType = resource("fairy")
+            )
+        )
+
+        assertEquals(160, umbreon.minHappiness)
+        assertEquals("night", umbreon.timeOfDay)
+        assertEquals(2, sylveon.minAffection)
+        // 타입은 화면이 이름을 붙일 수 있게 PokemonType 이름으로 둔다.
+        assertEquals("Fairy", sylveon.knownMoveType)
+        assertNull(sylveon.timeOfDay)
+    }
+
+    @Test
     fun asEntities_idMissingFromUrl_dropsThatMember() {
         val entities = chain(
             NetworkChainLink(species = NetworkNamedResource(name = "mew", url = ""))
@@ -65,6 +130,17 @@ class NetworkEvolutionChainExtTest {
     }
 
     private fun chain(root: NetworkChainLink) = NetworkEvolutionChain(id = 1, chain = root)
+
+    /** 이브이에서 한 단계 진화하는 [id] 의 구성원을 만든다. */
+    private fun withDetails(id: Int, name: String, vararg details: NetworkEvolutionDetail) = chain(
+        link(133, "eevee").copy(
+            evolvesTo = listOf(
+                link(id, name).copy(evolutionDetails = details.toList())
+            )
+        )
+    ).asEntities().single { it.pokemonId == id }
+
+    private fun resource(name: String) = NetworkNamedResource(name = name)
 
     private fun link(
         id: Int,

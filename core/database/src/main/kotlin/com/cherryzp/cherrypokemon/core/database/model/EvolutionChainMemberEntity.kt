@@ -5,6 +5,7 @@ import androidx.room3.Entity
 import com.cherryzp.cherrypokemon.core.model.EvolutionCondition
 import com.cherryzp.cherrypokemon.core.model.EvolutionStage
 import com.cherryzp.cherrypokemon.core.model.LocalizedText
+import com.cherryzp.cherrypokemon.core.model.PokemonType
 
 /**
  * 진화 체인을 평탄화해 담는다. 트리 그대로 담으면 읽을 때마다 다시 펼쳐야 한다.
@@ -21,6 +22,15 @@ data class EvolutionChainMemberEntity(
     @ColumnInfo(name = "min_level") val minLevel: Int?,
     val item: String?,
     val trigger: String?,
+    @ColumnInfo(name = "held_item") val heldItem: String? = null,
+    @ColumnInfo(name = "min_happiness") val minHappiness: Int? = null,
+    @ColumnInfo(name = "min_affection") val minAffection: Int? = null,
+    /** `day` / `night`. */
+    @ColumnInfo(name = "time_of_day") val timeOfDay: String? = null,
+    @ColumnInfo(name = "known_move") val knownMove: String? = null,
+    /** [PokemonType] 의 이름. */
+    @ColumnInfo(name = "known_move_type") val knownMoveType: String? = null,
+    val location: String? = null,
 )
 
 /**
@@ -39,6 +49,17 @@ data class EvolutionChainMemberWithName(
     @ColumnInfo(name = "english") val english: String?,
     @ColumnInfo(name = "item_korean") val itemKorean: String? = null,
     @ColumnInfo(name = "item_english") val itemEnglish: String? = null,
+    @ColumnInfo(name = "held_item") val heldItem: String? = null,
+    @ColumnInfo(name = "held_item_korean") val heldItemKorean: String? = null,
+    @ColumnInfo(name = "held_item_english") val heldItemEnglish: String? = null,
+    @ColumnInfo(name = "min_happiness") val minHappiness: Int? = null,
+    @ColumnInfo(name = "min_affection") val minAffection: Int? = null,
+    @ColumnInfo(name = "time_of_day") val timeOfDay: String? = null,
+    @ColumnInfo(name = "known_move") val knownMove: String? = null,
+    @ColumnInfo(name = "known_move_type") val knownMoveType: String? = null,
+    @ColumnInfo(name = "known_move_type_korean") val knownMoveTypeKorean: String? = null,
+    @ColumnInfo(name = "known_move_type_english") val knownMoveTypeEnglish: String? = null,
+    val location: String? = null,
 )
 
 fun List<EvolutionChainMemberWithName>.asExternalModel(): List<EvolutionStage> = map { member ->
@@ -57,12 +78,27 @@ fun List<EvolutionChainMemberWithName>.asExternalModel(): List<EvolutionStage> =
 
 /** 1 단계는 조건이 없다. */
 private fun EvolutionChainMemberWithName.condition(): EvolutionCondition? {
-    if (minLevel == null && item == null && trigger == null) return null
+    if (stage == 1) return null
     return EvolutionCondition(
         minLevel = minLevel,
         item = item,
         itemName = LocalizedText(korean = itemKorean.orEmpty(), english = itemEnglish.orEmpty()),
-        trigger = trigger
+        trigger = trigger,
+        heldItem = heldItem,
+        heldItemName = LocalizedText(
+            korean = heldItemKorean.orEmpty(),
+            english = heldItemEnglish.orEmpty()
+        ),
+        minHappiness = minHappiness,
+        minAffection = minAffection,
+        timeOfDay = timeOfDay,
+        knownMove = knownMove,
+        knownMoveType = PokemonType.entries.firstOrNull { it.name == knownMoveType },
+        knownMoveTypeName = LocalizedText(
+            korean = knownMoveTypeKorean.orEmpty(),
+            english = knownMoveTypeEnglish.orEmpty()
+        ),
+        location = location
     )
 }
 
