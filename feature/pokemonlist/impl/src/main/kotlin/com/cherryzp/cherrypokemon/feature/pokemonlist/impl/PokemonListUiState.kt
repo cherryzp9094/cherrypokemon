@@ -1,6 +1,8 @@
 package com.cherryzp.cherrypokemon.feature.pokemonlist.impl
 
 import com.cherryzp.cherrypokemon.core.model.AppLanguage
+import com.cherryzp.cherrypokemon.core.model.PokemonType
+import com.cherryzp.cherrypokemon.core.model.PokemonTypeInfo
 
 /**
  * 목록 화면 상태.
@@ -13,6 +15,12 @@ data class PokemonListUiState(
     val language: AppLanguage? = null,
     /** 검색어. 비어 있으면 전체 목록이다. */
     val query: String = "",
+    /** 고른 타입. null 이면 거르지 않는다. */
+    val typeFilter: PokemonType? = null,
+    /** 고른 세대(1~9). null 이면 거르지 않는다. */
+    val generationFilter: Int? = null,
+    /** 타입 단추에 늘어놓을 타입과 그 언어별 이름. */
+    val types: List<PokemonTypeInfo> = emptyList(),
 )
 
 /** 아직 보낼 일회성 이벤트가 없다. */

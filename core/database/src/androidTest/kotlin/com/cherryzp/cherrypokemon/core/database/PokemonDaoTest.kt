@@ -9,6 +9,7 @@ import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.model.LocalizedTextEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonDetailEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
+import com.cherryzp.cherrypokemon.core.database.model.PokemonFilterEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonStatsEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonWithName
@@ -206,6 +207,40 @@ class PokemonDaoTest {
         assertEquals(listOf("pikachu"), pokemonDao.searchPagingSource("피카").names())
         // 식별자(mr-mime)와 다른 영어 이름으로도 찾는다.
         assertEquals(listOf("mr-mime"), pokemonDao.searchPagingSource("Mr. M").names())
+    }
+
+    @Test
+    fun searchPagingSource_filtersByTypeAndGeneration() = runTest {
+        pokemonDao.insertPokemons(
+            listOf(
+                PokemonEntity(id = 6, name = "charizard", imageUrl = ""),
+                PokemonEntity(id = 25, name = "pikachu", imageUrl = ""),
+                PokemonEntity(id = 10034, name = "charizard-mega-x", imageUrl = "")
+            )
+        )
+        pokemonDao.insertFilters(
+            listOf(
+                PokemonFilterEntity(id = 6, type1 = "Fire", type2 = "Flying", generation = 1),
+                PokemonFilterEntity(id = 25, type1 = "Electric", type2 = null, generation = 1),
+                PokemonFilterEntity(id = 10034, type1 = "Fire", type2 = "Dragon", generation = 1)
+            )
+        )
+
+        // 두 번째 타입도 본다.
+        assertEquals(
+            listOf("charizard-mega-x"),
+            pokemonDao.searchPagingSource("", type = "Dragon").names()
+        )
+        assertEquals(
+            listOf("charizard", "charizard-mega-x"),
+            pokemonDao.searchPagingSource("", type = "Fire", generation = 1).names()
+        )
+        // 검색어와 함께 건다.
+        assertEquals(
+            listOf("charizard"),
+            pokemonDao.searchPagingSource("6", type = "Fire").names()
+        )
+        assertEquals(emptyList<String>(), pokemonDao.searchPagingSource("", generation = 2).names())
     }
 
     @Test

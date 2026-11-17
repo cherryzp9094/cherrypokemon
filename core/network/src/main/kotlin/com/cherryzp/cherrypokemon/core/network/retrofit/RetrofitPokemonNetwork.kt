@@ -8,6 +8,8 @@ import com.cherryzp.cherrypokemon.core.network.model.NetworkGraphQlRequest
 import com.cherryzp.cherrypokemon.core.network.model.NetworkMoveDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonFilters
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonFiltersResponse
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonMoves
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonMovesResponse
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNames
@@ -69,6 +71,12 @@ private interface RetrofitPokemonNetworkApi {
     ): NetworkPokemonNamesResponse
 
     @POST
+    suspend fun getPokemonFilters(
+        @Url url: String,
+        @Body body: NetworkGraphQlRequest,
+    ): NetworkPokemonFiltersResponse
+
+    @POST
     suspend fun getPokemonMoves(
         @Url url: String,
         @Body body: NetworkGraphQlRequest,
@@ -122,6 +130,14 @@ internal class RetrofitPokemonNetwork @Inject constructor(
         // 질의 오류는 HTTP 200 에 errors 만 담아 온다. 다른 네트워크 실패처럼 다루게 예외로 바꾼다.
         ?: throw IOException("GraphQL 응답에 data 가 없다")
 
+    override suspend fun getPokemonFilters(): NetworkPokemonFilters = networkApi
+        .getPokemonFilters(
+            url = BuildConfig.POKE_API_GRAPHQL_URL,
+            body = NetworkGraphQlRequest(POKEMON_FILTERS_QUERY)
+        )
+        .data
+        ?: throw IOException("GraphQL 응답에 data 가 없다")
+
     override suspend fun getPokemonMoves(pokeId: Int): NetworkPokemonMoves = networkApi
         .getPokemonMoves(
             url = BuildConfig.POKE_API_GRAPHQL_URL,
@@ -154,6 +170,17 @@ internal class RetrofitPokemonNetwork @Inject constructor(
                   movedamageclass { name }
                   movenames(where: {language_id: {_in: [$KOREAN, $ENGLISH]}}) { name language_id }
                 }
+              }
+            }
+        """.trimIndent()
+
+        /** 모든 포켓몬(폼 포함)의 타입과 세대. 약 1350 마리, 160KB. */
+        val POKEMON_FILTERS_QUERY = """
+            {
+              pokemon {
+                id
+                pokemontypes { slot type { name } }
+                pokemonspecy { generation_id }
               }
             }
         """.trimIndent()

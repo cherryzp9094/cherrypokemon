@@ -5,4 +5,9 @@
     <string name="feature_pokemonlist_impl_empty">표시할 포켓몬이 없습니다</string>
     <string name="feature_pokemonlist_impl_detail_placeholder_title">포켓몬을 골라 보세요</string>
     <string name="feature_pokemonlist_impl_detail_placeholder_body">종족값, 진화, 약점이 여기에 나옵니다.</string>
+    <string name="feature_pokemonlist_impl_filter_type">타입</string>
+    <string name="feature_pokemonlist_impl_filter_generation">세대</string>
+    <string name="feature_pokemonlist_impl_filter_all">전체</string>
+    <string name="feature_pokemonlist_impl_generation_value">%1$d세대</string>
+    <string name="feature_pokemonlist_impl_empty_filtered">조건에 맞는 포켓몬이 없습니다</string>
 </resources>

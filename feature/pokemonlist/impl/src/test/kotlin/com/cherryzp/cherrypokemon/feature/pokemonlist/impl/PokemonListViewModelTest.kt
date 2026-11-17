@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.testing.asSnapshot
 import com.cherryzp.cherrypokemon.core.model.AppLanguage
 import com.cherryzp.cherrypokemon.core.model.Pokemon
+import com.cherryzp.cherrypokemon.core.model.PokemonFilter
+import com.cherryzp.cherrypokemon.core.model.PokemonType
 import com.cherryzp.cherrypokemon.core.testing.repository.FakePokemonRepository
 import com.cherryzp.cherrypokemon.core.testing.repository.FakeUserDataRepository
 import com.cherryzp.cherrypokemon.core.testing.util.MainDispatcherRule
@@ -163,6 +165,67 @@ class PokemonListViewModelTest {
         }
         // 목록 카드가 언어별 이름으로 보이려면 이름을 받아 둬야 한다.
         assertEquals(1, pokemonRepository.namesCount)
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
+    fun onCreate_fillsFilterData() = runTest {
+        val viewModel =
+            PokemonListViewModel(pokemonRepository, userDataRepository, SavedStateHandle())
+
+        viewModel.test(this) {
+            runOnCreate()
+            expectInitialState()
+            testScheduler.runCurrent()
+            cancelAndIgnoreRemainingItems()
+        }
+        assertEquals(1, pokemonRepository.filtersCount)
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
+    fun setTypeFilter_showsItSavesItAndSearchesWithIt() = runTest {
+        pokemonRepository.sendPokemons(
+            listOf(Pokemon(id = 25, name = "pikachu", imageUrl = "https://example.com/25.png"))
+        )
+        val savedStateHandle = SavedStateHandle()
+        val viewModel =
+            PokemonListViewModel(pokemonRepository, userDataRepository, savedStateHandle)
+
+        viewModel.test(this) {
+            runOnCreate()
+            expectInitialState()
+            viewModel.setTypeFilter(PokemonType.Electric)
+            expectState { copy(typeFilter = PokemonType.Electric) }
+            viewModel.setGenerationFilter(1)
+            expectState { copy(generationFilter = 1) }
+            testScheduler.runCurrent()
+            cancelAndIgnoreRemainingItems()
+        }
+        viewModel.pokemons.asSnapshot()
+
+        // 검색어가 없어도 거름이 걸리면 로컬 검색으로 간다. 색인도 받는다.
+        assertEquals(
+            PokemonFilter(type = PokemonType.Electric, generation = 1),
+            pokemonRepository.lastFilter
+        )
+        assertEquals(1, pokemonRepository.indexCount)
+        assertEquals("Electric", savedStateHandle.get<String>("type"))
+        assertEquals(1, savedStateHandle.get<Int>("generation"))
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
+    fun savedFilter_isRestoredIntoState() = runTest {
+        val viewModel = PokemonListViewModel(
+            pokemonRepository,
+            userDataRepository,
+            SavedStateHandle(mapOf("type" to "Fire", "generation" to 3))
+        )
+
+        val state = viewModel.container.stateFlow.value
+        assertEquals(PokemonType.Fire, state.typeFilter)
+        assertEquals(3, state.generationFilter)
         viewModel.viewModelScope.cancel()
     }
 

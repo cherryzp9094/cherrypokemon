@@ -18,6 +18,7 @@ import com.cherryzp.cherrypokemon.core.network.model.NetworkOfficialArtwork
 import com.cherryzp.cherrypokemon.core.network.model.NetworkOtherSprites
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonAbility
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonFilters
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonMove
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonMoves
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNames
@@ -205,6 +206,18 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
         movesCallCount++
         error?.let { throw it }
         return pokemonMoves
+    }
+
+    var pokemonFilters: NetworkPokemonFilters = NetworkPokemonFilters()
+
+    /** 거름 데이터 호출 횟수. 한 번만 받는지 보는 데 쓴다. */
+    var filtersCallCount: Int = 0
+        private set
+
+    override suspend fun getPokemonFilters(): NetworkPokemonFilters {
+        filtersCallCount++
+        error?.let { throw it }
+        return pokemonFilters
     }
 
     var pokemonNames: NetworkPokemonNames = NetworkPokemonNames()

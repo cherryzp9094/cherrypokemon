@@ -26,7 +26,9 @@ import com.cherryzp.cherrypokemon.core.database.model.asExternalModel
 import com.cherryzp.cherrypokemon.core.model.LocalizedText
 import com.cherryzp.cherrypokemon.core.model.Pokemon
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
+import com.cherryzp.cherrypokemon.core.model.PokemonFilter
 import com.cherryzp.cherrypokemon.core.model.PokemonType
+import com.cherryzp.cherrypokemon.core.model.PokemonTypeInfo
 import com.cherryzp.cherrypokemon.core.model.PokemonVariety
 import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
@@ -65,12 +67,41 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         pagingSourceFactory = pokemonDao::pagingSource
     ).flow.map { pagingData -> pagingData.map(PokemonWithName::asExternalModel) }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override fun searchPokemonsStream(query: String): Flow<PagingData<Pokemon>> = Pager(
+    override fun searchPokemonsStream(
+        query: String,
+        filter: PokemonFilter,
+    ): Flow<PagingData<Pokemon>> = Pager(
         config = PagingConfig(pageSize = POKEMON_PAGE_SIZE),
         // 색인이 이미 로컬에 있으므로 네트워크를 보지 않는다.
-        pagingSourceFactory = { pokemonDao.searchPagingSource(query) }
+        pagingSourceFactory = {
+            pokemonDao.searchPagingSource(
+                query = query,
+                type = filter.type?.name,
+                generation = filter.generation
+            )
+        }
     ).flow.map { pagingData -> pagingData.map(PokemonWithName::asExternalModel) }
+
+    override suspend fun ensurePokemonFilters() {
+        if (pokemonDao.countFilters() == 0) {
+            pokemonDao.insertFilters(network.getPokemonFilters().asEntities())
+        }
+        // 타입 단추에 이름을 적으려면 18 타입 이름이 다 있어야 한다. 이미 받은 타입은 건너뛴다.
+        refreshTypes(POKEMON_TYPES.map { it.name.lowercase() })
+    }
+
+    override fun getTypesStream(): Flow<List<PokemonTypeInfo>> =
+        localizedNameDao.getTypeNames().map { saved ->
+            val byType = saved.associateBy { it.type }
+            POKEMON_TYPES.map { type ->
+                PokemonTypeInfo(
+                    type = type,
+                    name = byType[type.name]
+                        ?.let { LocalizedText(korean = it.korean, english = it.english) }
+                        ?: LocalizedText.Empty
+                )
+            }
+        }
 
     override suspend fun ensurePokemonIndex() {
         val page = network.getPokemons(offset = 0, limit = POKEMON_INDEX_LIMIT)
@@ -346,6 +377,10 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
 
     private companion object {
         const val POKEMON_PAGE_SIZE = 20
+
+        /** 포켓몬이 가질 수 있는 18 타입. 테라스탈(Stellar)·다크(Shadow) 같은 특수 타입은 뺀다. */
+        val POKEMON_TYPES = PokemonType.entries -
+            setOf(PokemonType.Stellar, PokemonType.Shadow, PokemonType.Unknown)
 
         /** 이 번호부터는 폼이다. 종 번호가 포켓몬 번호와 다르다. */
         const val FIRST_FORM_ID = 10001

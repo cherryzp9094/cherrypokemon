@@ -288,4 +288,20 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate13To14_addsFilterTable() = runTest {
+        helper.createDatabase(version = 13).use { connection ->
+            connection.execSQL(
+                "INSERT INTO pokemons (id, name, image_url) VALUES (25, 'pikachu', '')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 14).use { connection ->
+            connection.prepare("SELECT COUNT(*) FROM pokemon_filters").use { statement ->
+                assertTrue(statement.step())
+                assertEquals(0, statement.getInt(0))
+            }
+        }
+    }
 }
