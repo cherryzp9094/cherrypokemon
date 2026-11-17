@@ -31,6 +31,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -67,24 +68,39 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         pokemonDao.insertPokemons(page.results.mapNotNull { it.asEntity() })
     }
 
-    override fun getPokemonDetailStream(pokeId: Int): Flow<PokemonDetail?> = combine(
-        pokemonDao.getPokemonDetailEntity(pokeId),
-        localizedNameDao.getTypeNames(),
-        localizedNameDao.getAbilityNames()
-    ) { entity, typeNames, abilityNames ->
-        entity to entity?.asExternalModel(
-            typeNames = typeNames.associateBy { it.type },
-            abilityNames = abilityNames.associate { it.asExternalModel() }
-        )
-    }.flatMapLatest { (entity, detail) ->
-        // 체인 ID 는 상세에 들어 있어서 먼저 읽어야 구성원을 읽을 수 있다.
-        val chainId = entity?.evolutionChainId ?: 0
-        if (detail == null || chainId == 0) {
-            flowOf(detail)
-        } else {
-            evolutionChainDao.getChainMembers(chainId)
-                .map { members -> detail.copy(evolutionStages = members.asExternalModel()) }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun getPokemonDetailStream(pokeId: Int): Flow<PokemonDetail?> {
+        // Room 은 테이블에 쓰기만 있어도 내용이 같은 값을 다시 흘린다. 다른 포켓몬을 저장할 때도 그렇다.
+        val entity = pokemonDao.getPokemonDetailEntity(pokeId).distinctUntilChanged()
+
+        val detail = combine(
+            entity,
+            localizedNameDao.getTypeNames(),
+            localizedNameDao.getAbilityNames()
+        ) { entity, typeNames, abilityNames ->
+            entity?.asExternalModel(
+                typeNames = typeNames.associateBy { it.type },
+                abilityNames = abilityNames.associate { it.asExternalModel() }
+            )
         }
+
+        // 체인 ID 는 상세에 들어 있어서 먼저 읽어야 구성원을 읽을 수 있다. ID 가 바뀔 때만 구성원
+        // 쿼리를 다시 연다. 이름이 하나 더 저장될 때마다 새로 열 이유가 없다.
+        val evolutionStages = entity
+            .map { it?.evolutionChainId ?: 0 }
+            .distinctUntilChanged()
+            .flatMapLatest { chainId ->
+                if (chainId == 0) {
+                    flowOf(emptyList())
+                } else {
+                    evolutionChainDao.getChainMembers(chainId)
+                }
+            }
+            .map { members -> members.asExternalModel() }
+
+        return combine(detail, evolutionStages) { detail, stages ->
+            detail?.copy(evolutionStages = stages)
+        }.distinctUntilChanged()
     }
 
     override suspend fun refreshPokemonDetail(pokeId: Int) {

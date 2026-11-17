@@ -6,14 +6,19 @@ import com.cherryzp.cherrypokemon.core.database.model.EvolutionChainMemberWithNa
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 
 /** 메모리에만 담는 진화 체인 대역. 이름 join 은 비워 둔다. */
 class FakeEvolutionChainDao : EvolutionChainDao {
 
     private val members = MutableStateFlow(emptyList<EvolutionChainMemberEntity>())
 
+    /** 구성원 쿼리를 몇 번 열었는지. 쓸데없이 다시 여는지 보는 데 쓴다. */
+    var chainQueryCount: Int = 0
+        private set
+
     override fun getChainMembers(chainId: Int): Flow<List<EvolutionChainMemberWithName>> =
-        members.map { all ->
+        members.onStart { chainQueryCount++ }.map { all ->
             all.filter { it.chainId == chainId }
                 .sortedWith(compareBy({ it.stage }, { it.pokemonId }))
                 .map {
