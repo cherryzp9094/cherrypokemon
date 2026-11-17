@@ -11,10 +11,15 @@ import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Compani
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemonSpecies
 import com.cherryzp.cherrypokemon.core.data.FakeRemoteKeyDao
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
+import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
 import java.io.IOException
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -49,6 +54,51 @@ class OfflineFirstPokemonRepositoryTest {
     @Test
     fun getPokemonDetailStream_emptyLocal_emitsNull() = runTest {
         assertNull(repository.getPokemonDetailStream(pokeId = 1).first())
+    }
+
+    @Test
+    fun getPokemonDetailStream_otherPokemonSaved_doesNotEmitAgain() = runTest {
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.species = networkPokemonSpecies(id = 1)
+        repository.refreshPokemonDetail(pokeId = 1)
+        val emitted = collectDetails(pokeId = 1)
+        val before = emitted.size
+
+        // 다른 포켓몬을 열어도 같은 테이블에 쓰므로 Room 은 1번 쿼리도 다시 흘린다.
+        network.detail =
+            networkPokemonDetail(id = 4, name = "charmander", typeNames = listOf("fire"))
+        network.species = networkPokemonSpecies(id = 4)
+        repository.refreshPokemonDetail(pokeId = 4)
+        testScheduler.runCurrent()
+
+        assertEquals(before, emitted.size)
+    }
+
+    @Test
+    fun getPokemonDetailStream_namesAdded_doesNotReopenChainQuery() = runTest {
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.species = networkPokemonSpecies(id = 1)
+        repository.refreshPokemonDetail(pokeId = 1)
+        collectDetails(pokeId = 1)
+        val before = evolutionChainDao.chainQueryCount
+
+        // 다른 포켓몬을 열면서 새 타입·특성 이름이 저장된다.
+        network.detail =
+            networkPokemonDetail(id = 4, name = "charmander", typeNames = listOf("fire"))
+        network.species = networkPokemonSpecies(id = 4)
+        repository.refreshPokemonDetail(pokeId = 4)
+        testScheduler.runCurrent()
+
+        assertEquals(before, evolutionChainDao.chainQueryCount)
+    }
+
+    /** 스트림이 흘린 값을 모두 모은다. 테스트가 끝나면 수집도 끝난다. */
+    private fun TestScope.collectDetails(pokeId: Int): List<PokemonDetail?> {
+        val emitted = mutableListOf<PokemonDetail?>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            repository.getPokemonDetailStream(pokeId).toList(emitted)
+        }
+        return emitted
     }
 
     @Test
