@@ -682,11 +682,23 @@ private fun BasicsBlock(pokemonDetail: PokemonDetail, language: AppLanguage) {
             value = pokemonDetail.baseExperience.toString()
         )
         pokemonDetail.abilities.forEach { ability ->
-            DetailRow(
-                label = ability.label(),
-                // 이름을 아직 받지 못했으면 식별자를 그대로 보여준다.
-                value = ability.localizedName.of(language).ifEmpty { ability.name }
-            )
+            Column {
+                DetailRow(
+                    label = ability.label(),
+                    // 이름을 아직 받지 못했으면 식별자를 그대로 보여준다.
+                    value = ability.localizedName.of(language).ifEmpty { ability.name }
+                )
+                // 특성 이름만으로는 무엇을 하는지 모른다. 최신 게임의 설명을 아래에 붙인다.
+                val description = ability.description.of(language)
+                if (description.isNotEmpty()) {
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+            }
         }
     }
 }

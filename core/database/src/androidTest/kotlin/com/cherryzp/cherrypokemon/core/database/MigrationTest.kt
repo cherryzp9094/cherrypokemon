@@ -201,4 +201,25 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate8To9_keepsAbilityNamesWithEmptyDescriptions() = runTest {
+        helper.createDatabase(version = 8).use { connection ->
+            connection.execSQL(
+                "INSERT INTO ability_names (name, korean, english) " +
+                    "VALUES ('static', '정전기', 'Static')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 9).use { connection ->
+            connection.prepare(
+                "SELECT korean, description_korean FROM ability_names WHERE name = 'static'"
+            ).use { statement ->
+                assertTrue(statement.step())
+                assertEquals("정전기", statement.getText(0))
+                // 설명이 비어 있으면 다음 갱신 때 다시 받는다.
+                assertEquals("", statement.getText(1))
+            }
+        }
+    }
 }

@@ -21,7 +21,9 @@ class FakeLocalizedNameDao : LocalizedNameDao {
 
     override suspend fun getSavedTypes(): List<String> = typeNames.value.map { it.type }
 
-    override suspend fun getSavedAbilities(): List<String> = abilityNames.value.map { it.name }
+    override suspend fun getSavedAbilities(): List<String> = abilityNames.value
+        .filter { it.descriptionKorean.isNotEmpty() || it.descriptionEnglish.isNotEmpty() }
+        .map { it.name }
 
     override suspend fun insertTypeNames(names: List<TypeNameEntity>) {
         typeNames.value =

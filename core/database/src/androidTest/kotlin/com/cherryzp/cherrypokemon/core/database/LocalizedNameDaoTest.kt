@@ -33,6 +33,24 @@ class LocalizedNameDaoTest {
     fun tearDown() = database.close()
 
     @Test
+    fun getSavedAbilities_skipsAbilitiesWithoutDescription() = runTest {
+        localizedNameDao.insertAbilityNames(
+            listOf(
+                AbilityNameEntity(name = "static", korean = "정전기", english = "Static"),
+                AbilityNameEntity(
+                    name = "overgrow",
+                    korean = "심록",
+                    english = "Overgrow",
+                    descriptionKorean = "HP가 줄었을 때 풀타입 기술의 위력이 올라간다."
+                )
+            )
+        )
+
+        // 설명 없이 받아 둔 특성은 저장된 것으로 치지 않아 다음 갱신 때 다시 받는다.
+        assertEquals(listOf("overgrow"), localizedNameDao.getSavedAbilities())
+    }
+
+    @Test
     fun insertTypeNames_areReadBackAndListedAsSaved() = runTest {
         localizedNameDao.insertTypeNames(
             listOf(TypeNameEntity(type = "Grass", korean = "풀", english = "Grass"))

@@ -55,7 +55,7 @@ data class PokemonStatsEntity(
  */
 fun PokemonDetailEntity.asExternalModel(
     typeNames: Map<String, TypeNameEntity> = emptyMap(),
-    abilityNames: Map<String, LocalizedText> = emptyMap(),
+    abilityNames: Map<String, AbilityNameEntity> = emptyMap(),
 ) = PokemonDetail(
     id = id,
     name = name,
@@ -82,7 +82,13 @@ fun PokemonDetailEntity.asExternalModel(
         speed = stats.speed
     ),
     abilities = abilities.map { ability ->
-        ability.copy(localizedName = abilityNames[ability.name] ?: LocalizedText.Empty)
+        val saved = abilityNames[ability.name]
+        ability.copy(
+            localizedName = saved?.let { LocalizedText(it.korean, it.english) }
+                ?: LocalizedText.Empty,
+            description = saved?.let { LocalizedText(it.descriptionKorean, it.descriptionEnglish) }
+                ?: LocalizedText.Empty
+        )
     },
     typeMatchups = typeMatchups(defending = types, relations = typeNames)
 )
@@ -91,5 +97,3 @@ private fun LocalizedTextEntity.asExternalModel() =
     LocalizedText(korean = korean, english = english)
 
 fun TypeNameEntity.asLocalizedText() = LocalizedText(korean = korean, english = english)
-
-fun AbilityNameEntity.asExternalModel() = name to LocalizedText(korean = korean, english = english)

@@ -250,6 +250,35 @@ class PokemonDetailScreenTest {
     }
 
     @Test
+    fun ability_showsDescription() {
+        val withDescription = pokemonDetail.copy(
+            abilities = listOf(
+                PokemonAbility(
+                    name = "overgrow",
+                    isHidden = false,
+                    localizedName = LocalizedText(korean = "심록", english = "Overgrow"),
+                    description = LocalizedText(
+                        korean = "HP가 줄었을 때 풀타입 기술의 위력이 올라간다.",
+                        english = "Powers up Grass-type moves when the Pokémon's HP is low."
+                    )
+                )
+            )
+        )
+        setScreen(PokemonDetailUiState(withDescription, RefreshState.Idle))
+
+        composeTestRule
+            .onNodeWithText(
+                if (isKorean) {
+                    "HP가 줄었을 때 풀타입 기술의 위력이 올라간다."
+                } else {
+                    "Powers up Grass-type moves when the Pokémon's HP is low."
+                }
+            )
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    @Test
     fun detail_showsWeaknessesAndResistances() {
         setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
 

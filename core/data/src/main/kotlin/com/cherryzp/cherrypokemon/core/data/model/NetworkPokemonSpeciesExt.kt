@@ -26,5 +26,5 @@ internal fun NetworkPokemonSpecies.localizedFlavorText() = LocalizedTextEntity(
  * 도감 설명에는 게임 화면 폭에 맞춘 줄바꿈과 폼피드가 섞여 있다.
  * 그대로 두면 아무 데서나 줄이 끊기므로 공백으로 바꾼다.
  */
-private fun String?.clean(): String =
+internal fun String?.clean(): String =
     this?.replace('\n', ' ')?.replace('\u000c', ' ')?.replace(Regex(" +"), " ")?.trim().orEmpty()

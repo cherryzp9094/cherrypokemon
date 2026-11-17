@@ -10,6 +10,7 @@ import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Compani
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemonDetail
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemonSpecies
 import com.cherryzp.cherrypokemon.core.data.FakeRemoteKeyDao
+import com.cherryzp.cherrypokemon.core.database.model.AbilityNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
@@ -274,6 +275,40 @@ class OfflineFirstPokemonRepositoryTest {
         val saved = localizedNameDao.getSavedTypes()
         assertTrue(PokemonType.Fire.name in saved)
         assertTrue(PokemonType.Water.name in saved)
+    }
+
+    @Test
+    fun refreshPokemonDetail_savesAbilityDescription() = runTest {
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.species = networkPokemonSpecies(id = 1)
+
+        repository.refreshPokemonDetail(pokeId = 1)
+
+        val ability = repository.getPokemonDetailStream(pokeId = 1).first()?.abilities?.first()
+        // 최신 게임 설명을 쓰고, 게임 화면 폭에 맞춘 줄바꿈은 공백으로 바꾼다.
+        assertEquals("HP가 줄었을 때 풀타입 기술의 위력이 올라간다.", ability?.description?.korean)
+        assertEquals(
+            "Powers up Grass-type moves when the Pokémon's HP is low.",
+            ability?.description?.english
+        )
+    }
+
+    @Test
+    fun refreshPokemonDetail_abilitySavedWithoutDescription_isFetchedAgain() = runTest {
+        // 설명 칸이 생기기 전에 받아 둔 특성. 이름만 있다.
+        localizedNameDao.insertAbilityNames(
+            listOf(
+                AbilityNameEntity(name = "overgrow", korean = "심록", english = "Overgrow"),
+                AbilityNameEntity(name = "chlorophyll", korean = "엽록소", english = "Chlorophyll")
+            )
+        )
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.species = networkPokemonSpecies(id = 1)
+
+        repository.refreshPokemonDetail(pokeId = 1)
+
+        val ability = repository.getPokemonDetailStream(pokeId = 1).first()?.abilities?.first()
+        assertTrue(ability?.description?.korean.orEmpty().isNotEmpty())
     }
 
     @Test

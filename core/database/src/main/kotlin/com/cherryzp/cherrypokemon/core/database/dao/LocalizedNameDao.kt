@@ -22,7 +22,13 @@ interface LocalizedNameDao {
     @Query("SELECT type FROM type_names")
     suspend fun getSavedTypes(): List<String>
 
-    @Query("SELECT name FROM ability_names")
+    /**
+     * 설명까지 받아 둔 특성. 설명이 없는 특성(8 버전 전에 받은 것)은 빠져서 다음 갱신 때 다시 받는다.
+     */
+    @Query(
+        "SELECT name FROM ability_names " +
+            "WHERE description_korean != '' OR description_english != ''"
+    )
     suspend fun getSavedAbilities(): List<String>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
