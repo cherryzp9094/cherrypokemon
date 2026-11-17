@@ -427,6 +427,38 @@ class PokemonDetailScreenTest {
     }
 
     @Test
+    fun evolution_knownMove_showsMoveName() {
+        val tangrowth = pokemonDetail.copy(
+            evolutionStages = listOf(
+                stage(114, "tangela", "덩쿠리", "Tangela", stage = 1),
+                stage(
+                    465,
+                    "tangrowth",
+                    "덩쿠림보",
+                    "Tangrowth",
+                    stage = 2,
+                    condition = EvolutionCondition(
+                        trigger = "level-up",
+                        knownMove = "ancient-power",
+                        knownMoveName = LocalizedText(korean = "원시의힘", english = "Ancient Power")
+                    )
+                )
+            )
+        )
+        setScreen(PokemonDetailUiState(tangrowth, RefreshState.Idle))
+
+        composeTestRule
+            .onNodeWithText(
+                resources.getString(
+                    R.string.feature_pokemondetail_impl_evolution_knows_move,
+                    if (isKorean) "원시의힘" else "Ancient Power"
+                )
+            )
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    @Test
     fun detail_showsWeaknessesAndResistances() {
         setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
 

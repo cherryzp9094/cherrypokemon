@@ -57,7 +57,7 @@ class OfflineFirstPokemonRepositoryTest {
         network = FakePokemonNetworkDataSource()
         localizedNameDao = FakeLocalizedNameDao()
         pokemonDao = FakePokemonDao(names = { localizedNameDao.pokemonNames.value })
-        evolutionChainDao = FakeEvolutionChainDao()
+        evolutionChainDao = FakeEvolutionChainDao(savedMoves = { moveDao.savedMoves.keys })
         remoteKeyDao = FakeRemoteKeyDao()
         moveDao = FakeMoveDao()
         repository = OfflineFirstPokemonRepository(
@@ -344,6 +344,42 @@ class OfflineFirstPokemonRepositoryTest {
         assertEquals(listOf("growl", "thunder-shock"), moves?.map { it.name })
         assertEquals("전기쇼크", moves?.last()?.localizedName?.korean)
         assertEquals(1, network.movesCallCount)
+    }
+
+    @Test
+    fun refreshPokemonDetail_chainWithKnownMove_savesMoveNameOnce() = runTest {
+        network.detail = networkPokemonDetail(id = 114, name = "tangela")
+        network.species = networkPokemonSpecies(id = 114)
+        network.evolutionChain = NetworkEvolutionChain(
+            id = 1,
+            chain = NetworkChainLink(
+                species = NetworkNamedResource(
+                    "tangela",
+                    "https://pokeapi.co/api/v2/pokemon-species/114/"
+                ),
+                evolvesTo = listOf(
+                    NetworkChainLink(
+                        species = NetworkNamedResource(
+                            "tangrowth",
+                            "https://pokeapi.co/api/v2/pokemon-species/465/"
+                        ),
+                        evolutionDetails = listOf(
+                            NetworkEvolutionDetail(
+                                trigger = NetworkNamedResource("level-up"),
+                                knownMove = NetworkNamedResource("ancient-power")
+                            )
+                        )
+                    )
+                )
+            )
+        )
+
+        repository.refreshPokemonDetail(pokeId = 114)
+        repository.refreshPokemonDetail(pokeId = 114)
+
+        assertEquals("원시의힘", moveDao.savedMoves["ancient-power"]?.korean)
+        // 기술 표에 들어간 기술은 다시 받지 않는다.
+        assertEquals(1, network.moveCallCount)
     }
 
     @Test

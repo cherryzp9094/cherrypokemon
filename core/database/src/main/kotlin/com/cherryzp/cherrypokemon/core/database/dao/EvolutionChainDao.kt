@@ -25,13 +25,15 @@ interface EvolutionChainDao {
                m.held_item, h.korean AS held_item_korean, h.english AS held_item_english,
                m.min_happiness, m.min_affection, m.time_of_day, m.known_move,
                m.known_move_type, t.korean AS known_move_type_korean,
-               t.english AS known_move_type_english, m.location
+               t.english AS known_move_type_english, m.location,
+               km.korean AS known_move_korean, km.english AS known_move_english
         FROM evolution_chain_members AS m
         LEFT JOIN pokemon_names AS n ON n.id = m.pokemon_id
         LEFT JOIN pokemon_details AS d ON d.id = m.pokemon_id
         LEFT JOIN item_names AS i ON i.name = m.item
         LEFT JOIN item_names AS h ON h.name = m.held_item
         LEFT JOIN type_names AS t ON t.type = m.known_move_type
+        LEFT JOIN moves AS km ON km.name = m.known_move
         WHERE m.chain_id = :chainId
         ORDER BY m.stage, m.pokemon_id
         """
@@ -48,6 +50,14 @@ interface EvolutionChainDao {
         """
     )
     suspend fun getChainItems(chainId: Int): List<String>
+
+    /** 체인 조건에 나오는 기술 중 기술 표에 아직 없는 것. */
+    @Query(
+        "SELECT DISTINCT m.known_move FROM evolution_chain_members AS m " +
+            "LEFT JOIN moves AS km ON km.name = m.known_move " +
+            "WHERE m.chain_id = :chainId AND m.known_move IS NOT NULL AND km.name IS NULL"
+    )
+    suspend fun getMissingChainMoves(chainId: Int): List<String>
 
     /** 체인 조건에 나오는 기술 타입([com.cherryzp.cherrypokemon.core.model.PokemonType] 이름). */
     @Query(

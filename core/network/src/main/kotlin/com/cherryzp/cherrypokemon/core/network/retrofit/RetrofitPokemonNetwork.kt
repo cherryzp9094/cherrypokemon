@@ -5,6 +5,7 @@ import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkAbility
 import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionChain
 import com.cherryzp.cherrypokemon.core.network.model.NetworkGraphQlRequest
+import com.cherryzp.cherrypokemon.core.network.model.NetworkMoveDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonMoves
@@ -53,6 +54,9 @@ private interface RetrofitPokemonNetworkApi {
 
     @GET("egg-group/{name}")
     suspend fun getEggGroup(@Path("name") name: String): NetworkNamedEntry
+
+    @GET("move/{name}")
+    suspend fun getMove(@Path("name") name: String): NetworkMoveDetail
 
     @GET("item/{name}")
     suspend fun getItem(@Path("name") name: String): NetworkNamedEntry
@@ -103,6 +107,8 @@ internal class RetrofitPokemonNetwork @Inject constructor(
         networkApi.getEvolutionChain(chainId = chainId)
 
     override suspend fun getItem(name: String): NetworkNamedEntry = networkApi.getItem(name = name)
+
+    override suspend fun getMove(name: String): NetworkMoveDetail = networkApi.getMove(name = name)
 
     override suspend fun getEggGroup(name: String): NetworkNamedEntry =
         networkApi.getEggGroup(name = name)

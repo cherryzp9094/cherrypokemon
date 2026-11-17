@@ -30,6 +30,7 @@ data class EvolutionStage(
  * @param minAffection 필요한 친밀도(6세대 이후 이름)
  * @param timeOfDay `day` / `night`
  * @param knownMove 배우고 있어야 하는 기술의 식별자
+ * @param knownMoveName 그 기술의 언어별 이름. 아직 받지 못했으면 비어 있다
  * @param knownMoveType 배우고 있어야 하는 기술의 타입
  * @param knownMoveTypeName 그 타입의 언어별 이름
  * @param location 진화하는 장소의 식별자. 게임마다 달라 장소 이름은 보여주지 않는다
@@ -45,6 +46,7 @@ data class EvolutionCondition(
     val minAffection: Int? = null,
     val timeOfDay: String? = null,
     val knownMove: String? = null,
+    val knownMoveName: LocalizedText = LocalizedText.Empty,
     val knownMoveType: PokemonType? = null,
     val knownMoveTypeName: LocalizedText = LocalizedText.Empty,
     val location: String? = null,

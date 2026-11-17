@@ -8,6 +8,7 @@ import com.cherryzp.cherrypokemon.core.database.dao.EvolutionChainDao
 import com.cherryzp.cherrypokemon.core.database.dao.LocalizedNameDao
 import com.cherryzp.cherrypokemon.core.database.model.EvolutionChainMemberEntity
 import com.cherryzp.cherrypokemon.core.database.model.ItemNameEntity
+import com.cherryzp.cherrypokemon.core.database.model.MoveEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.asExternalModel
@@ -118,6 +119,42 @@ class EvolutionChainDaoTest {
         )
 
         assertEquals(listOf("kings-rock"), chainDao.getChainItems(CHAIN_ID))
+    }
+
+    @Test
+    fun getChainMembers_attachesKnownMoveName_andListsMissingMoves() = runTest {
+        chainDao.insertChainMembers(
+            listOf(
+                member(pokemonId = 114, name = "tangela", stage = 1),
+                member(
+                    pokemonId = 465,
+                    name = "tangrowth",
+                    stage = 2
+                ).copy(knownMove = "ancient-power")
+            )
+        )
+        assertEquals(listOf("ancient-power"), chainDao.getMissingChainMoves(CHAIN_ID))
+
+        database.moveDao().insertMoves(
+            listOf(
+                MoveEntity(
+                    name = "ancient-power",
+                    korean = "원시의힘",
+                    english = "Ancient Power",
+                    type = "Rock",
+                    power = 60,
+                    accuracy = 100,
+                    pp = 5,
+                    damageClass = "special"
+                )
+            )
+        )
+
+        val condition = chainDao.getChainMembers(CHAIN_ID).first().asExternalModel()
+            .single { it.pokemonId == 465 }.condition
+        assertEquals("원시의힘", condition?.knownMoveName?.korean)
+        // 기술 표에 들어가면 더 받을 것이 없다.
+        assertEquals(emptyList<String>(), chainDao.getMissingChainMoves(CHAIN_ID))
     }
 
     @Test

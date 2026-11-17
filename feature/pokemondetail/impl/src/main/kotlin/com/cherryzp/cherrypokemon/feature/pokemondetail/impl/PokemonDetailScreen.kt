@@ -721,8 +721,8 @@ private fun ConditionText(label: String) {
 /**
  * 조건 글자. 함께 걸린 조건은 " · " 로 잇는다(님피아: 페어리 기술 · 친밀도).
  *
- * 도구·타입 이름을 아직 받지 못했으면 식별자를 읽기 좋게 바꿔 보여준다. 장소는 게임마다 달라
- * 이름 대신 "특정 장소" 로 적는다.
+ * 도구·타입 이름을 아직 받지 못했으면 식별자를 읽기 좋게 바꿔 보여준다. 기술 이름을 아직 받지
+ * 못했으면 "특정 기술", 장소는 게임마다 달라 이름 대신 "특정 장소" 로 적는다.
  */
 @Composable
 private fun EvolutionCondition.label(language: AppLanguage): String? {
@@ -758,8 +758,18 @@ private fun EvolutionCondition.label(language: AppLanguage): String? {
             val typeName = knownMoveTypeName.of(language).ifEmpty { type.name }
             add(stringResource(R.string.feature_pokemondetail_impl_evolution_move_type, typeName))
         }
-        if (knownMove != null) {
-            add(stringResource(R.string.feature_pokemondetail_impl_evolution_known_move))
+        knownMove?.let { move ->
+            val moveName = knownMoveName.of(language)
+            add(
+                if (moveName.isEmpty()) {
+                    stringResource(R.string.feature_pokemondetail_impl_evolution_known_move)
+                } else {
+                    stringResource(
+                        R.string.feature_pokemondetail_impl_evolution_knows_move,
+                        moveName
+                    )
+                }
+            )
         }
         if (location != null) {
             add(stringResource(R.string.feature_pokemondetail_impl_evolution_location))
