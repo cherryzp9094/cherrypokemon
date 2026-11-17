@@ -35,7 +35,10 @@ import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonSpecies
 import java.io.IOException
 import javax.inject.Inject
+import javax.inject.Singleton
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -47,9 +50,17 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 
-/** 읽기는 항상 로컬에서 하고, 네트워크는 로컬을 갱신하는 데만 쓴다. */
+/**
+ * 읽기는 항상 로컬에서 하고, 네트워크는 로컬을 갱신하는 데만 쓴다.
+ *
+ * 앱에 하나만 둔다. 목록과 상세가 같은 [typeFetches] 를 봐야 타입 이름을 겹쳐 받지 않는다.
+ */
+@Singleton
 internal class OfflineFirstPokemonRepository @Inject constructor(
     private val pokemonDao: PokemonDao,
     private val remoteKeyDao: RemoteKeyDao,
@@ -59,6 +70,14 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
     private val network: PokemonNetworkDataSource,
     private val transaction: DatabaseTransactionRunner,
 ) : PokemonRepository {
+    /**
+     * 지금 받고 있는 타입 이름. 상성·기술·진화 조건·거름이 동시에 같은 타입을 찾으면 모두 "아직 없음"
+     * 으로 보고 같은 타입을 여러 번 받는다. 뒤에 온 쪽은 새로 부르지 않고 앞의 요청을 기다린다.
+     *
+     * 받기 전체를 잠그면 겹치지 않는 타입까지 차례를 기다려 첫 화면이 늦어진다. 잠금은 이 표를 볼 때만 건다.
+     */
+    private val typeFetches = mutableMapOf<String, CompletableDeferred<Unit>>()
+    private val typeFetchesLock = Mutex()
 
     @OptIn(ExperimentalPagingApi::class)
     override fun getPokemonsStream(): Flow<PagingData<Pokemon>> = Pager(
@@ -374,19 +393,47 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         localizedNameDao.insertAbilityNames(entities)
     }
 
-    /** 저장되지 않은 타입만 받아 쓴다. */
+    /** 저장되지 않은 타입만 받아 쓴다. 다른 곳에서 받고 있는 타입은 그 요청을 기다린다. */
     private suspend fun refreshTypes(typeNames: List<String>) {
-        val savedTypes = localizedNameDao.getSavedTypes().toSet()
-        val missing = typeNames
-            .distinct()
-            .filter { it.asPokemonType() != PokemonType.Unknown }
-            .filter { it.asPokemonType().name !in savedTypes }
-        if (missing.isEmpty()) return
-
-        val entities = coroutineScope {
-            missing.map { async { network.getType(it).asEntity(it.asPokemonType()) } }.awaitAll()
+        val (mine, others) = typeFetchesLock.withLock {
+            val savedTypes = localizedNameDao.getSavedTypes().toSet()
+            val missing = typeNames
+                .distinct()
+                .filter { it.asPokemonType() != PokemonType.Unknown }
+                .filter { it.asPokemonType().name !in savedTypes }
+            val others = missing.mapNotNull { typeFetches[it] }
+            val mine = missing.filter { it !in typeFetches }
+            mine.forEach { typeFetches[it] = CompletableDeferred() }
+            mine to others
         }
-        localizedNameDao.insertTypeNames(entities)
+
+        var fetched = false
+        try {
+            if (mine.isNotEmpty()) {
+                val entities = coroutineScope {
+                    mine.map { async { network.getType(it).asEntity(it.asPokemonType()) } }
+                        .awaitAll()
+                }
+                localizedNameDao.insertTypeNames(entities)
+            }
+            fetched = true
+        } finally {
+            // 취소된 뒤에도 표를 비워야 다음 요청이 영영 기다리지 않는다.
+            withContext(NonCancellable) {
+                typeFetchesLock.withLock {
+                    mine.forEach { name ->
+                        val waiting = typeFetches.remove(name)
+                        if (fetched) {
+                            waiting?.complete(Unit)
+                        } else {
+                            // 기다리던 쪽에는 취소가 아니라 받지 못한 것으로 알린다.
+                            waiting?.completeExceptionally(IOException("타입 $name 을 받지 못했다"))
+                        }
+                    }
+                }
+            }
+        }
+        others.awaitAll()
     }
 
     private companion object {
