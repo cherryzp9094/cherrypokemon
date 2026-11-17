@@ -64,9 +64,13 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
     var nameCallCount: Int = 0
         private set
 
+    /** 타입마다 몇 번 받았는지. 같은 타입을 겹쳐 받지 않는지 보는 데 쓴다. */
+    val typeCalls = mutableMapOf<String, Int>()
+
     override suspend fun getType(name: String): NetworkType {
         delay(callDelayMillis)
         nameCallCount++
+        typeCalls[name] = (typeCalls[name] ?: 0) + 1
         error?.let { throw it }
         return NetworkType(
             name = name,

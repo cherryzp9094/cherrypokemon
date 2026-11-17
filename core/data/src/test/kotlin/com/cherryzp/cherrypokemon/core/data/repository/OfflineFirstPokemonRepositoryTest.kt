@@ -10,6 +10,7 @@ import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemon
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemonDetail
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemonSpecies
+import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.pokemonMove
 import com.cherryzp.cherrypokemon.core.data.FakeRemoteKeyDao
 import com.cherryzp.cherrypokemon.core.database.model.AbilityNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
@@ -29,6 +30,7 @@ import com.cherryzp.cherrypokemon.core.network.model.NetworkLanguageName
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedResource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonFilter
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonFilters
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonMoves
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNames
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonTypeSlotName
@@ -691,5 +693,24 @@ class OfflineFirstPokemonRepositoryTest {
 
         // 목록 화면은 IOException 만 잡는다.
         assertTrue(thrown is IOException)
+    }
+
+    @Test
+    fun refreshPokemonDetail_sameTypeFromMovesAndMatchups_fetchesEachTypeOnce() = runTest {
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.species = networkPokemonSpecies(id = 1)
+        // 자기 타입(풀)과 약점(불꽃)이 기술 타입에도 나온다. 상성과 기술이 동시에 타입 이름을 찾는다.
+        network.pokemonMoves = NetworkPokemonMoves(
+            moves = listOf(
+                pokemonMove("scarlet-violet", 1, "vine-whip", "덩굴채찍", "grass", power = 45),
+                pokemonMove("scarlet-violet", 9, "ember", "불꽃세례", "fire", power = 40)
+            )
+        )
+        network.callDelayMillis = 100
+
+        repository.refreshPokemonDetail(pokeId = 1)
+
+        assertEquals(1, network.typeCalls["grass"])
+        assertEquals(1, network.typeCalls["fire"])
     }
 }
