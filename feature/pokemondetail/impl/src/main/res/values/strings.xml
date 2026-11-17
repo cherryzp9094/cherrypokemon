@@ -52,4 +52,5 @@
     <string name="feature_pokemondetail_impl_move_power">Power</string>
     <string name="feature_pokemondetail_impl_move_on_evolution">Evo.</string>
     <string name="feature_pokemondetail_impl_evolution_knows_move">Knows %1$s</string>
+    <string name="feature_pokemondetail_impl_section_varieties">Other forms</string>
 </resources>

@@ -26,6 +26,14 @@ data class NetworkPokemonSpecies(
     val isLegendary: Boolean = false,
     @SerialName("is_mythical")
     val isMythical: Boolean = false,
+    /** 같은 종의 모든 모습(메가진화, 거다이맥스, 지역 폼). 기본 모습이 먼저 온다. */
+    val varieties: List<NetworkVariety> = emptyList(),
+)
+
+@Serializable
+data class NetworkVariety(
+    @SerialName("is_default") val isDefault: Boolean = false,
+    val pokemon: NetworkNamedResource = NetworkNamedResource(),
 )
 
 @Serializable

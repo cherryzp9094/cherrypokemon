@@ -44,6 +44,8 @@ data class PokemonDetailEntity(
     @ColumnInfo(name = "egg_groups", defaultValue = "") val eggGroups: String = "",
     @ColumnInfo(name = "is_legendary", defaultValue = "0") val isLegendary: Boolean = false,
     @ColumnInfo(name = "is_mythical", defaultValue = "0") val isMythical: Boolean = false,
+    /** 같은 종의 모든 모습. `번호:식별자` 를 순서대로 쉼표로 잇는다. */
+    @ColumnInfo(defaultValue = "") val varieties: String = "",
 )
 
 /** 언어별 문자열. 언어를 바꿔도 다시 받지 않도록 둘 다 저장한다. */

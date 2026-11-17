@@ -45,6 +45,9 @@ class FakeLocalizedNameDao : LocalizedNameDao {
 
     override fun getPokemonName(id: Int): Flow<PokemonNameEntity?> = pokemonNames.map { it[id] }
 
+    override fun getPokemonNames(ids: List<Int>): Flow<List<PokemonNameEntity>> =
+        pokemonNames.map { names -> ids.mapNotNull { names[it] } }
+
     override suspend fun countPokemonNames(): Int = pokemonNames.value.size
 
     override suspend fun insertPokemonNames(names: List<PokemonNameEntity>) {

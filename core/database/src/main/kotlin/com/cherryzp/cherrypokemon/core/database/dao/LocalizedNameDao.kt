@@ -42,6 +42,10 @@ interface LocalizedNameDao {
     @Query("SELECT * FROM pokemon_names WHERE id = :id")
     fun getPokemonName(id: Int): Flow<PokemonNameEntity?>
 
+    /** 여러 포켓몬의 이름. 같은 종의 다른 모습에 이름을 붙일 때 쓴다. */
+    @Query("SELECT * FROM pokemon_names WHERE id IN (:ids)")
+    fun getPokemonNames(ids: List<Int>): Flow<List<PokemonNameEntity>>
+
     @Query("SELECT COUNT(*) FROM pokemon_names")
     suspend fun countPokemonNames(): Int
 

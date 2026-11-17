@@ -22,6 +22,7 @@ import com.cherryzp.cherrypokemon.core.model.PokemonMove
 import com.cherryzp.cherrypokemon.core.model.PokemonStats
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import com.cherryzp.cherrypokemon.core.model.PokemonTypeInfo
+import com.cherryzp.cherrypokemon.core.model.PokemonVariety
 import com.cherryzp.cherrypokemon.core.model.TypeMatchup
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -456,6 +457,45 @@ class PokemonDetailScreenTest {
             )
             .performScrollTo()
             .assertIsDisplayed()
+    }
+
+    @Test
+    fun varieties_showOtherFormsAndOpenThem() {
+        var clickedId: Int? = null
+        val charizard = pokemonDetail.copy(
+            id = 6,
+            varieties = listOf(
+                PokemonVariety(6, "charizard", LocalizedText("리자몽", "Charizard"), ""),
+                PokemonVariety(
+                    10034,
+                    "charizard-mega-x",
+                    LocalizedText("메가리자몽X", "Mega Charizard X"),
+                    ""
+                )
+            )
+        )
+        setScreen(
+            uiState = PokemonDetailUiState(charizard, RefreshState.Idle),
+            onPokemonClick = { clickedId = it }
+        )
+
+        composeTestRule
+            .onNodeWithText(if (isKorean) "메가리자몽X" else "Mega Charizard X")
+            .performScrollTo()
+            .performClick()
+
+        assertEquals(10034, clickedId)
+    }
+
+    @Test
+    fun varieties_single_hidesSection() {
+        setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
+
+        composeTestRule
+            .onNodeWithText(
+                resources.getString(R.string.feature_pokemondetail_impl_section_varieties)
+            )
+            .assertDoesNotExist()
     }
 
     @Test

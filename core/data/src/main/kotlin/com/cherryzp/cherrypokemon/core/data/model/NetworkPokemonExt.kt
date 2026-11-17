@@ -34,6 +34,9 @@ fun NetworkPokemonDetail.asEntity(species: NetworkPokemonSpecies) = PokemonDetai
     eggGroups = species.eggGroups.joinToString(",") { it.name },
     isLegendary = species.isLegendary,
     isMythical = species.isMythical,
+    varieties = species.varieties.mapNotNull { variety ->
+        variety.pokemon.url.urlId()?.let { "$it:${variety.pokemon.name}" }
+    }.joinToString(","),
     // PokeAPI 는 키를 데시미터, 몸무게를 헥토그램으로 준다.
     heightMeters = height / 10f,
     weightKilograms = weight / 10f,
@@ -60,5 +63,5 @@ internal fun String.asPokemonType(): PokemonType =
     PokemonType.entries.firstOrNull { it.name.equals(this, ignoreCase = true) }
         ?: PokemonType.Unknown
 
-private fun officialArtworkUrl(id: Int) =
+internal fun officialArtworkUrl(id: Int) =
     "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$id.png"

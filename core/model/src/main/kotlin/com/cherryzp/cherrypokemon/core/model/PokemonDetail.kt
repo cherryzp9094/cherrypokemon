@@ -41,4 +41,6 @@ data class PokemonDetail(
     val isMythical: Boolean = false,
     /** 레벨업으로 배우는 기술. 레벨 순이다. 아직 받지 못했으면 비어 있다. */
     val moves: List<PokemonMove> = emptyList(),
+    /** 같은 종의 모든 모습. 기본 모습뿐이면 하나만 있다. */
+    val varieties: List<PokemonVariety> = emptyList(),
 )
