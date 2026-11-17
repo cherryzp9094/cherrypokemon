@@ -42,7 +42,7 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         PokemonMoveEntity::class,
         PokemonFilterEntity::class
     ],
-    version = 14,
+    version = 15,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -56,7 +56,8 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         AutoMigration(from = 10, to = 11),
         AutoMigration(from = 11, to = 12),
         AutoMigration(from = 12, to = 13),
-        AutoMigration(from = 13, to = 14)
+        AutoMigration(from = 13, to = 14),
+        AutoMigration(from = 14, to = 15, spec = ClearPokemonNamesSpec::class)
     ],
     exportSchema = true
 )
@@ -80,5 +81,15 @@ internal abstract class CherryPokemonDatabase : RoomDatabase() {
 internal class ClearEvolutionChainsSpec : AutoMigrationSpec {
     override suspend fun onPostMigrate(connection: SQLiteConnection) {
         connection.execSQL("DELETE FROM evolution_chain_members")
+    }
+}
+
+/**
+ * 14 → 15: 한국어 이름이 없는 폼(거다이맥스·메가·리전폼)에 이름을 만들어 넣게 됐다. 이미 받아 둔
+ * 이름에는 종 이름만 들어 있으므로 지워서 목록을 열 때 다시 받게 한다.
+ */
+internal class ClearPokemonNamesSpec : AutoMigrationSpec {
+    override suspend fun onPostMigrate(connection: SQLiteConnection) {
+        connection.execSQL("DELETE FROM pokemon_names")
     }
 }
