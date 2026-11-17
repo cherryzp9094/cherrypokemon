@@ -7,6 +7,8 @@ package com.cherryzp.cherrypokemon.core.model
  * @param localizedName 언어별 이름(이상해씨 / Bulbasaur)
  * @param genus 분류(씨앗포켓몬 / Seed Pokémon)
  * @param flavorText 도감 설명
+ * @param shinyImageUrl 색이 다른 모습의 일러스트. 없으면 빈 문자열
+ * @param cryUrl 울음소리 파일. 없으면 빈 문자열
  * @param heightMeters 키(m)
  * @param weightKilograms 몸무게(kg)
  * @param baseExperience 쓰러뜨렸을 때 얻는 기초 경험치
@@ -28,4 +30,6 @@ data class PokemonDetail(
     val typeMatchups: List<TypeMatchup> = emptyList(),
     /** 진화 체인. 자기 자신도 들어 있다. 아직 받지 못했으면 비어 있다. */
     val evolutionStages: List<EvolutionStage> = emptyList(),
+    val shinyImageUrl: String = "",
+    val cryUrl: String = "",
 )

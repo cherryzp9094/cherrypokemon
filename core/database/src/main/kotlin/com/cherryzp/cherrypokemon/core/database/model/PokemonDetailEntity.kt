@@ -31,6 +31,10 @@ data class PokemonDetailEntity(
     @ColumnInfo(defaultValue = "") val abilities: List<PokemonAbility>,
     /** 진화 체인 ID. 아직 받지 못했으면 0 이다. */
     @ColumnInfo(name = "evolution_chain_id", defaultValue = "0") val evolutionChainId: Int = 0,
+    /** 색이 다른 모습의 일러스트. 없으면 빈 문자열이다. */
+    @ColumnInfo(name = "shiny_image_url", defaultValue = "") val shinyImageUrl: String = "",
+    /** 울음소리 OGG 파일. 없으면 빈 문자열이다. */
+    @ColumnInfo(name = "cry_url", defaultValue = "") val cryUrl: String = "",
 )
 
 /** 언어별 문자열. 언어를 바꿔도 다시 받지 않도록 둘 다 저장한다. */
@@ -63,6 +67,8 @@ fun PokemonDetailEntity.asExternalModel(
     genus = genus.asExternalModel(),
     flavorText = flavorText.asExternalModel(),
     imageUrl = imageUrl,
+    shinyImageUrl = shinyImageUrl,
+    cryUrl = cryUrl,
     heightMeters = heightMeters,
     weightKilograms = weightKilograms,
     types = types.map { type ->

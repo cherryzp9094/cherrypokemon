@@ -37,4 +37,6 @@
     <string name="feature_pokemondetail_impl_evolution_move_type">%1$s 기술</string>
     <string name="feature_pokemondetail_impl_evolution_known_move">특정 기술</string>
     <string name="feature_pokemondetail_impl_evolution_location">특정 장소</string>
+    <string name="feature_pokemondetail_impl_play_cry">울음소리 듣기</string>
+    <string name="feature_pokemondetail_impl_shiny">색이 다른 모습</string>
 </resources>

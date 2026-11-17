@@ -4,7 +4,11 @@ import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Compani
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemonDetail
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemonSpecies
 import com.cherryzp.cherrypokemon.core.model.PokemonType
+import com.cherryzp.cherrypokemon.core.network.model.NetworkCries
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedResource
+import com.cherryzp.cherrypokemon.core.network.model.NetworkOfficialArtwork
+import com.cherryzp.cherrypokemon.core.network.model.NetworkOtherSprites
+import com.cherryzp.cherrypokemon.core.network.model.NetworkSprites
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -32,6 +36,42 @@ class NetworkPokemonExtTest {
             ).asEntity()
         )
         assertNull(NetworkNamedResource(name = "mew", url = "").asEntity())
+    }
+
+    @Test
+    fun asEntity_detail_keepsShinyArtworkAndCry() {
+        val detail = networkPokemonDetail(id = 25, name = "pikachu").let {
+            it.copy(
+                sprites = NetworkSprites(
+                    other = NetworkOtherSprites(
+                        officialArtwork = NetworkOfficialArtwork(
+                            frontDefault = "https://example.com/25.png",
+                            frontShiny = "https://example.com/shiny/25.png"
+                        )
+                    )
+                ),
+                cries = NetworkCries(
+                    latest = "https://example.com/latest/25.ogg",
+                    legacy = "https://example.com/legacy/25.ogg"
+                )
+            )
+        }
+
+        val entity = detail.asEntity(networkPokemonSpecies(id = 25))
+
+        assertEquals("https://example.com/shiny/25.png", entity.shinyImageUrl)
+        // 최신 게임 소리를 쓴다.
+        assertEquals("https://example.com/latest/25.ogg", entity.cryUrl)
+    }
+
+    @Test
+    fun asEntity_detailWithoutShinyOrCry_leavesThemEmpty() {
+        val entity = networkPokemonDetail(id = 25, name = "pikachu")
+            .asEntity(networkPokemonSpecies(id = 25))
+
+        // 화면은 비어 있으면 단추를 숨긴다.
+        assertEquals("", entity.shinyImageUrl)
+        assertEquals("", entity.cryUrl)
     }
 
     @Test

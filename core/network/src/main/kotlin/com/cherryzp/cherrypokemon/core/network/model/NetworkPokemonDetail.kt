@@ -23,6 +23,7 @@ data class NetworkPokemonDetail(
     val abilities: List<NetworkPokemonAbility> = emptyList(),
     /** 이 포켓몬의 종. 폼(10001 번부터)은 번호가 달라 이 주소로 종 정보를 찾는다. */
     val species: NetworkNamedResource = NetworkNamedResource(),
+    val cries: NetworkCries = NetworkCries(),
 )
 
 @Serializable
@@ -59,4 +60,11 @@ data class NetworkOtherSprites(
 data class NetworkOfficialArtwork(
     @SerialName("front_default")
     val frontDefault: String? = null,
+    /** 색이 다른 모습. */
+    @SerialName("front_shiny")
+    val frontShiny: String? = null,
 )
+
+/** 울음소리 OGG 파일 주소. `latest` 는 최신 게임, `legacy` 는 옛 게임 소리다. */
+@Serializable
+data class NetworkCries(val latest: String? = null, val legacy: String? = null)
