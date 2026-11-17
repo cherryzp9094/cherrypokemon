@@ -174,6 +174,82 @@ class PokemonDetailScreenTest {
     }
 
     @Test
+    fun evolution_tradeWithHeldItem_showsItemAndTrade() {
+        val slowking = pokemonDetail.copy(
+            evolutionStages = listOf(
+                stage(79, "slowpoke", "야돈", "Slowpoke", stage = 1),
+                stage(
+                    199,
+                    "slowking",
+                    "야도킹",
+                    "Slowking",
+                    stage = 2,
+                    condition = EvolutionCondition(
+                        trigger = "trade",
+                        heldItem = "kings-rock",
+                        heldItemName = LocalizedText(korean = "왕의징표석", english = "King's Rock")
+                    )
+                )
+            )
+        )
+        setScreen(PokemonDetailUiState(slowking, RefreshState.Idle))
+
+        val heldItem = if (isKorean) "왕의징표석" else "King's Rock"
+        composeTestRule
+            .onNodeWithText(
+                resources.getString(
+                    R.string.feature_pokemondetail_impl_evolution_trade_holding,
+                    heldItem
+                )
+            )
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun evolution_branches_showEachOwnCondition() {
+        // 이브이처럼 갈래가 여럿이면 화살표 하나에 첫 조건만 적지 않고 각자 아래에 적는다.
+        val eevee = pokemonDetail.copy(
+            evolutionStages = listOf(
+                stage(133, "eevee", "이브이", "Eevee", stage = 1),
+                stage(
+                    134,
+                    "vaporeon",
+                    "샤미드",
+                    "Vaporeon",
+                    stage = 2,
+                    condition = EvolutionCondition(
+                        item = "water-stone",
+                        itemName = LocalizedText(korean = "물의돌", english = "Water Stone")
+                    )
+                ),
+                stage(
+                    197,
+                    "umbreon",
+                    "블래키",
+                    "Umbreon",
+                    stage = 2,
+                    condition = EvolutionCondition(minHappiness = 160, timeOfDay = "night")
+                )
+            )
+        )
+        setScreen(PokemonDetailUiState(eevee, RefreshState.Idle))
+
+        composeTestRule
+            .onNodeWithText(if (isKorean) "물의돌" else "Water Stone")
+            .performScrollTo()
+            .assertIsDisplayed()
+        val friendship = resources.getString(
+            R.string.feature_pokemondetail_impl_evolution_friendship
+        )
+        val night = resources.getString(R.string.feature_pokemondetail_impl_evolution_night)
+        composeTestRule
+            .onNodeWithText("$friendship · $night")
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    @Test
     fun detail_showsWeaknessesAndResistances() {
         setScreen(PokemonDetailUiState(pokemonDetail, RefreshState.Idle))
 
@@ -279,6 +355,22 @@ class PokemonDetailScreenTest {
             )
             .assertDoesNotExist()
     }
+
+    private fun stage(
+        id: Int,
+        name: String,
+        korean: String,
+        english: String,
+        stage: Int,
+        condition: EvolutionCondition? = null,
+    ) = EvolutionStage(
+        pokemonId = id,
+        name = name,
+        localizedName = LocalizedText(korean = korean, english = english),
+        imageUrl = "",
+        stage = stage,
+        condition = condition
+    )
 
     private fun setScreen(
         uiState: PokemonDetailUiState,

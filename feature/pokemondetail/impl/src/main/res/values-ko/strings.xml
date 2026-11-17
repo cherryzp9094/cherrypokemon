@@ -28,4 +28,13 @@
     <string name="feature_pokemondetail_impl_multiplier">×%1$s</string>
     <string name="feature_pokemondetail_impl_section_evolution">진화</string>
     <string name="feature_pokemondetail_impl_evolution_level">Lv. %1$d</string>
+    <string name="feature_pokemondetail_impl_evolution_trade">교환</string>
+    <string name="feature_pokemondetail_impl_evolution_trade_holding">%1$s 지니고 교환</string>
+    <string name="feature_pokemondetail_impl_evolution_holding">%1$s 지니고</string>
+    <string name="feature_pokemondetail_impl_evolution_friendship">친밀도</string>
+    <string name="feature_pokemondetail_impl_evolution_day">낮</string>
+    <string name="feature_pokemondetail_impl_evolution_night">밤</string>
+    <string name="feature_pokemondetail_impl_evolution_move_type">%1$s 기술</string>
+    <string name="feature_pokemondetail_impl_evolution_known_move">특정 기술</string>
+    <string name="feature_pokemondetail_impl_evolution_location">특정 장소</string>
 </resources>

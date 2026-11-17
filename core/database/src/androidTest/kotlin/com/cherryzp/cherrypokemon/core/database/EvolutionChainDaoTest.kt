@@ -9,8 +9,10 @@ import com.cherryzp.cherrypokemon.core.database.dao.LocalizedNameDao
 import com.cherryzp.cherrypokemon.core.database.model.EvolutionChainMemberEntity
 import com.cherryzp.cherrypokemon.core.database.model.ItemNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
+import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.asExternalModel
 import com.cherryzp.cherrypokemon.core.model.LocalizedText
+import com.cherryzp.cherrypokemon.core.model.PokemonType
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -70,6 +72,52 @@ class EvolutionChainDaoTest {
             LocalizedText(korean = "천둥의돌", english = "Thunder Stone"),
             stages.last().condition?.itemName
         )
+    }
+
+    @Test
+    fun getChainMembers_attachesHeldItemAndMoveTypeNames() = runTest {
+        chainDao.insertChainMembers(
+            listOf(
+                member(pokemonId = 79, name = "slowpoke", stage = 1),
+                member(pokemonId = 199, name = "slowking", stage = 2).copy(
+                    trigger = "trade",
+                    heldItem = "kings-rock"
+                ),
+                member(pokemonId = 700, name = "sylveon", stage = 2).copy(
+                    minAffection = 2,
+                    knownMoveType = "Fairy"
+                )
+            )
+        )
+        nameDao.insertItemNames(
+            listOf(ItemNameEntity(name = "kings-rock", korean = "왕의징표석", english = "King's Rock"))
+        )
+        nameDao.insertTypeNames(
+            listOf(TypeNameEntity(type = "Fairy", korean = "페어리", english = "Fairy"))
+        )
+
+        val stages = chainDao.getChainMembers(CHAIN_ID).first().asExternalModel()
+        val slowking = stages.single { it.pokemonId == 199 }.condition
+        val sylveon = stages.single { it.pokemonId == 700 }.condition
+
+        assertEquals("trade", slowking?.trigger)
+        assertEquals("왕의징표석", slowking?.heldItemName?.korean)
+        assertEquals(PokemonType.Fairy, sylveon?.knownMoveType)
+        assertEquals("페어리", sylveon?.knownMoveTypeName?.korean)
+        assertEquals(2, sylveon?.minAffection)
+    }
+
+    @Test
+    fun getChainItems_includesHeldItems() = runTest {
+        chainDao.insertChainMembers(
+            listOf(
+                member(pokemonId = 79, name = "slowpoke", stage = 1),
+                member(pokemonId = 80, name = "slowbro", stage = 2),
+                member(pokemonId = 199, name = "slowking", stage = 2).copy(heldItem = "kings-rock")
+            )
+        )
+
+        assertEquals(listOf("kings-rock"), chainDao.getChainItems(CHAIN_ID))
     }
 
     @Test

@@ -28,4 +28,13 @@
     <string name="feature_pokemondetail_impl_multiplier">×%1$s</string>
     <string name="feature_pokemondetail_impl_section_evolution">Evolution</string>
     <string name="feature_pokemondetail_impl_evolution_level">Lv. %1$d</string>
+    <string name="feature_pokemondetail_impl_evolution_trade">Trade</string>
+    <string name="feature_pokemondetail_impl_evolution_trade_holding">Trade holding %1$s</string>
+    <string name="feature_pokemondetail_impl_evolution_holding">Holding %1$s</string>
+    <string name="feature_pokemondetail_impl_evolution_friendship">Friendship</string>
+    <string name="feature_pokemondetail_impl_evolution_day">Day</string>
+    <string name="feature_pokemondetail_impl_evolution_night">Night</string>
+    <string name="feature_pokemondetail_impl_evolution_move_type">Knows a %1$s move</string>
+    <string name="feature_pokemondetail_impl_evolution_known_move">Knows a move</string>
+    <string name="feature_pokemondetail_impl_evolution_location">Special place</string>
 </resources>

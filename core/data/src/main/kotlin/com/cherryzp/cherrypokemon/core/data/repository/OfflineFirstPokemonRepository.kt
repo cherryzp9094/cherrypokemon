@@ -184,6 +184,8 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
             }
             // 체인을 전에 받아 둔 경우에도 도구 이름은 없을 수 있다. 그래서 체인과 따로 본다.
             refreshItemNames(chainId)
+            // "페어리 기술" 처럼 조건에 나오는 타입도 이름이 있어야 한국어로 적는다.
+            refreshTypes(evolutionChainDao.getChainMoveTypes(chainId).map { it.lowercase() })
         }
     }
 

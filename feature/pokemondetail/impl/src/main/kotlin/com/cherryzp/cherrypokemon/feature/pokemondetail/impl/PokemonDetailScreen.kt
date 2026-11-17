@@ -54,6 +54,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -425,14 +426,21 @@ private fun EvolutionBlock(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = if (fits) Arrangement.SpaceBetween else Arrangement.spacedBy(4.dp)
     ) {
+        // 한 단계에 여럿이면(이브이) 갈래마다 조건이 달라 화살표 하나에 적을 수 없다. 각자 아래에 적는다.
+        val branchCounts = stages.groupingBy { it.stage }.eachCount()
         stages.forEachIndexed { index, stage ->
+            val isBranch = (branchCounts[stage.stage] ?: 0) > 1
             if (index > 0 && stage.stage != stages[index - 1].stage) {
-                EvolutionArrow(condition = stage.condition, language = language)
+                EvolutionArrow(
+                    condition = if (isBranch) null else stage.condition,
+                    language = language
+                )
             }
             EvolutionStageItem(
                 stage = stage,
                 isCurrent = stage.pokemonId == currentId,
                 language = language,
+                conditionLabel = if (isBranch) stage.condition?.label(language) else null,
                 onClick = { onPokemonClick(stage.pokemonId) }
             )
         }
@@ -444,6 +452,7 @@ private fun EvolutionStageItem(
     stage: EvolutionStage,
     isCurrent: Boolean,
     language: AppLanguage,
+    conditionLabel: String?,
     onClick: () -> Unit,
 ) {
     Column(
@@ -473,6 +482,9 @@ private fun EvolutionStageItem(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(top = 4.dp)
         )
+        if (conditionLabel != null) {
+            ConditionText(label = conditionLabel)
+        }
     }
 }
 
@@ -489,33 +501,80 @@ private fun EvolutionArrow(condition: EvolutionCondition?, language: AppLanguage
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        condition?.label(language)?.let { label ->
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1
-            )
-        }
+        condition?.label(language)?.let { label -> ConditionText(label = label) }
     }
 }
 
-/** 조건 글자. 도구 이름을 아직 받지 못했으면 식별자를 읽기 좋게 바꿔 보여준다. */
+/** 진화 조건 글자. "왕의징표석 지니고 교환" 처럼 길어지면 두 줄까지 쓴다. */
+@Composable
+private fun ConditionText(label: String) {
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.widthIn(max = 84.dp)
+    )
+}
+
+/**
+ * 조건 글자. 함께 걸린 조건은 " · " 로 잇는다(님피아: 페어리 기술 · 친밀도).
+ *
+ * 도구·타입 이름을 아직 받지 못했으면 식별자를 읽기 좋게 바꿔 보여준다. 장소는 게임마다 달라
+ * 이름 대신 "특정 장소" 로 적는다.
+ */
 @Composable
 private fun EvolutionCondition.label(language: AppLanguage): String? {
-    val level = minLevel
-    val item = item
-    return when {
-        level != null -> stringResource(
-            R.string.feature_pokemondetail_impl_evolution_level,
-            level
-        )
+    val parts = buildList {
+        minLevel?.let {
+            add(stringResource(R.string.feature_pokemondetail_impl_evolution_level, it))
+        }
+        item?.let { add(itemName.of(language).ifEmpty { it.readable() }) }
+        val held = heldItem?.let { heldItemName.of(language).ifEmpty { it.readable() } }
+        when {
+            trigger == TRIGGER_TRADE && held != null ->
+                add(
+                    stringResource(
+                        R.string.feature_pokemondetail_impl_evolution_trade_holding,
+                        held
+                    )
+                )
 
-        item != null -> itemName.of(language).ifEmpty { item.replace('-', ' ') }
+            trigger == TRIGGER_TRADE ->
+                add(stringResource(R.string.feature_pokemondetail_impl_evolution_trade))
 
-        else -> null
+            held != null ->
+                add(stringResource(R.string.feature_pokemondetail_impl_evolution_holding, held))
+        }
+        if (minHappiness != null || minAffection != null) {
+            add(stringResource(R.string.feature_pokemondetail_impl_evolution_friendship))
+        }
+        when (timeOfDay) {
+            TIME_DAY -> add(stringResource(R.string.feature_pokemondetail_impl_evolution_day))
+            TIME_NIGHT -> add(stringResource(R.string.feature_pokemondetail_impl_evolution_night))
+        }
+        knownMoveType?.let { type ->
+            val typeName = knownMoveTypeName.of(language).ifEmpty { type.name }
+            add(stringResource(R.string.feature_pokemondetail_impl_evolution_move_type, typeName))
+        }
+        if (knownMove != null) {
+            add(stringResource(R.string.feature_pokemondetail_impl_evolution_known_move))
+        }
+        if (location != null) {
+            add(stringResource(R.string.feature_pokemondetail_impl_evolution_location))
+        }
     }
+    return parts.joinToString(" · ").ifEmpty { null }
 }
+
+/** `thunder-stone` → `thunder stone`. 이름을 아직 받지 못했을 때만 쓴다. */
+private fun String.readable() = replace('-', ' ')
+
+private const val TRIGGER_TRADE = "trade"
+private const val TIME_DAY = "day"
+private const val TIME_NIGHT = "night"
 
 /** 약점·저항·무효를 한 줄씩. 1 배인 타입은 보여줄 게 없어 빠져 있다. */
 @Composable

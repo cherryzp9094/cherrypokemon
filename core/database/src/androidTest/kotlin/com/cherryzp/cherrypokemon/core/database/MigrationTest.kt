@@ -175,4 +175,30 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate7To8_clearsCachedChainsSoTheyAreFetchedAgain() = runTest {
+        helper.createDatabase(version = 7).use { connection ->
+            connection.execSQL(
+                "INSERT INTO evolution_chain_members " +
+                    "(chain_id, pokemon_id, name, stage, min_level, item, trigger) " +
+                    "VALUES (1, 1, 'bulbasaur', 1, NULL, NULL, NULL)"
+            )
+            connection.execSQL(
+                "INSERT INTO pokemons (id, name, image_url) VALUES (25, 'pikachu', '')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 8).use { connection ->
+            // 예전 체인에는 교환·친밀도 칸이 비어 있다. 지워야 다음에 열 때 새 칸까지 받는다.
+            connection.prepare("SELECT COUNT(*) FROM evolution_chain_members").use { statement ->
+                assertTrue(statement.step())
+                assertEquals(0, statement.getInt(0))
+            }
+            connection.prepare("SELECT name FROM pokemons WHERE id = 25").use { statement ->
+                assertTrue(statement.step())
+                assertEquals("pikachu", statement.getText(0))
+            }
+        }
+    }
 }
