@@ -35,6 +35,8 @@ internal fun NetworkEvolutionChain.asEntities(): List<EvolutionChainMemberEntity
 }
 
 /** `https://pokeapi.co/api/v2/evolution-chain/1/` 처럼 끝의 숫자를 꺼낸다. */
-internal fun String.chainId(): Int? = trimEnd('/').substringAfterLast('/').toIntOrNull()
+internal fun String.urlId(): Int? = trimEnd('/').substringAfterLast('/').toIntOrNull()
 
-private fun String.pokemonId(): Int? = chainId()
+internal fun String.chainId(): Int? = urlId()
+
+private fun String.pokemonId(): Int? = urlId()

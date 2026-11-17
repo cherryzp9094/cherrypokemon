@@ -29,12 +29,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import retrofit2.HttpException
+import retrofit2.Response
 
 class OfflineFirstPokemonRepositoryTest {
 
@@ -329,6 +332,59 @@ class OfflineFirstPokemonRepositoryTest {
         // 상세·종(100) 다음에 자기 타입 → 약점·저항 타입(200)이 가장 길다. 특성 둘과 체인은
         // 그동안 함께 받는다. 하나씩 기다리면 800 이 걸린다.
         assertEquals(300, testScheduler.currentTime)
+    }
+
+    @Test
+    fun refreshPokemonDetail_form_followsSpeciesUrl() = runTest {
+        // 메가리자몽X 는 10034 번이지만 종은 6 번(리자몽)이다. 10034 번 종은 없다(404).
+        network.detail = networkPokemonDetail(id = 10034, name = "charizard-mega-x").copy(
+            species = NetworkNamedResource(
+                "charizard",
+                "https://pokeapi.co/api/v2/pokemon-species/6/"
+            )
+        )
+        network.species = networkPokemonSpecies(id = 6)
+
+        repository.refreshPokemonDetail(pokeId = 10034)
+
+        assertEquals(listOf(6), network.speciesIds)
+        assertEquals(
+            "charizard-mega-x",
+            repository.getPokemonDetailStream(pokeId = 10034).first()?.name
+        )
+    }
+
+    @Test
+    fun refreshPokemonDetail_httpError_throwsIOException() = runTest {
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.speciesError = HttpException(Response.error<Any>(404, "".toResponseBody()))
+
+        val thrown = runCatching { repository.refreshPokemonDetail(pokeId = 1) }.exceptionOrNull()
+
+        // 화면은 Retrofit 을 모른다. 연결 실패처럼 IOException 으로 받아야 잡을 수 있다.
+        assertTrue(thrown is IOException)
+    }
+
+    @Test
+    fun getPokemonDetailStream_form_usesSavedFormName() = runTest {
+        network.detail = networkPokemonDetail(id = 10034, name = "charizard-mega-x").copy(
+            species = NetworkNamedResource(
+                "charizard",
+                "https://pokeapi.co/api/v2/pokemon-species/6/"
+            )
+        )
+        network.species = networkPokemonSpecies(id = 6, koreanName = "리자몽")
+        localizedNameDao.insertPokemonNames(
+            listOf(PokemonNameEntity(id = 10034, korean = "메가리자몽X", english = "Mega Charizard X"))
+        )
+
+        repository.refreshPokemonDetail(pokeId = 10034)
+
+        // 종 정보의 이름(리자몽)이 아니라 폼 이름을 쓴다.
+        assertEquals(
+            "메가리자몽X",
+            repository.getPokemonDetailStream(pokeId = 10034).first()?.localizedName?.korean
+        )
     }
 
     @Test
