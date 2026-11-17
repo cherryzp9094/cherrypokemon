@@ -16,6 +16,7 @@ import com.cherryzp.cherrypokemon.core.database.dao.LocalizedNameDao
 import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.dao.RemoteKeyDao
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
+import com.cherryzp.cherrypokemon.core.database.model.RemoteKeyEntity
 import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.asExternalModel
 import com.cherryzp.cherrypokemon.core.model.Pokemon
@@ -65,7 +66,11 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         val page = network.getPokemons(offset = 0, limit = POKEMON_INDEX_LIMIT)
         // 이미 다 받아 뒀으면 다시 쓰지 않는다.
         if (pokemonDao.countPokemons() >= page.count) return
-        pokemonDao.insertPokemons(page.results.mapNotNull { it.asEntity() })
+        transaction {
+            pokemonDao.insertPokemons(page.results.mapNotNull { it.asEntity() })
+            // 전부 받았으므로 목록이 끝에 닿아도 네트워크에서 더 받을 것이 없다.
+            remoteKeyDao.upsertRemoteKey(RemoteKeyEntity(nextOffset = null))
+        }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

@@ -41,6 +41,25 @@ class PokemonRemoteMediatorTest {
     }
 
     @Test
+    fun initialize_emptyLocal_refreshes() = runTest {
+        assertEquals(
+            RemoteMediator.InitializeAction.LAUNCH_INITIAL_REFRESH,
+            mediator.initialize()
+        )
+    }
+
+    @Test
+    fun initialize_localHasData_skipsRefresh() = runTest {
+        // 검색용 색인을 받아 둔 상태. 처음부터 다시 받으면 REFRESH 가 색인을 지운다.
+        pokemonDao.insertPokemons(listOf(PokemonEntity(id = 133, name = "eevee", imageUrl = "")))
+
+        assertEquals(
+            RemoteMediator.InitializeAction.SKIP_INITIAL_REFRESH,
+            mediator.initialize()
+        )
+    }
+
+    @Test
     fun refresh_networkError_returnsError() = runTest {
         network.error = IOException()
 

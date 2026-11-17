@@ -23,6 +23,18 @@ internal class PokemonRemoteMediator(
     private val transaction: DatabaseTransactionRunner,
 ) : RemoteMediator<Int, PokemonEntity>() {
 
+    /**
+     * 로컬에 이미 있으면 처음부터 다시 받지 않는다.
+     *
+     * 검색어를 지울 때마다 새 Pager 가 만들어진다. 그때마다 REFRESH 로 표를 비우면 검색용으로 받아 둔
+     * 전체 이름 색인까지 지워져, 다음 검색에서 아무것도 찾지 못한다.
+     */
+    override suspend fun initialize(): InitializeAction = if (pokemonDao.countPokemons() > 0) {
+        InitializeAction.SKIP_INITIAL_REFRESH
+    } else {
+        InitializeAction.LAUNCH_INITIAL_REFRESH
+    }
+
     override suspend fun load(
         loadType: LoadType,
         state: PagingState<Int, PokemonEntity>,

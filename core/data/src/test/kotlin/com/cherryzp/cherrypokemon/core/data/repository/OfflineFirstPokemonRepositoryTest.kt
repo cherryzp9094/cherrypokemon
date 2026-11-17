@@ -22,6 +22,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -33,6 +34,7 @@ class OfflineFirstPokemonRepositoryTest {
     private lateinit var pokemonDao: FakePokemonDao
     private lateinit var localizedNameDao: FakeLocalizedNameDao
     private lateinit var evolutionChainDao: FakeEvolutionChainDao
+    private lateinit var remoteKeyDao: FakeRemoteKeyDao
     private lateinit var repository: OfflineFirstPokemonRepository
 
     @Before
@@ -41,9 +43,10 @@ class OfflineFirstPokemonRepositoryTest {
         pokemonDao = FakePokemonDao()
         localizedNameDao = FakeLocalizedNameDao()
         evolutionChainDao = FakeEvolutionChainDao()
+        remoteKeyDao = FakeRemoteKeyDao()
         repository = OfflineFirstPokemonRepository(
             pokemonDao = pokemonDao,
-            remoteKeyDao = FakeRemoteKeyDao(),
+            remoteKeyDao = remoteKeyDao,
             localizedNameDao = localizedNameDao,
             evolutionChainDao = evolutionChainDao,
             network = network,
@@ -133,6 +136,9 @@ class OfflineFirstPokemonRepositoryTest {
         repository.ensurePokemonIndex()
 
         assertEquals(listOf("pikachu", "mewtwo"), pokemonDao.pokemons.map { it.name })
+        // 전부 받았으므로 목록 끝에서 더 받으러 가지 않는다.
+        assertNull(remoteKeyDao.getRemoteKey()?.nextOffset)
+        assertNotNull(remoteKeyDao.getRemoteKey())
     }
 
     @Test
