@@ -7,6 +7,7 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import com.cherryzp.cherrypokemon.core.data.model.asEntities
 import com.cherryzp.cherrypokemon.core.data.model.asEntity
+import com.cherryzp.cherrypokemon.core.data.model.asItemEntity
 import com.cherryzp.cherrypokemon.core.data.model.asPokemonType
 import com.cherryzp.cherrypokemon.core.data.model.chainId
 import com.cherryzp.cherrypokemon.core.data.paging.PokemonRemoteMediator
@@ -15,7 +16,7 @@ import com.cherryzp.cherrypokemon.core.database.dao.EvolutionChainDao
 import com.cherryzp.cherrypokemon.core.database.dao.LocalizedNameDao
 import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.dao.RemoteKeyDao
-import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
+import com.cherryzp.cherrypokemon.core.database.model.PokemonWithName
 import com.cherryzp.cherrypokemon.core.database.model.RemoteKeyEntity
 import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.asExternalModel
@@ -53,14 +54,14 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         config = PagingConfig(pageSize = POKEMON_PAGE_SIZE),
         remoteMediator = PokemonRemoteMediator(pokemonDao, remoteKeyDao, network, transaction),
         pagingSourceFactory = pokemonDao::pagingSource
-    ).flow.map { pagingData -> pagingData.map(PokemonEntity::asExternalModel) }
+    ).flow.map { pagingData -> pagingData.map(PokemonWithName::asExternalModel) }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun searchPokemonsStream(query: String): Flow<PagingData<Pokemon>> = Pager(
         config = PagingConfig(pageSize = POKEMON_PAGE_SIZE),
         // 색인이 이미 로컬에 있으므로 네트워크를 보지 않는다.
         pagingSourceFactory = { pokemonDao.searchPagingSource(query) }
-    ).flow.map { pagingData -> pagingData.map(PokemonEntity::asExternalModel) }
+    ).flow.map { pagingData -> pagingData.map(PokemonWithName::asExternalModel) }
 
     override suspend fun ensurePokemonIndex() {
         val page = network.getPokemons(offset = 0, limit = POKEMON_INDEX_LIMIT)
@@ -74,6 +75,11 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
+    override suspend fun ensurePokemonNames() {
+        if (localizedNameDao.countPokemonNames() > 0) return
+        localizedNameDao.insertPokemonNames(network.getPokemonNames().asEntities())
+    }
+
     override fun getPokemonDetailStream(pokeId: Int): Flow<PokemonDetail?> {
         // Room 은 테이블에 쓰기만 있어도 내용이 같은 값을 다시 흘린다. 다른 포켓몬을 저장할 때도 그렇다.
         val entity = pokemonDao.getPokemonDetailEntity(pokeId).distinctUntilChanged()
@@ -131,11 +137,28 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
      */
     private suspend fun refreshEvolutionChain(species: NetworkPokemonSpecies) {
         val chainId = species.evolutionChain?.url?.chainId() ?: return
-        if (evolutionChainDao.countChainMembers(chainId) > 0) return
 
         runCatching {
-            evolutionChainDao.insertChainMembers(network.getEvolutionChain(chainId).asEntities())
+            if (evolutionChainDao.countChainMembers(chainId) == 0) {
+                evolutionChainDao.insertChainMembers(
+                    network.getEvolutionChain(chainId).asEntities()
+                )
+            }
+            // 체인을 전에 받아 둔 경우에도 도구 이름은 없을 수 있다. 그래서 체인과 따로 본다.
+            refreshItemNames(chainId)
         }
+    }
+
+    /** 체인에 쓰이는 진화 도구 중 이름을 아직 받지 않은 것만 받는다. */
+    private suspend fun refreshItemNames(chainId: Int) {
+        val saved = localizedNameDao.getSavedItems().toSet()
+        val missing = evolutionChainDao.getChainItems(chainId).filter { it !in saved }
+        if (missing.isEmpty()) return
+
+        val entities = coroutineScope {
+            missing.map { async { network.getItem(it).asItemEntity() } }.awaitAll()
+        }
+        localizedNameDao.insertItemNames(entities)
     }
 
     /**

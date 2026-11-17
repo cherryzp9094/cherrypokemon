@@ -54,6 +54,14 @@ class FakePokemonRepository @Inject constructor() : PokemonRepository {
         indexError?.let { throw it }
     }
 
+    /** `ensurePokemonNames` 가 몇 번 불렸는지. */
+    var namesCount: Int = 0
+        private set
+
+    override suspend fun ensurePokemonNames() {
+        namesCount++
+    }
+
     private companion object {
         val loadedStates = LoadStates(
             refresh = LoadState.NotLoading(endOfPaginationReached = true),

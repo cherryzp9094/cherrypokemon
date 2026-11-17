@@ -13,6 +13,7 @@ import com.cherryzp.cherrypokemon.core.network.model.NetworkOfficialArtwork
 import com.cherryzp.cherrypokemon.core.network.model.NetworkOtherSprites
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonAbility
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNames
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonSpecies
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonStat
@@ -114,6 +115,34 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
         chainCallCount++
         error?.let { throw it }
         return evolutionChain
+    }
+
+    /** 아이템 이름 호출 횟수. */
+    var itemCallCount: Int = 0
+        private set
+
+    override suspend fun getItem(name: String): NetworkNamedEntry {
+        itemCallCount++
+        error?.let { throw it }
+        return NetworkNamedEntry(
+            name = name,
+            names = listOf(
+                NetworkSpeciesName("천둥의돌", NetworkNamedResource(name = "ko")),
+                NetworkSpeciesName("Thunder Stone", NetworkNamedResource(name = "en"))
+            )
+        )
+    }
+
+    var pokemonNames: NetworkPokemonNames = NetworkPokemonNames()
+
+    /** 이름 전체 호출 횟수. 한 번만 받는지 보는 데 쓴다. */
+    var namesCallCount: Int = 0
+        private set
+
+    override suspend fun getPokemonNames(): NetworkPokemonNames {
+        namesCallCount++
+        error?.let { throw it }
+        return pokemonNames
     }
 
     override suspend fun getPokemonSpecies(pokeId: Int): NetworkPokemonSpecies {

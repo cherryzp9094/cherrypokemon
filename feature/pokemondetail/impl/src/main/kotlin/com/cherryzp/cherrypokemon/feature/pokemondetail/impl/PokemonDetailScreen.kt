@@ -427,7 +427,7 @@ private fun EvolutionBlock(
     ) {
         stages.forEachIndexed { index, stage ->
             if (index > 0 && stage.stage != stages[index - 1].stage) {
-                EvolutionArrow(condition = stage.condition)
+                EvolutionArrow(condition = stage.condition, language = language)
             }
             EvolutionStageItem(
                 stage = stage,
@@ -478,7 +478,7 @@ private fun EvolutionStageItem(
 
 /** 단계 사이의 화살표와 조건. */
 @Composable
-private fun EvolutionArrow(condition: EvolutionCondition?) {
+private fun EvolutionArrow(condition: EvolutionCondition?, language: AppLanguage) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(horizontal = 2.dp)
@@ -489,7 +489,7 @@ private fun EvolutionArrow(condition: EvolutionCondition?) {
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        condition?.label()?.let { label ->
+        condition?.label(language)?.let { label ->
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
@@ -500,9 +500,9 @@ private fun EvolutionArrow(condition: EvolutionCondition?) {
     }
 }
 
-/** 조건 글자. 도구 이름은 아직 영어 식별자다. */
+/** 조건 글자. 도구 이름을 아직 받지 못했으면 식별자를 읽기 좋게 바꿔 보여준다. */
 @Composable
-private fun EvolutionCondition.label(): String? {
+private fun EvolutionCondition.label(language: AppLanguage): String? {
     val level = minLevel
     val item = item
     return when {
@@ -511,7 +511,7 @@ private fun EvolutionCondition.label(): String? {
             level
         )
 
-        item != null -> item.replace('-', ' ')
+        item != null -> itemName.of(language).ifEmpty { item.replace('-', ' ') }
 
         else -> null
     }

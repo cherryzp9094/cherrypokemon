@@ -9,7 +9,9 @@ import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.model.LocalizedTextEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonDetailEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
+import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonStatsEntity
+import com.cherryzp.cherrypokemon.core.database.model.PokemonWithName
 import com.cherryzp.cherrypokemon.core.database.model.asExternalModel
 import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonType
@@ -169,6 +171,44 @@ class PokemonDaoTest {
     }
 
     @Test
+    fun pagingSource_attachesSavedNames() = runTest {
+        pokemonDao.insertPokemons(
+            listOf(
+                PokemonEntity(id = 25, name = "pikachu", imageUrl = ""),
+                PokemonEntity(id = 26, name = "raichu", imageUrl = "")
+            )
+        )
+        database.localizedNameDao().insertPokemonNames(
+            listOf(PokemonNameEntity(id = 25, korean = "피카츄", english = "Pikachu"))
+        )
+
+        val loaded = pokemonDao.pagingSource().loadAll()
+
+        assertEquals(listOf("피카츄", null), loaded.map { it.korean })
+        assertEquals("Pikachu", loaded.first().english)
+    }
+
+    @Test
+    fun searchPagingSource_findsByKoreanAndEnglishName() = runTest {
+        pokemonDao.insertPokemons(
+            listOf(
+                PokemonEntity(id = 122, name = "mr-mime", imageUrl = ""),
+                PokemonEntity(id = 25, name = "pikachu", imageUrl = "")
+            )
+        )
+        database.localizedNameDao().insertPokemonNames(
+            listOf(
+                PokemonNameEntity(id = 25, korean = "피카츄", english = "Pikachu"),
+                PokemonNameEntity(id = 122, korean = "마임맨", english = "Mr. Mime")
+            )
+        )
+
+        assertEquals(listOf("pikachu"), pokemonDao.searchPagingSource("피카").names())
+        // 식별자(mr-mime)와 다른 영어 이름으로도 찾는다.
+        assertEquals(listOf("mr-mime"), pokemonDao.searchPagingSource("Mr. M").names())
+    }
+
+    @Test
     fun searchPagingSource_isCaseInsensitive() = runTest {
         pokemonDao.insertPokemons(listOf(PokemonEntity(id = 25, name = "pikachu", imageUrl = "")))
 
@@ -185,7 +225,10 @@ class PokemonDaoTest {
     }
 
     /** PagingSource 를 한 번 읽어 이름만 꺼낸다. */
-    private suspend fun PagingSource<Int, PokemonEntity>.names(): List<String> {
+    private suspend fun PagingSource<Int, PokemonWithName>.names(): List<String> =
+        loadAll().map { it.pokemon.name }
+
+    private suspend fun PagingSource<Int, PokemonWithName>.loadAll(): List<PokemonWithName> {
         val page = load(
             PagingSource.LoadParams.Refresh(
                 key = null,
@@ -193,7 +236,7 @@ class PokemonDaoTest {
                 placeholdersEnabled = false
             )
         )
-        return (page as PagingSource.LoadResult.Page).data.map { it.name }
+        return (page as PagingSource.LoadResult.Page).data
     }
 
     private fun bulbasaurDetail() = PokemonDetailEntity(

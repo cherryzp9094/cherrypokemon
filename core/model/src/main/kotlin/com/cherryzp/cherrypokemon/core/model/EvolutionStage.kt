@@ -22,10 +22,12 @@ data class EvolutionStage(
  *
  * @param minLevel 레벨업 진화에 필요한 레벨
  * @param item 돌 같은 도구의 PokeAPI 식별자
+ * @param itemName 도구의 언어별 이름. 아직 받지 못했으면 비어 있다
  * @param trigger 레벨업·교환 같은 계기
  */
 data class EvolutionCondition(
     val minLevel: Int? = null,
     val item: String? = null,
+    val itemName: LocalizedText = LocalizedText.Empty,
     val trigger: String? = null,
 )

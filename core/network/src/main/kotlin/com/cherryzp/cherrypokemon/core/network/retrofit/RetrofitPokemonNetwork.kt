@@ -3,11 +3,15 @@ package com.cherryzp.cherrypokemon.core.network.retrofit
 import com.cherryzp.cherrypokemon.core.network.BuildConfig
 import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionChain
+import com.cherryzp.cherrypokemon.core.network.model.NetworkGraphQlRequest
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNames
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNamesResponse
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonSpecies
 import com.cherryzp.cherrypokemon.core.network.model.NetworkType
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.serialization.json.Json
@@ -15,9 +19,12 @@ import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Url
 
 private interface RetrofitPokemonNetworkApi {
     @GET("pokemon")
@@ -40,6 +47,16 @@ private interface RetrofitPokemonNetworkApi {
 
     @GET("evolution-chain/{id}")
     suspend fun getEvolutionChain(@Path("id") chainId: Int): NetworkEvolutionChain
+
+    @GET("item/{name}")
+    suspend fun getItem(@Path("name") name: String): NetworkNamedEntry
+
+    /** GraphQL 은 주소가 달라서 전체 주소를 넘긴다. */
+    @POST
+    suspend fun getPokemonNames(
+        @Url url: String,
+        @Body body: NetworkGraphQlRequest,
+    ): NetworkPokemonNamesResponse
 }
 
 @Singleton
@@ -72,4 +89,37 @@ internal class RetrofitPokemonNetwork @Inject constructor(
 
     override suspend fun getEvolutionChain(chainId: Int): NetworkEvolutionChain =
         networkApi.getEvolutionChain(chainId = chainId)
+
+    override suspend fun getItem(name: String): NetworkNamedEntry = networkApi.getItem(name = name)
+
+    override suspend fun getPokemonNames(): NetworkPokemonNames = networkApi
+        .getPokemonNames(
+            url = BuildConfig.POKE_API_GRAPHQL_URL,
+            body = NetworkGraphQlRequest(POKEMON_NAMES_QUERY)
+        )
+        .data
+        // 질의 오류는 HTTP 200 에 errors 만 담아 온다. 다른 네트워크 실패처럼 다루게 예외로 바꾼다.
+        ?: throw IOException("GraphQL 응답에 data 가 없다")
+
+    private companion object {
+        const val KOREAN = 3
+        const val ENGLISH = 9
+
+        /** 종 이름은 1~1025 번, 폼은 10001 번부터. 폼은 기본 모양의 이름만 쓴다. */
+        val POKEMON_NAMES_QUERY = """
+            {
+              pokemonspeciesname(where: {language_id: {_in: [$KOREAN, $ENGLISH]}}) {
+                name pokemon_species_id language_id
+              }
+              pokemon(where: {id: {_gt: 10000}}) {
+                id name pokemon_species_id
+                pokemonforms(where: {is_default: {_eq: true}}) {
+                  pokemonformnames(where: {language_id: {_in: [$KOREAN, $ENGLISH]}}) {
+                    pokemon_name name language_id
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+    }
 }

@@ -135,8 +135,10 @@ PokemonNetworkDataSource (Retrofit + kotlinx.serialization)
 | `/type/{name}` | 언어별 이름, 받는 쪽 상성 | 받지 않은 타입만 |
 | `/ability/{name}` | 언어별 이름 | 받지 않은 특성만 |
 | `/evolution-chain/{id}` | 진화 단계와 조건 | 받지 않은 체인만 |
+| `/item/{name}` | 진화 도구의 언어별 이름 | 받지 않은 도구만 |
 
-- 타입·특성 이름은 `type_names`·`ability_names` 에, 진화 체인은 `evolution_chain_members` 에 캐시한다. 상세를 읽을 때 `combine`·`flatMapLatest` 로 이어 붙인다.
+- 타입·특성·도구 이름은 `type_names`·`ability_names`·`item_names` 에, 진화 체인은 `evolution_chain_members` 에 캐시한다. 상세를 읽을 때 `combine`·`flatMapLatest` 로 이어 붙인다.
+- **모든 포켓몬의 이름은 GraphQL 한 번으로 받는다.** 목록을 처음 열 때 `graphql.pokeapi.co/v1beta2` 에서 종 1025개와 폼 326개의 한국어·영어 이름을 받아 `pokemon_names` 에 둔다. REST 로는 종마다 불러야 해서 천 번이 넘는다. 목록 카드, 한국어 검색, 아직 열어보지 않은 진화 단계가 이 표를 쓴다. 받지 못하면 식별자(`pikachu`)로 보인다.
 - **언어는 한국어와 영어를 함께 저장한다.** 한 응답에 둘 다 오므로 언어를 바꿔도 다시 받지 않는다. 모델은 `LocalizedText` 로 들고 화면이 `of(language)` 로 고른다.
 
 - 네트워크 모델(`Network*`)과 엔티티(`*Entity`)는 데이터 레이어 밖으로 나가지 않는다. 밖에는 `:core:model` 의 모델을 노출한다.

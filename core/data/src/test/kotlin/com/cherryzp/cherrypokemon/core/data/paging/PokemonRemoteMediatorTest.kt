@@ -11,6 +11,7 @@ import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemon
 import com.cherryzp.cherrypokemon.core.data.FakeRemoteKeyDao
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
+import com.cherryzp.cherrypokemon.core.database.model.PokemonWithName
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
 import java.io.IOException
 import kotlinx.coroutines.test.runTest
@@ -115,7 +116,7 @@ class PokemonRemoteMediatorTest {
     private fun RemoteMediator.MediatorResult.endOfPaginationReached(): Boolean =
         (this as RemoteMediator.MediatorResult.Success).endOfPaginationReached
 
-    private fun pagingState() = PagingState<Int, PokemonEntity>(
+    private fun pagingState() = PagingState<Int, PokemonWithName>(
         pages = emptyList(),
         anchorPosition = null,
         config = PagingConfig(pageSize = 2),

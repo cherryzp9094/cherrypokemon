@@ -3,6 +3,7 @@ package com.cherryzp.cherrypokemon.core.network
 import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionChain
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNames
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonSpecies
 import com.cherryzp.cherrypokemon.core.network.model.NetworkType
@@ -24,4 +25,10 @@ interface PokemonNetworkDataSource {
 
     /** 진화 체인. 종 정보의 `evolution_chain` 주소에서 ID 를 꺼내 부른다. */
     suspend fun getEvolutionChain(chainId: Int): NetworkEvolutionChain
+
+    /** 진화 도구 같은 아이템의 언어별 이름. */
+    suspend fun getItem(name: String): NetworkNamedEntry
+
+    /** 모든 종과 폼의 한국어·영어 이름. GraphQL 한 번으로 받는다. */
+    suspend fun getPokemonNames(): NetworkPokemonNames
 }

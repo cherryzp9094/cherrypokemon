@@ -35,6 +35,9 @@ class FakeEvolutionChainDao : EvolutionChainDao {
                 }
         }
 
+    override suspend fun getChainItems(chainId: Int): List<String> =
+        members.value.filter { it.chainId == chainId }.mapNotNull { it.item }.distinct()
+
     override suspend fun countChainMembers(chainId: Int): Int =
         members.value.count { it.chainId == chainId }
 

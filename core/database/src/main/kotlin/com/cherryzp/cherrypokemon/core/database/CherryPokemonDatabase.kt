@@ -10,8 +10,10 @@ import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.dao.RemoteKeyDao
 import com.cherryzp.cherrypokemon.core.database.model.AbilityNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.EvolutionChainMemberEntity
+import com.cherryzp.cherrypokemon.core.database.model.ItemNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonDetailEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
+import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.RemoteKeyEntity
 import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
 import com.cherryzp.cherrypokemon.core.database.util.PokemonAbilityListConverter
@@ -24,15 +26,18 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         RemoteKeyEntity::class,
         TypeNameEntity::class,
         AbilityNameEntity::class,
-        EvolutionChainMemberEntity::class
+        EvolutionChainMemberEntity::class,
+        PokemonNameEntity::class,
+        ItemNameEntity::class
     ],
-    version = 6,
+    version = 7,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5),
-        AutoMigration(from = 5, to = 6)
+        AutoMigration(from = 5, to = 6),
+        AutoMigration(from = 6, to = 7)
     ],
     exportSchema = true
 )

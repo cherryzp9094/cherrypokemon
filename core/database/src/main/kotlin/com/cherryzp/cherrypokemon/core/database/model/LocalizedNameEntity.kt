@@ -35,3 +35,29 @@ data class AbilityNameEntity(
     @ColumnInfo(defaultValue = "") val korean: String,
     @ColumnInfo(defaultValue = "") val english: String,
 )
+
+/**
+ * 종과 폼의 언어별 이름. 목록·검색·진화 단계가 함께 쓴다.
+ *
+ * 상세를 열 때 받는 종 정보와 달리 모든 포켓몬을 한 번에 받아 둔다.
+ *
+ * @param id 도감 번호. 폼은 10001 번부터다
+ */
+@Entity(tableName = "pokemon_names")
+data class PokemonNameEntity(
+    @PrimaryKey val id: Int,
+    @ColumnInfo(defaultValue = "") val korean: String,
+    @ColumnInfo(defaultValue = "") val english: String,
+)
+
+/**
+ * 진화 도구 같은 아이템의 언어별 이름.
+ *
+ * @param name PokeAPI 식별자(`thunder-stone`)
+ */
+@Entity(tableName = "item_names")
+data class ItemNameEntity(
+    @PrimaryKey val name: String,
+    @ColumnInfo(defaultValue = "") val korean: String,
+    @ColumnInfo(defaultValue = "") val english: String,
+)

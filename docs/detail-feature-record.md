@@ -45,6 +45,7 @@
 | 4 | `type_names`, `ability_names` 이름 캐시 |
 | 5 | 타입별 받는 상성 3개 컬럼 |
 | 6 | `evolution_chain_members`, 상세의 체인 ID |
+| 7 | `pokemon_names`(모든 종·폼의 언어별 이름), `item_names`(진화 도구 이름) |
 
 모두 `AutoMigration` 이고 **버전마다 마이그레이션 테스트가 있다**(`MigrationTest`). 계획에 적어둔 "스키마를 바꿀 때마다 마이그레이션 테스트" 를 지켰다.
 

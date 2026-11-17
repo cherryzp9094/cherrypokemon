@@ -8,7 +8,7 @@ import com.cherryzp.cherrypokemon.core.data.model.asEntity
 import com.cherryzp.cherrypokemon.core.database.DatabaseTransactionRunner
 import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.dao.RemoteKeyDao
-import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
+import com.cherryzp.cherrypokemon.core.database.model.PokemonWithName
 import com.cherryzp.cherrypokemon.core.database.model.RemoteKeyEntity
 import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
 import java.io.IOException
@@ -21,7 +21,7 @@ internal class PokemonRemoteMediator(
     private val remoteKeyDao: RemoteKeyDao,
     private val network: PokemonNetworkDataSource,
     private val transaction: DatabaseTransactionRunner,
-) : RemoteMediator<Int, PokemonEntity>() {
+) : RemoteMediator<Int, PokemonWithName>() {
 
     /**
      * 로컬에 이미 있으면 처음부터 다시 받지 않는다.
@@ -37,7 +37,7 @@ internal class PokemonRemoteMediator(
 
     override suspend fun load(
         loadType: LoadType,
-        state: PagingState<Int, PokemonEntity>,
+        state: PagingState<Int, PokemonWithName>,
     ): MediatorResult {
         val offset = when (loadType) {
             LoadType.REFRESH -> 0

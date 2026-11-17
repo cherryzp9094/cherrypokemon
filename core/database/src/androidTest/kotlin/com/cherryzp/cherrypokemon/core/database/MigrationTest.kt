@@ -153,4 +153,26 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate6To7_addsEmptyNameTablesAndKeepsList() = runTest {
+        helper.createDatabase(version = 6).use { connection ->
+            connection.execSQL(
+                "INSERT INTO pokemons (id, name, image_url) VALUES (25, 'pikachu', '')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 7).use { connection ->
+            for (table in listOf("pokemon_names", "item_names")) {
+                connection.prepare("SELECT COUNT(*) FROM $table").use { statement ->
+                    assertTrue(statement.step())
+                    assertEquals(0, statement.getInt(0))
+                }
+            }
+            connection.prepare("SELECT name FROM pokemons WHERE id = 25").use { statement ->
+                assertTrue(statement.step())
+                assertEquals("pikachu", statement.getText(0))
+            }
+        }
+    }
 }

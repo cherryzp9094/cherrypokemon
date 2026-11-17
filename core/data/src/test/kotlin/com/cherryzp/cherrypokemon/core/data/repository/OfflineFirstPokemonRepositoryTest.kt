@@ -11,8 +11,16 @@ import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Compani
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemonSpecies
 import com.cherryzp.cherrypokemon.core.data.FakeRemoteKeyDao
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
+import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
+import com.cherryzp.cherrypokemon.core.model.LocalizedText
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonType
+import com.cherryzp.cherrypokemon.core.network.model.NetworkChainLink
+import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionChain
+import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionDetail
+import com.cherryzp.cherrypokemon.core.network.model.NetworkLanguageName
+import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedResource
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNames
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
 import java.io.IOException
 import kotlinx.coroutines.flow.first
@@ -40,8 +48,8 @@ class OfflineFirstPokemonRepositoryTest {
     @Before
     fun setUp() {
         network = FakePokemonNetworkDataSource()
-        pokemonDao = FakePokemonDao()
         localizedNameDao = FakeLocalizedNameDao()
+        pokemonDao = FakePokemonDao(names = { localizedNameDao.pokemonNames.value })
         evolutionChainDao = FakeEvolutionChainDao()
         remoteKeyDao = FakeRemoteKeyDao()
         repository = OfflineFirstPokemonRepository(
@@ -120,6 +128,53 @@ class OfflineFirstPokemonRepositoryTest {
         assertEquals(
             listOf("mewtwo"),
             repository.searchPokemonsStream("150").asSnapshot().map { it.name }
+        )
+    }
+
+    @Test
+    fun ensurePokemonNames_savesOnce() = runTest {
+        network.pokemonNames = NetworkPokemonNames(
+            speciesNames = listOf(
+                NetworkLanguageName("피카츄", speciesId = 25, languageId = 3),
+                NetworkLanguageName("Pikachu", speciesId = 25, languageId = 9)
+            )
+        )
+
+        repository.ensurePokemonNames()
+        repository.ensurePokemonNames()
+
+        // 이미 받아 두었으면 다시 받지 않는다.
+        assertEquals(1, network.namesCallCount)
+        assertEquals("피카츄", localizedNameDao.pokemonNames.value[25]?.korean)
+    }
+
+    @Test
+    fun pokemonsStream_attachesSavedNames() = runTest {
+        pokemonDao.insertPokemons(listOf(PokemonEntity(id = 25, name = "pikachu", imageUrl = "")))
+        localizedNameDao.insertPokemonNames(
+            listOf(PokemonNameEntity(id = 25, korean = "피카츄", english = "Pikachu"))
+        )
+
+        val pokemon = repository.getPokemonsStream().asSnapshot().single()
+
+        assertEquals(LocalizedText(korean = "피카츄", english = "Pikachu"), pokemon.localizedName)
+    }
+
+    @Test
+    fun searchPokemonsStream_findsByKoreanName() = runTest {
+        pokemonDao.insertPokemons(
+            listOf(
+                PokemonEntity(id = 25, name = "pikachu", imageUrl = ""),
+                PokemonEntity(id = 133, name = "eevee", imageUrl = "")
+            )
+        )
+        localizedNameDao.insertPokemonNames(
+            listOf(PokemonNameEntity(id = 25, korean = "피카츄", english = "Pikachu"))
+        )
+
+        assertEquals(
+            listOf("pikachu"),
+            repository.searchPokemonsStream("피카").asSnapshot().map { it.name }
         )
     }
 
@@ -216,6 +271,39 @@ class OfflineFirstPokemonRepositoryTest {
         assertEquals(listOf(1, 2), stages?.map { it.pokemonId })
         assertEquals(listOf(1, 2), stages?.map { it.stage })
         assertEquals(16, stages?.last()?.condition?.minLevel)
+    }
+
+    @Test
+    fun refreshPokemonDetail_chainWithItem_savesItemNameOnce() = runTest {
+        network.detail = networkPokemonDetail(id = 25, name = "pikachu")
+        network.species = networkPokemonSpecies(id = 25)
+        network.evolutionChain = NetworkEvolutionChain(
+            id = 1,
+            chain = NetworkChainLink(
+                species = NetworkNamedResource(
+                    "pikachu",
+                    "https://pokeapi.co/api/v2/pokemon-species/25/"
+                ),
+                evolvesTo = listOf(
+                    NetworkChainLink(
+                        species = NetworkNamedResource(
+                            "raichu",
+                            "https://pokeapi.co/api/v2/pokemon-species/26/"
+                        ),
+                        evolutionDetails = listOf(
+                            NetworkEvolutionDetail(item = NetworkNamedResource("thunder-stone"))
+                        )
+                    )
+                )
+            )
+        )
+
+        repository.refreshPokemonDetail(pokeId = 25)
+        repository.refreshPokemonDetail(pokeId = 25)
+
+        assertEquals("천둥의돌", localizedNameDao.savedItemNames["thunder-stone"]?.korean)
+        // 받아 둔 도구 이름은 다시 받지 않는다.
+        assertEquals(1, network.itemCallCount)
     }
 
     @Test
