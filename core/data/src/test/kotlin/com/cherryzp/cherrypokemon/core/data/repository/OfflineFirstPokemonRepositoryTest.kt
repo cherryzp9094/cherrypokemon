@@ -25,6 +25,7 @@ import com.cherryzp.cherrypokemon.core.network.model.NetworkLanguageName
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedResource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNames
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
+import com.cherryzp.cherrypokemon.core.network.model.NetworkVariety
 import java.io.IOException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
@@ -380,6 +381,58 @@ class OfflineFirstPokemonRepositoryTest {
         assertEquals("원시의힘", moveDao.savedMoves["ancient-power"]?.korean)
         // 기술 표에 들어간 기술은 다시 받지 않는다.
         assertEquals(1, network.moveCallCount)
+    }
+
+    @Test
+    fun getPokemonDetailStream_attachesVarietiesWithNames() = runTest {
+        network.detail = networkPokemonDetail(id = 6, name = "charizard")
+        network.species = networkPokemonSpecies(id = 6).copy(
+            varieties = listOf(
+                NetworkVariety(
+                    true,
+                    NetworkNamedResource("charizard", "https://pokeapi.co/api/v2/pokemon/6/")
+                ),
+                NetworkVariety(
+                    false,
+                    NetworkNamedResource(
+                        "charizard-mega-x",
+                        "https://pokeapi.co/api/v2/pokemon/10034/"
+                    )
+                )
+            )
+        )
+        localizedNameDao.insertPokemonNames(
+            listOf(PokemonNameEntity(id = 10034, korean = "메가리자몽X", english = "Mega Charizard X"))
+        )
+
+        repository.refreshPokemonDetail(pokeId = 6)
+
+        val varieties = repository.getPokemonDetailStream(pokeId = 6).first()?.varieties
+        assertEquals(listOf(6, 10034), varieties?.map { it.id })
+        assertEquals("메가리자몽X", varieties?.last()?.localizedName?.korean)
+        // 이름을 아직 받지 못한 모습은 식별자를 쓸 수 있게 남긴다.
+        assertEquals("charizard", varieties?.first()?.name)
+    }
+
+    @Test
+    fun getPokemonDetailStream_singleVariety_hasNoVarieties() = runTest {
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.species = networkPokemonSpecies(id = 1).copy(
+            varieties = listOf(
+                NetworkVariety(
+                    true,
+                    NetworkNamedResource("bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/")
+                )
+            )
+        )
+
+        repository.refreshPokemonDetail(pokeId = 1)
+
+        // 기본 모습뿐이면 보여줄 다른 모습이 없다.
+        assertEquals(
+            emptyList<Any>(),
+            repository.getPokemonDetailStream(pokeId = 1).first()?.varieties
+        )
     }
 
     @Test

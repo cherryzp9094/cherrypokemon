@@ -272,4 +272,20 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate12To13_addsVarietiesColumn() = runTest {
+        helper.createDatabase(version = 12).use { connection ->
+            connection.execSQL(
+                "INSERT INTO pokemons (id, name, image_url) VALUES (6, 'charizard', '')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 13).use { connection ->
+            connection.prepare("SELECT name FROM pokemons WHERE id = 6").use { statement ->
+                assertTrue(statement.step())
+                assertEquals("charizard", statement.getText(0))
+            }
+        }
+    }
 }

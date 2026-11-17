@@ -40,7 +40,7 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         MoveEntity::class,
         PokemonMoveEntity::class
     ],
-    version = 12,
+    version = 13,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -52,7 +52,8 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         AutoMigration(from = 8, to = 9),
         AutoMigration(from = 9, to = 10),
         AutoMigration(from = 10, to = 11),
-        AutoMigration(from = 11, to = 12)
+        AutoMigration(from = 11, to = 12),
+        AutoMigration(from = 12, to = 13)
     ],
     exportSchema = true
 )

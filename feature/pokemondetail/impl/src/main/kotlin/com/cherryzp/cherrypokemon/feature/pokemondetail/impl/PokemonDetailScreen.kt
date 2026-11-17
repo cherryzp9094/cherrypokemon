@@ -75,6 +75,7 @@ import com.cherryzp.cherrypokemon.core.model.PokemonAbility
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonMove
 import com.cherryzp.cherrypokemon.core.model.PokemonStats
+import com.cherryzp.cherrypokemon.core.model.PokemonVariety
 import com.cherryzp.cherrypokemon.core.model.TypeMatchup
 import com.cherryzp.cherrypokemon.core.ui.DetailRow
 import com.cherryzp.cherrypokemon.core.ui.DetailSectionLabel
@@ -281,6 +282,18 @@ private fun DetailBody(
             )
             EvolutionBlock(
                 stages = pokemonDetail.evolutionStages,
+                currentId = pokemonDetail.id,
+                language = language,
+                onPokemonClick = onPokemonClick
+            )
+        }
+
+        if (pokemonDetail.varieties.size > 1) {
+            DetailSectionLabel(
+                stringResource(R.string.feature_pokemondetail_impl_section_varieties)
+            )
+            VarietiesBlock(
+                varieties = pokemonDetail.varieties,
                 currentId = pokemonDetail.id,
                 language = language,
                 onPokemonClick = onPokemonClick
@@ -654,6 +667,31 @@ private fun EvolutionStageItem(
     conditionLabel: String?,
     onClick: () -> Unit,
 ) {
+    PokemonThumbnail(
+        imageUrl = stage.imageUrl,
+        name = stage.localizedName.of(language).ifEmpty { stage.name },
+        isCurrent = isCurrent,
+        onClick = onClick
+    ) {
+        if (conditionLabel != null) {
+            ConditionText(label = conditionLabel)
+        }
+    }
+}
+
+/**
+ * 그림과 이름. 진화 단계와 다른 모습이 같이 쓴다. 보고 있는 포켓몬은 진하게, 누를 수 없게 둔다.
+ *
+ * @param below 이름 아래에 붙일 것(진화 조건)
+ */
+@Composable
+private fun PokemonThumbnail(
+    imageUrl: String,
+    name: String,
+    isCurrent: Boolean,
+    onClick: () -> Unit,
+    below: @Composable () -> Unit = {},
+) {
     Column(
         modifier = Modifier
             .width(84.dp)
@@ -663,26 +701,51 @@ private fun EvolutionStageItem(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         GlideImage(
-            imageModel = { stage.imageUrl },
+            imageModel = { imageUrl },
             imageOptions = ImageOptions(contentScale = ContentScale.Fit),
             modifier = Modifier.size(64.dp)
         )
         Text(
-            text = stage.localizedName.of(language).ifEmpty { stage.name },
+            text = name,
             style = MaterialTheme.typography.labelLarge,
-            // 보고 있는 포켓몬만 진하게.
             fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
             color = if (isCurrent) {
                 MaterialTheme.colorScheme.onSurface
             } else {
                 MaterialTheme.colorScheme.onSurfaceVariant
             },
-            maxLines = 1,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(top = 4.dp)
         )
-        if (conditionLabel != null) {
-            ConditionText(label = conditionLabel)
+        below()
+    }
+}
+
+/** 같은 종의 다른 모습(메가진화, 거다이맥스, 지역 폼). 많으면 가로로 스크롤한다. */
+@Composable
+private fun VarietiesBlock(
+    varieties: List<PokemonVariety>,
+    currentId: Int,
+    language: AppLanguage,
+    onPokemonClick: (pokeId: Int) -> Unit,
+) {
+    val fits = varieties.size <= MAX_EVOLUTION_STAGES_WITHOUT_SCROLL
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(if (fits) Modifier else Modifier.horizontalScroll(rememberScrollState()))
+            .padding(top = 4.dp),
+        horizontalArrangement = if (fits) Arrangement.SpaceEvenly else Arrangement.spacedBy(4.dp)
+    ) {
+        varieties.forEach { variety ->
+            PokemonThumbnail(
+                imageUrl = variety.imageUrl,
+                name = variety.localizedName.of(language).ifEmpty { variety.name },
+                isCurrent = variety.id == currentId,
+                onClick = { onPokemonClick(variety.id) }
+            )
         }
     }
 }

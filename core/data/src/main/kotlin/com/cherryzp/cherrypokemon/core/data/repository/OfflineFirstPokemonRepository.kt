@@ -11,6 +11,7 @@ import com.cherryzp.cherrypokemon.core.data.model.asEntity
 import com.cherryzp.cherrypokemon.core.data.model.asItemEntity
 import com.cherryzp.cherrypokemon.core.data.model.asPokemonType
 import com.cherryzp.cherrypokemon.core.data.model.chainId
+import com.cherryzp.cherrypokemon.core.data.model.officialArtworkUrl
 import com.cherryzp.cherrypokemon.core.data.model.urlId
 import com.cherryzp.cherrypokemon.core.data.paging.PokemonRemoteMediator
 import com.cherryzp.cherrypokemon.core.database.DatabaseTransactionRunner
@@ -26,6 +27,7 @@ import com.cherryzp.cherrypokemon.core.model.LocalizedText
 import com.cherryzp.cherrypokemon.core.model.Pokemon
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonType
+import com.cherryzp.cherrypokemon.core.model.PokemonVariety
 import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonSpecies
@@ -127,8 +129,36 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
 
         val moves = moveDao.getPokemonMoves(pokeId).map { it.asExternalModel() }
 
-        return combine(detail, evolutionStages, moves) { detail, stages, moves ->
-            detail?.copy(evolutionStages = stages, moves = moves)
+        // 같은 종의 다른 모습. 번호는 상세에 있고 이름은 이름 표에서 붙인다.
+        val varieties = entity
+            .map { it?.varieties.orEmpty() }
+            .distinctUntilChanged()
+            .flatMapLatest { saved ->
+                val pairs = saved.split(',').mapNotNull { pair ->
+                    val id = pair.substringBefore(':').toIntOrNull() ?: return@mapNotNull null
+                    id to pair.substringAfter(':')
+                }
+                if (pairs.size <= 1) {
+                    flowOf(emptyList())
+                } else {
+                    localizedNameDao.getPokemonNames(pairs.map { it.first }).map { names ->
+                        val byId = names.associateBy { it.id }
+                        pairs.map { (id, name) ->
+                            PokemonVariety(
+                                id = id,
+                                name = name,
+                                localizedName = byId[id]
+                                    ?.let { LocalizedText(it.korean, it.english) }
+                                    ?: LocalizedText.Empty,
+                                imageUrl = officialArtworkUrl(id)
+                            )
+                        }
+                    }
+                }
+            }
+
+        return combine(detail, evolutionStages, moves, varieties) { detail, stages, moves, forms ->
+            detail?.copy(evolutionStages = stages, moves = moves, varieties = forms)
         }.distinctUntilChanged()
     }
 
