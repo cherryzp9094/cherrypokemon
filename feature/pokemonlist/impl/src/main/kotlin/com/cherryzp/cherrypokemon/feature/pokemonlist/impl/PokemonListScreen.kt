@@ -25,8 +25,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -145,6 +151,10 @@ private fun PokemonListBody(
     onPokemonClick: (pokeId: Int) -> Unit,
     selectedPokeId: Int?,
 ) {
+    // 카드마다 이미지에서 뽑은 대표 색. 그리드보다 위에 둬야 검색 결과가 비었다 돌아오거나
+    // 상세에 다녀와도 남는다. 없으면 카드가 회색으로 그려졌다가 다시 칠해진다.
+    val cardColors = rememberSaveable(saver = CardColorsSaver) { mutableStateMapOf() }
+
     // 로컬 캐시(source)와 네트워크(mediator)를 나눠 본다. 캐시가 있으면 목록을 보여준다.
     val localRefresh = pokemons.loadState.source.refresh
     val remoteRefresh = pokemons.loadState.mediator?.refresh
@@ -172,6 +182,7 @@ private fun PokemonListBody(
 
         else -> PokemonGrid(
             pokemons = pokemons,
+            cardColors = cardColors,
             onPokemonClick = onPokemonClick,
             selectedPokeId = selectedPokeId,
             header = header
@@ -216,6 +227,7 @@ private fun ListHeader(
 @Composable
 private fun PokemonGrid(
     pokemons: LazyPagingItems<Pokemon>,
+    cardColors: SnapshotStateMap<Int, Color>,
     onPokemonClick: (pokeId: Int) -> Unit,
     selectedPokeId: Int?,
     header: @Composable () -> Unit,
@@ -247,7 +259,12 @@ private fun PokemonGrid(
                     number = pokemon.id,
                     imageUrl = pokemon.imageUrl,
                     onClick = { onPokemonClick(pokemon.id) },
-                    selected = pokemon.id == selectedPokeId
+                    selected = pokemon.id == selectedPokeId,
+                    backgroundColor = cardColors[pokemon.id],
+                    onBackgroundColorExtract = { color ->
+                        // 캐시된 이미지를 다시 그릴 때도 불린다. 같은 색이면 쓰지 않아 다시 그리지 않는다.
+                        if (cardColors[pokemon.id] != color) cardColors[pokemon.id] = color
+                    }
                 )
             }
         }
@@ -300,3 +317,20 @@ private fun HeaderedBox(header: @Composable () -> Unit, content: @Composable () 
         }
     }
 }
+
+/** 대표 색을 회전·프로세스 종료 뒤에도 남긴다. 번호와 ARGB 를 번갈아 담는다. */
+internal val CardColorsSaver = Saver<SnapshotStateMap<Int, Color>, IntArray>(
+    save = { colors ->
+        IntArray(colors.size * 2).also { saved ->
+            colors.entries.forEachIndexed { index, (id, color) ->
+                saved[index * 2] = id
+                saved[index * 2 + 1] = color.toArgb()
+            }
+        }
+    },
+    restore = { saved ->
+        mutableStateMapOf<Int, Color>().apply {
+            for (index in saved.indices step 2) put(saved[index], Color(saved[index + 1]))
+        }
+    }
+)

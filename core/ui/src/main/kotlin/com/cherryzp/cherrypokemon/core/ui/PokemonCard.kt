@@ -11,10 +11,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -41,6 +37,12 @@ import com.skydoves.landscapist.palette.PalettePlugin
  *
  * 글자색은 배경에서 계산해 대비를 지킨다. 보조 글자는 회색이 아니라 같은 전경색을 옅게 쓴다.
  * 도메인 모델이 아니라 필요한 값만 받는다.
+ *
+ * 대표 색은 부르는 쪽이 들고 있는다. 카드 안에 두면 스크롤로 화면 밖에 나갔다 돌아올 때마다
+ * 사라져서, 다시 뽑는 동안 카드가 잠깐 회색으로 보인다.
+ *
+ * @param backgroundColor 이미 뽑아 둔 대표 색. 없으면 회색으로 칠하고 이미지에서 뽑는다.
+ * @param onBackgroundColorExtract 이미지에서 대표 색을 뽑았을 때.
  */
 @Composable
 fun PokemonCard(
@@ -50,8 +52,9 @@ fun PokemonCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     selected: Boolean = false,
+    backgroundColor: Color? = null,
+    onBackgroundColorExtract: (Color) -> Unit = {},
 ) {
-    var backgroundColor by remember(imageUrl) { mutableStateOf<Color?>(null) }
     val cardColor = backgroundColor ?: MaterialTheme.colorScheme.surfaceVariant
     val contentColor = contentColorOn(cardColor)
     val shape = MaterialTheme.shapes.large
@@ -97,7 +100,7 @@ fun PokemonCard(
                         imageModel = imageUrl,
                         useCache = true,
                         paletteLoadedListener = { palette ->
-                            palette.dominantSwatch?.let { backgroundColor = Color(it.rgb) }
+                            palette.dominantSwatch?.let { onBackgroundColorExtract(Color(it.rgb)) }
                         }
                     )
                 },
