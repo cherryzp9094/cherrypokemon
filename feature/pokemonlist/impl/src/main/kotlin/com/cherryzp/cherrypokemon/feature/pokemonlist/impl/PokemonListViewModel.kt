@@ -12,6 +12,7 @@ import com.cherryzp.cherrypokemon.core.model.Pokemon
 import com.cherryzp.cherrypokemon.core.model.PokemonFilter
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -73,7 +74,11 @@ class PokemonListViewModel @Inject constructor(
      * 받지 못하면 거를 수 없지만 목록은 보이므로 실패를 삼킨다. 다음에 화면을 열 때 다시 해 본다.
      */
     private suspend fun fillFilters() {
-        runCatching { pokemonRepository.ensurePokemonFilters() }
+        try {
+            pokemonRepository.ensurePokemonFilters()
+        } catch (e: IOException) {
+            // 다음에 화면을 열 때 다시 해 본다.
+        }
     }
 
     @OptIn(OrbitExperimental::class)
@@ -101,7 +106,11 @@ class PokemonListViewModel @Inject constructor(
      * 받지 못해도 목록은 식별자로 보이므로 실패를 삼킨다. 다음에 화면을 열 때 다시 해 본다.
      */
     private suspend fun fillNames() {
-        runCatching { pokemonRepository.ensurePokemonNames() }
+        try {
+            pokemonRepository.ensurePokemonNames()
+        } catch (e: IOException) {
+            // 다음에 화면을 열 때 다시 해 본다.
+        }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
@@ -155,7 +164,14 @@ class PokemonListViewModel @Inject constructor(
         // 거름도 검색처럼 로컬 전체에서 찾으므로 색인이 있어야 한다.
         query.combine(filter) { text, filter -> text.isNotBlank() || filter.isActive }
             .filter { it }
-            .first { runCatching { pokemonRepository.ensurePokemonIndex() }.isSuccess }
+            .first {
+                try {
+                    pokemonRepository.ensurePokemonIndex()
+                    true
+                } catch (e: IOException) {
+                    false
+                }
+            }
     }
 
     private companion object {

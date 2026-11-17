@@ -85,6 +85,7 @@ import com.cherryzp.cherrypokemon.core.ui.TypeChip
 import com.cherryzp.cherrypokemon.core.ui.color
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
+import java.io.IOException
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
 
@@ -560,9 +561,11 @@ private fun rememberCryPlayer(): (String) -> Unit {
                 )
                 setOnPreparedListener { it.start() }
                 setOnErrorListener { _, _, _ -> true }
-                runCatching {
+                try {
                     setDataSource(url)
                     prepareAsync()
+                } catch (e: IOException) {
+                    // 소리를 못 내도 화면에는 영향이 없다.
                 }
             }
         }

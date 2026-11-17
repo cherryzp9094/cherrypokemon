@@ -202,9 +202,13 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
     var movesCallCount: Int = 0
         private set
 
+    /** 기술 호출만 실패시킨다. 보조 데이터 실패가 상세 갱신을 막지 않는지 보는 데 쓴다. */
+    var movesError: Throwable? = null
+
     override suspend fun getPokemonMoves(pokeId: Int): NetworkPokemonMoves {
         movesCallCount++
         error?.let { throw it }
+        movesError?.let { throw it }
         return pokemonMoves
     }
 

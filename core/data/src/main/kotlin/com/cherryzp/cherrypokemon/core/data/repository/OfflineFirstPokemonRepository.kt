@@ -82,7 +82,7 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         }
     ).flow.map { pagingData -> pagingData.map(PokemonWithName::asExternalModel) }
 
-    override suspend fun ensurePokemonFilters() {
+    override suspend fun ensurePokemonFilters() = httpErrorAsIOException {
         if (pokemonDao.countFilters() == 0) {
             pokemonDao.insertFilters(network.getPokemonFilters().asEntities())
         }
@@ -103,10 +103,10 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
             }
         }
 
-    override suspend fun ensurePokemonIndex() {
+    override suspend fun ensurePokemonIndex() = httpErrorAsIOException {
         val page = network.getPokemons(offset = 0, limit = POKEMON_INDEX_LIMIT)
         // 이미 다 받아 뒀으면 다시 쓰지 않는다.
-        if (pokemonDao.countPokemons() >= page.count) return
+        if (pokemonDao.countPokemons() >= page.count) return@httpErrorAsIOException
         transaction {
             pokemonDao.insertPokemons(page.results.mapNotNull { it.asEntity() })
             // 전부 받았으므로 목록이 끝에 닿아도 네트워크에서 더 받을 것이 없다.
@@ -114,8 +114,8 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         }
     }
 
-    override suspend fun ensurePokemonNames() {
-        if (localizedNameDao.countPokemonNames() > 0) return
+    override suspend fun ensurePokemonNames() = httpErrorAsIOException {
+        if (localizedNameDao.countPokemonNames() > 0) return@httpErrorAsIOException
         localizedNameDao.insertPokemonNames(network.getPokemonNames().asEntities())
     }
 
@@ -226,6 +226,20 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
     }
 
     /**
+     * 받지 못해도 화면이 보이는 보조 데이터(이름·기술·진화 체인)를 받는다.
+     *
+     * 네트워크 실패만 삼킨다. 취소는 그대로 올려 보내야 화면을 떠날 때 멈추고, DB 오류 같은 버그는
+     * 묻히지 않아야 한다. `runCatching` 은 둘 다 삼킨다.
+     */
+    private suspend fun ignoringNetworkFailure(block: suspend () -> Unit) {
+        try {
+            httpErrorAsIOException(block)
+        } catch (e: IOException) {
+            // 다음에 상세를 열 때 다시 받는다.
+        }
+    }
+
+    /**
      * HTTP 오류(404, 5xx)를 [IOException] 으로 바꿔 던진다.
      *
      * 상태를 만드는 ViewModel 은 Retrofit 을 모르므로 [HttpException] 을 잡지 못한다. 그대로 두면
@@ -246,7 +260,7 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
     private suspend fun refreshEvolutionChain(species: NetworkPokemonSpecies) {
         val chainId = species.evolutionChain?.url?.chainId() ?: return
 
-        runCatching {
+        ignoringNetworkFailure {
             if (evolutionChainDao.countChainMembers(chainId) == 0) {
                 evolutionChainDao.insertChainMembers(
                     network.getEvolutionChain(chainId).asEntities()
@@ -274,7 +288,7 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
      * 받지 못해도 상세는 보이므로 실패를 삼킨다. 기술 칩의 타입 이름도 함께 채운다.
      */
     private suspend fun refreshMoves(pokeId: Int) {
-        runCatching {
+        ignoringNetworkFailure {
             if (moveDao.countPokemonMoves(pokeId) == 0) {
                 val entities = network.getPokemonMoves(pokeId).asEntities(pokemonId = pokeId)
                 transaction {
@@ -291,10 +305,10 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
      * 받지 못해도 식별자로 보이므로 실패를 삼킨다.
      */
     private suspend fun refreshEggGroupNames(species: NetworkPokemonSpecies) {
-        runCatching {
+        ignoringNetworkFailure {
             val saved = localizedNameDao.getSavedEggGroups().toSet()
             val missing = species.eggGroups.map { it.name }.filter { it !in saved }.distinct()
-            if (missing.isEmpty()) return@runCatching
+            if (missing.isEmpty()) return@ignoringNetworkFailure
 
             val entities = coroutineScope {
                 missing.map { async { network.getEggGroup(it).asEggGroupEntity() } }.awaitAll()
@@ -323,7 +337,7 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
      * 이름을 받지 못해도 상성 없이 상세는 보이므로 실패를 삼킨다.
      */
     private suspend fun refreshMissingNames(detail: NetworkPokemonDetail) {
-        runCatching {
+        ignoringNetworkFailure {
             coroutineScope {
                 launch {
                     val ownTypes = detail.types.map { it.type.name }

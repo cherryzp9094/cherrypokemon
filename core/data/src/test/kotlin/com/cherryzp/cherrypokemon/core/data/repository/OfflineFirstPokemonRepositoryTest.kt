@@ -658,4 +658,38 @@ class OfflineFirstPokemonRepositoryTest {
 
         assertEquals("bulbasaur", repository.getPokemonDetailStream(pokeId = 1).first()?.name)
     }
+
+    @Test
+    fun refreshPokemonDetail_movesHttpError_stillSavesDetail() = runTest {
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.species = networkPokemonSpecies(id = 1)
+        network.movesError = HttpException(Response.error<Any>(500, "".toResponseBody()))
+
+        // 기술은 보조 데이터다. 받지 못해도 상세 갱신은 성공한다.
+        repository.refreshPokemonDetail(pokeId = 1)
+
+        assertEquals("bulbasaur", repository.getPokemonDetailStream(pokeId = 1).first()?.name)
+    }
+
+    @Test
+    fun refreshPokemonDetail_movesNonNetworkError_isNotSwallowed() = runTest {
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.species = networkPokemonSpecies(id = 1)
+        network.movesError = IllegalStateException("bug")
+
+        val thrown = runCatching { repository.refreshPokemonDetail(pokeId = 1) }.exceptionOrNull()
+
+        // 네트워크 실패만 삼킨다. 버그까지 삼키면 원인을 찾을 수 없다.
+        assertTrue(thrown is IllegalStateException)
+    }
+
+    @Test
+    fun ensurePokemonNames_httpError_throwsIOException() = runTest {
+        network.error = HttpException(Response.error<Any>(503, "".toResponseBody()))
+
+        val thrown = runCatching { repository.ensurePokemonNames() }.exceptionOrNull()
+
+        // 목록 화면은 IOException 만 잡는다.
+        assertTrue(thrown is IOException)
+    }
 }
