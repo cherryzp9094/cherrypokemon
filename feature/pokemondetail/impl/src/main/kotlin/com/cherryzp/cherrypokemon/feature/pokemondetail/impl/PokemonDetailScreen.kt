@@ -477,9 +477,19 @@ private fun NameBlock(pokemonDetail: PokemonDetail, language: AppLanguage) {
         style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Bold
     )
-    if (!pokemonDetail.genus.isEmpty) {
+    // 전설·환상은 분류 옆에 붙인다. 흔하지 않은 포켓몬이라는 것이 이름 다음으로 중요하다.
+    val rarity = when {
+        pokemonDetail.isMythical -> stringResource(R.string.feature_pokemondetail_impl_mythical)
+        pokemonDetail.isLegendary -> stringResource(R.string.feature_pokemondetail_impl_legendary)
+        else -> null
+    }
+    val genusLine = listOfNotNull(
+        pokemonDetail.genus.of(language).ifEmpty { null },
+        rarity
+    ).joinToString(" · ")
+    if (genusLine.isNotEmpty()) {
         Text(
-            text = pokemonDetail.genus.of(language),
+            text = genusLine,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 2.dp)
@@ -784,6 +794,26 @@ private fun BasicsBlock(pokemonDetail: PokemonDetail, language: AppLanguage) {
             label = stringResource(R.string.feature_pokemondetail_impl_base_experience),
             value = pokemonDetail.baseExperience.toString()
         )
+        pokemonDetail.captureRate?.let { rate ->
+            DetailRow(
+                label = stringResource(R.string.feature_pokemondetail_impl_capture_rate),
+                value = rate.toString()
+            )
+        }
+        pokemonDetail.genderRate?.let { rate ->
+            DetailRow(
+                label = stringResource(R.string.feature_pokemondetail_impl_gender),
+                value = genderText(rate)
+            )
+        }
+        if (pokemonDetail.eggGroups.isNotEmpty()) {
+            DetailRow(
+                label = stringResource(R.string.feature_pokemondetail_impl_egg_groups),
+                value = pokemonDetail.eggGroups.joinToString(" · ") { group ->
+                    group.localizedName.of(language).ifEmpty { group.name }
+                }
+            )
+        }
         pokemonDetail.abilities.forEach { ability ->
             Column {
                 DetailRow(
@@ -805,6 +835,23 @@ private fun BasicsBlock(pokemonDetail: PokemonDetail, language: AppLanguage) {
         }
     }
 }
+
+/**
+ * 성비. PokeAPI 는 암컷일 확률을 8 분의 몇으로 준다(4 면 반반). -1 은 성별이 없다.
+ * 12.5% 같은 값이 있어 소수점은 필요할 때만 쓴다.
+ */
+@Composable
+private fun genderText(femaleEighths: Int): String {
+    if (femaleEighths < 0) return stringResource(R.string.feature_pokemondetail_impl_genderless)
+    val female = femaleEighths * 100.0 / 8
+    return stringResource(
+        R.string.feature_pokemondetail_impl_gender_value,
+        (100 - female).percent(),
+        female.percent()
+    )
+}
+
+private fun Double.percent(): String = if (this % 1.0 == 0.0) toInt().toString() else toString()
 
 @Composable
 private fun PokemonAbility.label(): String = stringResource(

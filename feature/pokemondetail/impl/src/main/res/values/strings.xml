@@ -39,4 +39,11 @@
     <string name="feature_pokemondetail_impl_evolution_location">Special place</string>
     <string name="feature_pokemondetail_impl_play_cry">Play cry</string>
     <string name="feature_pokemondetail_impl_shiny">Shiny form</string>
+    <string name="feature_pokemondetail_impl_legendary">Legendary</string>
+    <string name="feature_pokemondetail_impl_mythical">Mythical</string>
+    <string name="feature_pokemondetail_impl_capture_rate">Catch rate</string>
+    <string name="feature_pokemondetail_impl_gender">Gender ratio</string>
+    <string name="feature_pokemondetail_impl_gender_value">♂ %1$s%% · ♀ %2$s%%</string>
+    <string name="feature_pokemondetail_impl_genderless">Genderless</string>
+    <string name="feature_pokemondetail_impl_egg_groups">Egg groups</string>
 </resources>

@@ -12,6 +12,7 @@ import com.cherryzp.cherrypokemon.core.database.dao.LocalizedNameDao
 import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.dao.RemoteKeyDao
 import com.cherryzp.cherrypokemon.core.database.model.AbilityNameEntity
+import com.cherryzp.cherrypokemon.core.database.model.EggGroupNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.EvolutionChainMemberEntity
 import com.cherryzp.cherrypokemon.core.database.model.ItemNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonDetailEntity
@@ -31,9 +32,10 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         AbilityNameEntity::class,
         EvolutionChainMemberEntity::class,
         PokemonNameEntity::class,
-        ItemNameEntity::class
+        ItemNameEntity::class,
+        EggGroupNameEntity::class
     ],
-    version = 10,
+    version = 11,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -43,7 +45,8 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         AutoMigration(from = 6, to = 7),
         AutoMigration(from = 7, to = 8, spec = ClearEvolutionChainsSpec::class),
         AutoMigration(from = 8, to = 9),
-        AutoMigration(from = 9, to = 10)
+        AutoMigration(from = 9, to = 10),
+        AutoMigration(from = 10, to = 11)
     ],
     exportSchema = true
 )

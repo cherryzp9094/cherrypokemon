@@ -2,6 +2,7 @@ package com.cherryzp.cherrypokemon.core.data
 
 import com.cherryzp.cherrypokemon.core.database.dao.LocalizedNameDao
 import com.cherryzp.cherrypokemon.core.database.model.AbilityNameEntity
+import com.cherryzp.cherrypokemon.core.database.model.EggGroupNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.ItemNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
@@ -54,5 +55,16 @@ class FakeLocalizedNameDao : LocalizedNameDao {
 
     override suspend fun insertItemNames(names: List<ItemNameEntity>) {
         itemNames.value = itemNames.value + names.associateBy { it.name }
+    }
+
+    private val eggGroupNames = MutableStateFlow(emptyList<EggGroupNameEntity>())
+
+    override fun getEggGroupNames(): Flow<List<EggGroupNameEntity>> = eggGroupNames
+
+    override suspend fun getSavedEggGroups(): List<String> = eggGroupNames.value.map { it.name }
+
+    override suspend fun insertEggGroupNames(names: List<EggGroupNameEntity>) {
+        eggGroupNames.value =
+            eggGroupNames.value.filterNot { saved -> names.any { it.name == saved.name } } + names
     }
 }

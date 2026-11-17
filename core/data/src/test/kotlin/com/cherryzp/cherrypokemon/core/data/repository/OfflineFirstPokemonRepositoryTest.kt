@@ -312,6 +312,22 @@ class OfflineFirstPokemonRepositoryTest {
     }
 
     @Test
+    fun refreshPokemonDetail_savesSpeciesBasicsAndEggGroupNamesOnce() = runTest {
+        network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
+        network.species = networkPokemonSpecies(id = 1)
+
+        repository.refreshPokemonDetail(pokeId = 1)
+        repository.refreshPokemonDetail(pokeId = 1)
+
+        val detail = repository.getPokemonDetailStream(pokeId = 1).first()
+        assertEquals(45, detail?.captureRate)
+        assertEquals(1, detail?.genderRate)
+        assertEquals(listOf("괴수"), detail?.eggGroups?.map { it.localizedName.korean })
+        // 받아 둔 알 그룹은 다시 받지 않는다.
+        assertEquals(1, network.eggGroupCallCount)
+    }
+
+    @Test
     fun refreshPokemonDetail_alreadySavedNames_doesNotCallAgain() = runTest {
         network.detail = networkPokemonDetail(id = 1, name = "bulbasaur")
         network.species = networkPokemonSpecies(id = 1)

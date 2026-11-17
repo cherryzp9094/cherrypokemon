@@ -9,6 +9,8 @@ package com.cherryzp.cherrypokemon.core.model
  * @param flavorText 도감 설명
  * @param shinyImageUrl 색이 다른 모습의 일러스트. 없으면 빈 문자열
  * @param cryUrl 울음소리 파일. 없으면 빈 문자열
+ * @param captureRate 포획률(0~255). 클수록 잡기 쉽다. 받기 전이면 null
+ * @param genderRate 암컷일 확률을 8 분의 몇으로. 성별이 없으면 -1, 받기 전이면 null
  * @param heightMeters 키(m)
  * @param weightKilograms 몸무게(kg)
  * @param baseExperience 쓰러뜨렸을 때 얻는 기초 경험치
@@ -32,4 +34,9 @@ data class PokemonDetail(
     val evolutionStages: List<EvolutionStage> = emptyList(),
     val shinyImageUrl: String = "",
     val cryUrl: String = "",
+    val captureRate: Int? = null,
+    val genderRate: Int? = null,
+    val eggGroups: List<EggGroup> = emptyList(),
+    val isLegendary: Boolean = false,
+    val isMythical: Boolean = false,
 )

@@ -145,6 +145,22 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
         )
     }
 
+    /** 알 그룹 이름 호출 횟수. */
+    var eggGroupCallCount: Int = 0
+        private set
+
+    override suspend fun getEggGroup(name: String): NetworkNamedEntry {
+        eggGroupCallCount++
+        error?.let { throw it }
+        return NetworkNamedEntry(
+            name = name,
+            names = listOf(
+                NetworkSpeciesName("괴수", NetworkNamedResource(name = "ko")),
+                NetworkSpeciesName("Monster", NetworkNamedResource(name = "en"))
+            )
+        )
+    }
+
     var pokemonNames: NetworkPokemonNames = NetworkPokemonNames()
 
     /** 이름 전체 호출 횟수. 한 번만 받는지 보는 데 쓴다. */
@@ -230,6 +246,9 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
             evolutionChain = NetworkNamedResource(
                 url = "https://pokeapi.co/api/v2/evolution-chain/1/"
             ),
+            captureRate = 45,
+            genderRate = 1,
+            eggGroups = listOf(NetworkNamedResource(name = "monster")),
             names = listOfNotNull(
                 koreanName?.let { NetworkSpeciesName(it, NetworkNamedResource(name = "ko")) },
                 englishName?.let { NetworkSpeciesName(it, NetworkNamedResource(name = "en")) },

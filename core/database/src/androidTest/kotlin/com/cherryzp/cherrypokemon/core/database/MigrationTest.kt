@@ -238,4 +238,20 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate10To11_addsEggGroupTable() = runTest {
+        helper.createDatabase(version = 10).use { connection ->
+            connection.execSQL(
+                "INSERT INTO pokemons (id, name, image_url) VALUES (25, 'pikachu', '')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 11).use { connection ->
+            connection.prepare("SELECT COUNT(*) FROM egg_group_names").use { statement ->
+                assertTrue(statement.step())
+                assertEquals(0, statement.getInt(0))
+            }
+        }
+    }
 }
