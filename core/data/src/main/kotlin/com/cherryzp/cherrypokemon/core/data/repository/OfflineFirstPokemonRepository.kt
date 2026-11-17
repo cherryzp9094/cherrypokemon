@@ -16,6 +16,7 @@ import com.cherryzp.cherrypokemon.core.data.paging.PokemonRemoteMediator
 import com.cherryzp.cherrypokemon.core.database.DatabaseTransactionRunner
 import com.cherryzp.cherrypokemon.core.database.dao.EvolutionChainDao
 import com.cherryzp.cherrypokemon.core.database.dao.LocalizedNameDao
+import com.cherryzp.cherrypokemon.core.database.dao.MoveDao
 import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.dao.RemoteKeyDao
 import com.cherryzp.cherrypokemon.core.database.model.PokemonWithName
@@ -50,6 +51,7 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
     private val remoteKeyDao: RemoteKeyDao,
     private val localizedNameDao: LocalizedNameDao,
     private val evolutionChainDao: EvolutionChainDao,
+    private val moveDao: MoveDao,
     private val network: PokemonNetworkDataSource,
     private val transaction: DatabaseTransactionRunner,
 ) : PokemonRepository {
@@ -123,8 +125,10 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
             }
             .map { members -> members.asExternalModel() }
 
-        return combine(detail, evolutionStages) { detail, stages ->
-            detail?.copy(evolutionStages = stages)
+        val moves = moveDao.getPokemonMoves(pokeId).map { it.asExternalModel() }
+
+        return combine(detail, evolutionStages, moves) { detail, stages, moves ->
+            detail?.copy(evolutionStages = stages, moves = moves)
         }.distinctUntilChanged()
     }
 
@@ -135,6 +139,7 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         coroutineScope {
             launch { refreshMissingNames(detail) }
             launch { refreshEggGroupNames(species) }
+            launch { refreshMoves(pokeId) }
             launch { refreshEvolutionChain(species) }
         }
     }
@@ -190,6 +195,24 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
             refreshItemNames(chainId)
             // "페어리 기술" 처럼 조건에 나오는 타입도 이름이 있어야 한국어로 적는다.
             refreshTypes(evolutionChainDao.getChainMoveTypes(chainId).map { it.lowercase() })
+        }
+    }
+
+    /**
+     * 레벨업 기술을 아직 받지 않았으면 받아 둔다. 기술은 게임이 새로 나오기 전에는 바뀌지 않는다.
+     *
+     * 받지 못해도 상세는 보이므로 실패를 삼킨다. 기술 칩의 타입 이름도 함께 채운다.
+     */
+    private suspend fun refreshMoves(pokeId: Int) {
+        runCatching {
+            if (moveDao.countPokemonMoves(pokeId) == 0) {
+                val entities = network.getPokemonMoves(pokeId).asEntities(pokemonId = pokeId)
+                transaction {
+                    moveDao.insertMoves(entities.moves)
+                    moveDao.insertPokemonMoves(entities.pokemonMoves)
+                }
+            }
+            refreshTypes(moveDao.getPokemonMoveTypes(pokeId).map { it.lowercase() })
         }
     }
 

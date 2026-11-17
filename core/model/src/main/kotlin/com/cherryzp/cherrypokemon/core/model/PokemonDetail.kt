@@ -39,4 +39,6 @@ data class PokemonDetail(
     val eggGroups: List<EggGroup> = emptyList(),
     val isLegendary: Boolean = false,
     val isMythical: Boolean = false,
+    /** 레벨업으로 배우는 기술. 레벨 순이다. 아직 받지 못했으면 비어 있다. */
+    val moves: List<PokemonMove> = emptyList(),
 )

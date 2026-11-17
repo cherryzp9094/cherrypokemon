@@ -4,6 +4,7 @@ import com.cherryzp.cherrypokemon.core.network.model.NetworkAbility
 import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionChain
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonMoves
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNames
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonSpecies
@@ -32,6 +33,9 @@ interface PokemonNetworkDataSource {
 
     /** 진화 도구 같은 아이템의 언어별 이름. */
     suspend fun getItem(name: String): NetworkNamedEntry
+
+    /** 레벨업으로 배우는 기술과 그 기술 정보. 본편 게임 것만 GraphQL 한 번으로 받는다. */
+    suspend fun getPokemonMoves(pokeId: Int): NetworkPokemonMoves
 
     /** 모든 종과 폼의 한국어·영어 이름. GraphQL 한 번으로 받는다. */
     suspend fun getPokemonNames(): NetworkPokemonNames

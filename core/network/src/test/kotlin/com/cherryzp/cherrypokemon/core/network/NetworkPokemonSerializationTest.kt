@@ -1,6 +1,7 @@
 package com.cherryzp.cherrypokemon.core.network
 
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonMovesResponse
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNamesResponse
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
 import kotlinx.serialization.SerializationException
@@ -50,6 +51,22 @@ class NetworkPokemonSerializationTest {
 
         // 질의가 틀리면 HTTP 200 에 data 없이 온다. 네트워크 쪽이 예외로 바꾼다.
         assertEquals(null, response.data)
+    }
+
+    @Test
+    fun pokemonMoves_realGraphQlResponse_parsesMoveDetails() {
+        val moves = json.decodeFromString<NetworkPokemonMovesResponse>(
+            readResource("pokemon_moves.json")
+        ).data?.moves.orEmpty()
+
+        val first = moves.first()
+        assertEquals("scarlet-violet", first.versionGroup.name)
+        assertEquals("electric", moves.first { it.move.name == "thunder-shock" }.move.type?.name)
+        assertEquals(
+            "전기쇼크",
+            moves.first { it.move.name == "thunder-shock" }.move.names
+                .single { it.languageId == 3 }.name
+        )
     }
 
     @Test

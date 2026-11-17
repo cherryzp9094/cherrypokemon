@@ -4,6 +4,7 @@ import androidx.paging.testing.asSnapshot
 import com.cherryzp.cherrypokemon.core.data.FakeDatabaseTransactionRunner
 import com.cherryzp.cherrypokemon.core.data.FakeEvolutionChainDao
 import com.cherryzp.cherrypokemon.core.data.FakeLocalizedNameDao
+import com.cherryzp.cherrypokemon.core.data.FakeMoveDao
 import com.cherryzp.cherrypokemon.core.data.FakePokemonDao
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource
 import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Companion.networkPokemon
@@ -48,6 +49,7 @@ class OfflineFirstPokemonRepositoryTest {
     private lateinit var localizedNameDao: FakeLocalizedNameDao
     private lateinit var evolutionChainDao: FakeEvolutionChainDao
     private lateinit var remoteKeyDao: FakeRemoteKeyDao
+    private lateinit var moveDao: FakeMoveDao
     private lateinit var repository: OfflineFirstPokemonRepository
 
     @Before
@@ -57,11 +59,13 @@ class OfflineFirstPokemonRepositoryTest {
         pokemonDao = FakePokemonDao(names = { localizedNameDao.pokemonNames.value })
         evolutionChainDao = FakeEvolutionChainDao()
         remoteKeyDao = FakeRemoteKeyDao()
+        moveDao = FakeMoveDao()
         repository = OfflineFirstPokemonRepository(
             pokemonDao = pokemonDao,
             remoteKeyDao = remoteKeyDao,
             localizedNameDao = localizedNameDao,
             evolutionChainDao = evolutionChainDao,
+            moveDao = moveDao,
             network = network,
             transaction = FakeDatabaseTransactionRunner()
         )
@@ -325,6 +329,21 @@ class OfflineFirstPokemonRepositoryTest {
         assertEquals(listOf("괴수"), detail?.eggGroups?.map { it.localizedName.korean })
         // 받아 둔 알 그룹은 다시 받지 않는다.
         assertEquals(1, network.eggGroupCallCount)
+    }
+
+    @Test
+    fun refreshPokemonDetail_savesLatestGameMovesOnce() = runTest {
+        network.detail = networkPokemonDetail(id = 25, name = "pikachu")
+        network.species = networkPokemonSpecies(id = 25)
+
+        repository.refreshPokemonDetail(pokeId = 25)
+        repository.refreshPokemonDetail(pokeId = 25)
+
+        val moves = repository.getPokemonDetailStream(pokeId = 25).first()?.moves
+        // 스칼렛·바이올렛 것만 쓴다. 소드·실드의 꼬리흔들기는 빠진다.
+        assertEquals(listOf("growl", "thunder-shock"), moves?.map { it.name })
+        assertEquals("전기쇼크", moves?.last()?.localizedName?.korean)
+        assertEquals(1, network.movesCallCount)
     }
 
     @Test

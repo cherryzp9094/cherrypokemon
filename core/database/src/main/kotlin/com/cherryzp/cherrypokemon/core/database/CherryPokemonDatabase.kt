@@ -9,14 +9,17 @@ import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.execSQL
 import com.cherryzp.cherrypokemon.core.database.dao.EvolutionChainDao
 import com.cherryzp.cherrypokemon.core.database.dao.LocalizedNameDao
+import com.cherryzp.cherrypokemon.core.database.dao.MoveDao
 import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.dao.RemoteKeyDao
 import com.cherryzp.cherrypokemon.core.database.model.AbilityNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.EggGroupNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.EvolutionChainMemberEntity
 import com.cherryzp.cherrypokemon.core.database.model.ItemNameEntity
+import com.cherryzp.cherrypokemon.core.database.model.MoveEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonDetailEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
+import com.cherryzp.cherrypokemon.core.database.model.PokemonMoveEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.RemoteKeyEntity
 import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
@@ -33,9 +36,11 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         EvolutionChainMemberEntity::class,
         PokemonNameEntity::class,
         ItemNameEntity::class,
-        EggGroupNameEntity::class
+        EggGroupNameEntity::class,
+        MoveEntity::class,
+        PokemonMoveEntity::class
     ],
-    version = 11,
+    version = 12,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -46,7 +51,8 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         AutoMigration(from = 7, to = 8, spec = ClearEvolutionChainsSpec::class),
         AutoMigration(from = 8, to = 9),
         AutoMigration(from = 9, to = 10),
-        AutoMigration(from = 10, to = 11)
+        AutoMigration(from = 10, to = 11),
+        AutoMigration(from = 11, to = 12)
     ],
     exportSchema = true
 )
@@ -59,6 +65,8 @@ internal abstract class CherryPokemonDatabase : RoomDatabase() {
     abstract fun localizedNameDao(): LocalizedNameDao
 
     abstract fun evolutionChainDao(): EvolutionChainDao
+
+    abstract fun moveDao(): MoveDao
 }
 
 /**

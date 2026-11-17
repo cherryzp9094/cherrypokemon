@@ -1,0 +1,118 @@
+{
+  "data": {
+    "pokemonmove": [
+      {
+        "level": 1,
+        "versiongroup": {
+          "name": "scarlet-violet"
+        },
+        "move": {
+          "name": "thunder-shock",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "type": {
+            "name": "electric"
+          },
+          "movedamageclass": {
+            "name": "special"
+          },
+          "movenames": [
+            {
+              "name": "전기쇼크",
+              "language_id": 3
+            },
+            {
+              "name": "Thunder Shock",
+              "language_id": 9
+            }
+          ]
+        }
+      },
+      {
+        "level": 1,
+        "versiongroup": {
+          "name": "scarlet-violet"
+        },
+        "move": {
+          "name": "quick-attack",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "type": {
+            "name": "normal"
+          },
+          "movedamageclass": {
+            "name": "physical"
+          },
+          "movenames": [
+            {
+              "name": "전광석화",
+              "language_id": 3
+            },
+            {
+              "name": "Quick Attack",
+              "language_id": 9
+            }
+          ]
+        }
+      },
+      {
+        "level": 1,
+        "versiongroup": {
+          "name": "scarlet-violet"
+        },
+        "move": {
+          "name": "growl",
+          "power": null,
+          "accuracy": 100,
+          "pp": 40,
+          "type": {
+            "name": "normal"
+          },
+          "movedamageclass": {
+            "name": "status"
+          },
+          "movenames": [
+            {
+              "name": "울음소리",
+              "language_id": 3
+            },
+            {
+              "name": "Growl",
+              "language_id": 9
+            }
+          ]
+        }
+      },
+      {
+        "level": 1,
+        "versiongroup": {
+          "name": "sword-shield"
+        },
+        "move": {
+          "name": "tail-whip",
+          "power": null,
+          "accuracy": 100,
+          "pp": 30,
+          "type": {
+            "name": "normal"
+          },
+          "movedamageclass": {
+            "name": "status"
+          },
+          "movenames": [
+            {
+              "name": "꼬리흔들기",
+              "language_id": 3
+            },
+            {
+              "name": "Tail Whip",
+              "language_id": 9
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

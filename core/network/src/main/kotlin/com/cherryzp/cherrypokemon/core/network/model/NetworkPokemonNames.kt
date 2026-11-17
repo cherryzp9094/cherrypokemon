@@ -3,9 +3,9 @@ package com.cherryzp.cherrypokemon.core.network.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/** PokeAPI GraphQL 요청 본문. */
+/** PokeAPI GraphQL 요청 본문. [variables] 는 질의의 `$id` 같은 자리에 들어간다. */
 @Serializable
-data class NetworkGraphQlRequest(val query: String)
+data class NetworkGraphQlRequest(val query: String, val variables: Map<String, Int> = emptyMap())
 
 /**
  * 모든 종과 폼의 언어별 이름. GraphQL 한 번으로 받는다.
