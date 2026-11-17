@@ -304,4 +304,29 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate14To15_clearsPokemonNamesSoTheyAreFetchedAgain() = runTest {
+        helper.createDatabase(version = 14).use { connection ->
+            connection.execSQL(
+                "INSERT INTO pokemon_names (id, korean, english) " +
+                    "VALUES (10196, '리자몽', 'Gigantamax Charizard')"
+            )
+            connection.execSQL(
+                "INSERT INTO pokemons (id, name, image_url) VALUES (6, 'charizard', '')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 15).use { connection ->
+            // 예전 폼 이름은 종 이름뿐이다. 지워야 목록을 열 때 새 규칙으로 다시 받는다.
+            connection.prepare("SELECT COUNT(*) FROM pokemon_names").use { statement ->
+                assertTrue(statement.step())
+                assertEquals(0, statement.getInt(0))
+            }
+            connection.prepare("SELECT name FROM pokemons WHERE id = 6").use { statement ->
+                assertTrue(statement.step())
+                assertEquals("charizard", statement.getText(0))
+            }
+        }
+    }
 }

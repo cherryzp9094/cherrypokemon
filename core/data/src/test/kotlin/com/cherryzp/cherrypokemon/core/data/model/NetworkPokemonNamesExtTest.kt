@@ -81,14 +81,35 @@ class NetworkPokemonNamesExtTest {
         )
     }
 
+    @Test
+    fun asEntities_formWithoutKoreanName_buildsNameFromIdentifier() {
+        val entities = NetworkPokemonNames(
+            speciesNames = species,
+            forms = listOf(
+                form(10196, speciesId = 6, name = "charizard-gmax"),
+                form(10035, speciesId = 6, name = "charizard-mega-y"),
+                form(10100, speciesId = 25, name = "pikachu-hisui"),
+                form(10150, speciesId = 25, name = "pikachu-totem-alola")
+            )
+        ).asEntities()
+
+        assertEquals("거다이맥스 리자몽", entities.byId(10196).korean)
+        assertEquals("메가리자몽Y", entities.byId(10035).korean)
+        assertEquals("히스이 피카츄", entities.byId(10100).korean)
+        // 주인 포켓몬이면서 알로라 모습이면 주인 쪽을 쓴다.
+        assertEquals("주인 피카츄", entities.byId(10150).korean)
+    }
+
     private fun namesWith(form: NetworkPokemonForm) =
         NetworkPokemonNames(speciesNames = species, forms = listOf(form)).asEntities()
 
-    private fun form(id: Int, speciesId: Int, vararg names: NetworkFormName) = NetworkPokemonForm(
-        id = id,
-        speciesId = speciesId,
-        forms = listOf(NetworkFormNames(names.toList()))
-    )
+    private fun form(id: Int, speciesId: Int, vararg names: NetworkFormName, name: String = "") =
+        NetworkPokemonForm(
+            id = id,
+            name = name,
+            speciesId = speciesId,
+            forms = listOf(NetworkFormNames(names.toList()))
+        )
 
     private fun List<PokemonNameEntity>.byId(id: Int) = single { it.id == id }
 
