@@ -31,6 +31,10 @@ interface LocalizedNameDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAbilityNames(names: List<AbilityNameEntity>)
 
+    /** 한 포켓몬의 이름. 폼은 종 정보에 폼 이름이 없어 여기서 읽는다. */
+    @Query("SELECT * FROM pokemon_names WHERE id = :id")
+    fun getPokemonName(id: Int): Flow<PokemonNameEntity?>
+
     @Query("SELECT COUNT(*) FROM pokemon_names")
     suspend fun countPokemonNames(): Int
 

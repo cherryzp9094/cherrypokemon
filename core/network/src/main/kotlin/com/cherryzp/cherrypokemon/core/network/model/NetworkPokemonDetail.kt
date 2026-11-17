@@ -21,6 +21,8 @@ data class NetworkPokemonDetail(
     val baseExperience: Int = 0,
     val stats: List<NetworkPokemonStat> = emptyList(),
     val abilities: List<NetworkPokemonAbility> = emptyList(),
+    /** 이 포켓몬의 종. 폼(10001 번부터)은 번호가 달라 이 주소로 종 정보를 찾는다. */
+    val species: NetworkNamedResource = NetworkNamedResource(),
 )
 
 @Serializable

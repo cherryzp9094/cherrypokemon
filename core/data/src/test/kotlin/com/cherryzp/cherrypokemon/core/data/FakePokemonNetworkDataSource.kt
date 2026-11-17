@@ -145,8 +145,12 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
         return pokemonNames
     }
 
+    /** 종 정보를 어떤 번호로 불렀는지. 폼이 종 주소를 따라가는지 보는 데 쓴다. */
+    val speciesIds = mutableListOf<Int>()
+
     override suspend fun getPokemonSpecies(pokeId: Int): NetworkPokemonSpecies {
         delay(callDelayMillis)
+        speciesIds += pokeId
         speciesCount++
         error?.let { throw it }
         speciesError?.let { throw it }

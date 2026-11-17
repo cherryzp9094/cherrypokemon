@@ -10,6 +10,7 @@ import com.cherryzp.cherrypokemon.core.data.model.asEntity
 import com.cherryzp.cherrypokemon.core.data.model.asItemEntity
 import com.cherryzp.cherrypokemon.core.data.model.asPokemonType
 import com.cherryzp.cherrypokemon.core.data.model.chainId
+import com.cherryzp.cherrypokemon.core.data.model.urlId
 import com.cherryzp.cherrypokemon.core.data.paging.PokemonRemoteMediator
 import com.cherryzp.cherrypokemon.core.database.DatabaseTransactionRunner
 import com.cherryzp.cherrypokemon.core.database.dao.EvolutionChainDao
@@ -20,12 +21,14 @@ import com.cherryzp.cherrypokemon.core.database.model.PokemonWithName
 import com.cherryzp.cherrypokemon.core.database.model.RemoteKeyEntity
 import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.asExternalModel
+import com.cherryzp.cherrypokemon.core.model.LocalizedText
 import com.cherryzp.cherrypokemon.core.model.Pokemon
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonDetail
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonSpecies
+import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -38,6 +41,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 /** 읽기는 항상 로컬에서 하고, 네트워크는 로컬을 갱신하는 데만 쓴다. */
 internal class OfflineFirstPokemonRepository @Inject constructor(
@@ -74,12 +78,12 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun ensurePokemonNames() {
         if (localizedNameDao.countPokemonNames() > 0) return
         localizedNameDao.insertPokemonNames(network.getPokemonNames().asEntities())
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun getPokemonDetailStream(pokeId: Int): Flow<PokemonDetail?> {
         // Room 은 테이블에 쓰기만 있어도 내용이 같은 값을 다시 흘린다. 다른 포켓몬을 저장할 때도 그렇다.
         val entity = pokemonDao.getPokemonDetailEntity(pokeId).distinctUntilChanged()
@@ -87,12 +91,19 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         val detail = combine(
             entity,
             localizedNameDao.getTypeNames(),
-            localizedNameDao.getAbilityNames()
-        ) { entity, typeNames, abilityNames ->
-            entity?.asExternalModel(
+            localizedNameDao.getAbilityNames(),
+            localizedNameDao.getPokemonName(pokeId)
+        ) { entity, typeNames, abilityNames, name ->
+            val detail = entity?.asExternalModel(
                 typeNames = typeNames.associateBy { it.type },
                 abilityNames = abilityNames.associate { it.asExternalModel() }
             )
+            // 종 정보의 이름은 종 이름(리자몽)이라 폼(메가리자몽X)에는 맞지 않는다. 받아 둔 이름을 쓴다.
+            if (detail != null && name != null && name.korean.isNotEmpty()) {
+                detail.copy(localizedName = LocalizedText(name.korean, name.english))
+            } else {
+                detail
+            }
         }
 
         // 체인 ID 는 상세에 들어 있어서 먼저 읽어야 구성원을 읽을 수 있다. ID 가 바뀔 때만 구성원
@@ -115,18 +126,45 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
     }
 
     override suspend fun refreshPokemonDetail(pokeId: Int) {
-        // 상세와 종 정보를 함께 받는다. 하나라도 실패하면 다른 쪽도 취소하고 아무것도 쓰지 않는다.
-        val (detail, species) = coroutineScope {
-            val detail = async { network.getPokemonDetail(pokeId) }
-            val species = async { network.getPokemonSpecies(pokeId) }
-            detail.await() to species.await()
-        }
+        val (detail, species) = httpErrorAsIOException { fetchDetailAndSpecies(pokeId) }
         pokemonDao.insertPokemonDetail(detail.asEntity(species))
         // 이름과 진화 체인은 서로 기다릴 이유가 없다.
         coroutineScope {
             launch { refreshMissingNames(detail) }
             launch { refreshEvolutionChain(species) }
         }
+    }
+
+    /**
+     * 상세와 종 정보를 받는다. 하나라도 실패하면 다른 쪽도 취소하고 아무것도 쓰지 않는다.
+     *
+     * 기본 모습(1~1025 번)은 종 번호가 같아 함께 받는다. 폼(10001 번부터)은 같은 번호의 종이
+     * 없어(404) 상세를 먼저 받고 거기 적힌 종 주소를 따라간다.
+     */
+    private suspend fun fetchDetailAndSpecies(
+        pokeId: Int,
+    ): Pair<NetworkPokemonDetail, NetworkPokemonSpecies> = coroutineScope {
+        val detail = async { network.getPokemonDetail(pokeId) }
+        val species = if (pokeId < FIRST_FORM_ID) {
+            async { network.getPokemonSpecies(pokeId) }
+        } else {
+            null
+        }
+        val received = detail.await()
+        val speciesId = received.species.url.urlId() ?: pokeId
+        received to (species?.await() ?: network.getPokemonSpecies(speciesId))
+    }
+
+    /**
+     * HTTP 오류(404, 5xx)를 [IOException] 으로 바꿔 던진다.
+     *
+     * 상태를 만드는 ViewModel 은 Retrofit 을 모르므로 [HttpException] 을 잡지 못한다. 그대로 두면
+     * 잡히지 않은 예외로 앱이 죽는다. 연결 실패와 똑같이 갱신 실패로 보여주면 된다.
+     */
+    private suspend fun <T> httpErrorAsIOException(block: suspend () -> T): T = try {
+        block()
+    } catch (e: HttpException) {
+        throw IOException("HTTP ${e.code()}", e)
     }
 
     /**
@@ -217,6 +255,9 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
 
     private companion object {
         const val POKEMON_PAGE_SIZE = 20
+
+        /** 이 번호부터는 폼이다. 종 번호가 포켓몬 번호와 다르다. */
+        const val FIRST_FORM_ID = 10001
 
         /** 전체 포켓몬 수보다 넉넉하게. 한 번에 받아 이름 색인을 만든다. */
         const val POKEMON_INDEX_LIMIT = 2000

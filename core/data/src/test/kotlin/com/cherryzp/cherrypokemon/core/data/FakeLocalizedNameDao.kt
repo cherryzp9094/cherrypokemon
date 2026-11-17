@@ -7,6 +7,7 @@ import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 
 /** 메모리에만 담는 이름 캐시 대역. */
 class FakeLocalizedNameDao : LocalizedNameDao {
@@ -38,6 +39,8 @@ class FakeLocalizedNameDao : LocalizedNameDao {
     private val itemNames = MutableStateFlow(emptyMap<String, ItemNameEntity>())
 
     val savedItemNames: Map<String, ItemNameEntity> get() = itemNames.value
+
+    override fun getPokemonName(id: Int): Flow<PokemonNameEntity?> = pokemonNames.map { it[id] }
 
     override suspend fun countPokemonNames(): Int = pokemonNames.value.size
 
