@@ -52,6 +52,8 @@ PokeAPI 기반 포켓몬 도감 앱. Jetpack Compose + Orbit MVI + 오프라인 
 ./gradlew validateDebugScreenshotTest   # 스크린샷 비교
 ./gradlew updateDebugScreenshotTest     # 참조 이미지 갱신 (UI 를 의도적으로 바꿨을 때)
 ./gradlew :app:generateBaselineProfile  # Baseline Profile 다시 수집
+# 리컴포지션 진단: 모듈마다 build/compose-reports 에 안정성 리포트를 만든다
+./gradlew assembleRelease -PenableComposeCompilerReports=true
 ```
 
 CI 는 `.github/workflows/ci.yml` 이다. PR 마다 포맷·단위 테스트·Lint·스크린샷·빌드와 계측 테스트를 돌린다.
