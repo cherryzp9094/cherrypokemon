@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
@@ -32,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
@@ -53,14 +52,32 @@ private val ScreenGutter = 16.dp
 /** 카드 사이 간격. 색 면끼리 붙으면 경계가 뭉개진다. */
 private val CardGap = 12.dp
 
-/** 두 여백을 합친다. `PaddingValues` 끼리는 더할 수 없어 직접 만든다. */
-private operator fun PaddingValues.plus(other: PaddingValues): PaddingValues = PaddingValues(
-    start = calculateStartPadding(LayoutDirection.Ltr) +
-        other.calculateStartPadding(LayoutDirection.Ltr),
-    top = calculateTopPadding() + other.calculateTopPadding(),
-    end = calculateEndPadding(LayoutDirection.Ltr) + other.calculateEndPadding(LayoutDirection.Ltr),
-    bottom = calculateBottomPadding() + other.calculateBottomPadding()
-)
+/**
+ * 두 여백을 합친다. `PaddingValues` 끼리는 더할 수 없어 직접 만든다.
+ *
+ * 값은 레이아웃 단계에서 읽는다. 여기서 바로 계산하면 키보드 inset 을 컴포지션에서 읽게 되어,
+ * 키보드가 열리고 닫히는 동안 그리드가 매 프레임 다시 컴포지션된다.
+ */
+private operator fun PaddingValues.plus(other: PaddingValues): PaddingValues =
+    SumPaddingValues(this, other)
+
+private class SumPaddingValues(
+    private val first: PaddingValues,
+    private val second: PaddingValues,
+) : PaddingValues {
+    override fun calculateLeftPadding(layoutDirection: LayoutDirection): Dp =
+        first.calculateLeftPadding(layoutDirection) + second.calculateLeftPadding(layoutDirection)
+
+    override fun calculateTopPadding(): Dp =
+        first.calculateTopPadding() + second.calculateTopPadding()
+
+    override fun calculateRightPadding(layoutDirection: LayoutDirection): Dp =
+        first.calculateRightPadding(layoutDirection) +
+            second.calculateRightPadding(layoutDirection)
+
+    override fun calculateBottomPadding(): Dp =
+        first.calculateBottomPadding() + second.calculateBottomPadding()
+}
 
 @Composable
 internal fun PokemonListScreen(
