@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -17,10 +18,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.cherryzp.cherrypokemon.core.designsystem.theme.contentColorOn
@@ -82,15 +86,12 @@ fun PokemonCard(
     ) {
         // 카드 높이를 고정해야 이름 길이가 달라도 줄이 가지런하다.
         Box(modifier = Modifier.fillMaxWidth().aspectRatio(0.8f)) {
-            Text(
-                text = number.toString().padStart(3, '0'),
-                style = MaterialTheme.typography.displayMedium,
-                fontWeight = FontWeight.Black,
+            NumberWatermark(
+                number = number,
                 color = contentColor.copy(alpha = 0.16f),
-                maxLines = 1,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(end = 10.dp, top = 2.dp)
+                    .padding(start = 10.dp, end = 10.dp, top = 2.dp)
             )
             GlideImage(
                 imageModel = { imageUrl },
@@ -134,3 +135,36 @@ fun PokemonCard(
         }
     }
 }
+
+/**
+ * 카드 오른쪽 위에 크게 까는 도감 번호.
+ *
+ * 폼은 10034 처럼 다섯 자리라 그대로 두면 카드 밖으로 넘친다. 카드 폭에 맞춰 글자를 줄인다.
+ * 장식이라 기기 글자 크기 설정을 따라 커지지 않게 최대 크기를 dp 로 정한다. 번호는 아래에
+ * "No.25" 로 따로 있으므로 화면 읽기에서는 뺀다.
+ */
+@Composable
+private fun NumberWatermark(number: Int, color: Color, modifier: Modifier = Modifier) {
+    val maxFontSize = with(LocalDensity.current) { WATERMARK_MAX_SIZE.toSp() }
+    Text(
+        text = number.toString().padStart(3, '0'),
+        style = MaterialTheme.typography.displayMedium,
+        fontWeight = FontWeight.Black,
+        color = color,
+        maxLines = 1,
+        textAlign = TextAlign.End,
+        autoSize = TextAutoSize.StepBased(
+            minFontSize = maxFontSize * WATERMARK_MIN_RATIO,
+            maxFontSize = maxFontSize
+        ),
+        modifier = modifier
+            .fillMaxWidth()
+            .clearAndSetSemantics {}
+    )
+}
+
+/** 세 자리 번호가 지금 크기(displayMedium 45sp)로 보이는 값. */
+private val WATERMARK_MAX_SIZE = 45.dp
+
+/** 다섯 자리도 150dp 카드에 들어가는 비율. */
+private const val WATERMARK_MIN_RATIO = 0.5f

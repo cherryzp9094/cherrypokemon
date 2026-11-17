@@ -25,4 +25,20 @@ class PokemonCardScreenshotTest {
             )
         }
     }
+
+    /** 폼은 다섯 자리 번호다. 가장 좁은 카드(150dp)에서도 번호가 카드 안에 들어와야 한다. */
+    @PreviewTest
+    @PreviewLightDark
+    @Composable
+    fun pokemonCard_fiveDigitNumber() {
+        CherryPokemonTheme {
+            PokemonCard(
+                name = "charizard-mega-x",
+                number = 10034,
+                imageUrl = "",
+                onClick = {},
+                modifier = Modifier.width(150.dp)
+            )
+        }
+    }
 }
