@@ -130,15 +130,23 @@ PokemonNetworkDataSource (Retrofit + kotlinx.serialization)
 
 | 호출 | 쓰는 것 | 다시 받는가 |
 |---|---|---|
-| `/pokemon/{id}` | 종족값, 특성, 타입, 키·몸무게 | 매번 |
-| `/pokemon-species/{id}` | 언어별 이름·분류·도감 설명, 체인 주소 | 매번 |
+| `/pokemon/{id}` | 종족값, 특성, 타입, 키·몸무게, 색이 다른 모습 이미지, 울음소리 | 매번 |
+| `/pokemon-species/{id}` | 언어별 이름·분류·도감 설명, 체인 주소, 포획률·성비·알 그룹·전설 여부, 같은 종의 다른 모습 | 매번 |
 | `/type/{name}` | 언어별 이름, 받는 쪽 상성 | 받지 않은 타입만 |
-| `/ability/{name}` | 언어별 이름 | 받지 않은 특성만 |
+| `/ability/{name}` | 언어별 이름과 설명 | 받지 않은 특성만 |
+| `/egg-group/{name}` | 알 그룹의 언어별 이름 | 받지 않은 알 그룹만 |
 | `/evolution-chain/{id}` | 진화 단계와 조건 | 받지 않은 체인만 |
 | `/item/{name}` | 진화 도구의 언어별 이름 | 받지 않은 도구만 |
+| `/move/{name}` | 진화 조건에 나오는 기술의 언어별 이름과 타입 | 받지 않은 기술만 |
+| GraphQL 기술 쿼리 | 레벨업 기술(이름·타입·위력·명중·PP). 본편 중 그 포켓몬이 있는 가장 최신 게임 기준 | 받지 않은 포켓몬만 |
 
-- 타입·특성·도구 이름은 `type_names`·`ability_names`·`item_names` 에, 진화 체인은 `evolution_chain_members` 에 캐시한다. 상세를 읽을 때 `combine`·`flatMapLatest` 로 이어 붙인다.
-- **모든 포켓몬의 이름은 GraphQL 한 번으로 받는다.** 목록을 처음 열 때 `graphql.pokeapi.co/v1beta2` 에서 종 1025개와 폼 326개의 한국어·영어 이름을 받아 `pokemon_names` 에 둔다. REST 로는 종마다 불러야 해서 천 번이 넘는다. 목록 카드, 한국어 검색, 아직 열어보지 않은 진화 단계가 이 표를 쓴다. 받지 못하면 식별자(`pikachu`)로 보인다.
+- 상세 하나를 처음 열 때 이 호출들은 `coroutineScope` 안에서 함께 시작한다. 여러 곳이 같은 타입 이름을 찾으면 먼저 시작한 요청 하나만 보내고 나머지는 그 결과를 기다린다.
+- 상세와 종 정보 말고는 받지 못해도 화면이 보이므로 네트워크 실패(`IOException`, `HttpException`)만 삼킨다. 취소와 그 밖의 예외는 그대로 던진다.
+
+- 타입·특성·도구·알 그룹 이름은 `type_names`·`ability_names`·`item_names`·`egg_group_names` 에, 기술은 `moves`·`pokemon_moves` 에, 진화 체인은 `evolution_chain_members` 에 캐시한다. 상세를 읽을 때 `combine`·`flatMapLatest` 로 이어 붙인다.
+- **모든 포켓몬의 이름은 GraphQL 한 번으로 받는다.** 목록을 처음 열 때 `graphql.pokeapi.co/v1beta2` 에서 종 1025개와 폼 326개의 한국어·영어 이름을 받아 `pokemon_names` 에 둔다. REST 로는 종마다 불러야 해서 천 번이 넘는다. 목록 카드, 한국어 검색, 아직 열어보지 않은 진화 단계, 같은 종의 다른 모습이 이 표를 쓴다. 받지 못하면 식별자(`pikachu`)로 보인다.
+  - 폼 149개는 PokeAPI 에 한국어 이름이 없다. 거다이맥스·메가·주인·리전폼은 식별자(`charizard-gmax`)로 `거다이맥스 리자몽` 처럼 만들고, 규칙이 없는 폼은 종 이름을 쓴다.
+- **타입·세대 거름도 GraphQL 한 번으로 받는다.** 목록을 처음 열 때 1025종의 타입과 세대를 `pokemon_filters` 에, 18 타입 이름을 `type_names` 에 둔다. 검색과 거름은 로컬에서만 한다.
 - **언어는 한국어와 영어를 함께 저장한다.** 한 응답에 둘 다 오므로 언어를 바꿔도 다시 받지 않는다. 모델은 `LocalizedText` 로 들고 화면이 `of(language)` 로 고른다.
 
 - 네트워크 모델(`Network*`)과 엔티티(`*Entity`)는 데이터 레이어 밖으로 나가지 않는다. 밖에는 `:core:model` 의 모델을 노출한다.
