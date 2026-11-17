@@ -96,7 +96,7 @@ internal class OfflineFirstPokemonRepository @Inject constructor(
         ) { entity, typeNames, abilityNames, name ->
             val detail = entity?.asExternalModel(
                 typeNames = typeNames.associateBy { it.type },
-                abilityNames = abilityNames.associate { it.asExternalModel() }
+                abilityNames = abilityNames.associateBy { it.name }
             )
             // 종 정보의 이름은 종 이름(리자몽)이라 폼(메가리자몽X)에는 맞지 않는다. 받아 둔 이름을 쓴다.
             if (detail != null && name != null && name.korean.isNotEmpty()) {

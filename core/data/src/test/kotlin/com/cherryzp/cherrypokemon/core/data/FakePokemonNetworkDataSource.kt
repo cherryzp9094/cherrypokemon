@@ -1,6 +1,7 @@
 package com.cherryzp.cherrypokemon.core.data
 
 import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
+import com.cherryzp.cherrypokemon.core.network.model.NetworkAbility
 import com.cherryzp.cherrypokemon.core.network.model.NetworkChainLink
 import com.cherryzp.cherrypokemon.core.network.model.NetworkDamageRelations
 import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionChain
@@ -74,15 +75,26 @@ class FakePokemonNetworkDataSource : PokemonNetworkDataSource {
         )
     }
 
-    override suspend fun getAbility(name: String): NetworkNamedEntry {
-        delay(callDelayMillis)
+    override suspend fun getAbility(name: String): NetworkAbility {
         nameCallCount++
+        delay(callDelayMillis)
         error?.let { throw it }
-        return NetworkNamedEntry(
+        return NetworkAbility(
             name = name,
             names = listOf(
                 NetworkSpeciesName("심록", NetworkNamedResource(name = "ko")),
                 NetworkSpeciesName("Overgrow", NetworkNamedResource(name = "en"))
+            ),
+            flavorTextEntries = listOf(
+                NetworkFlavorText("옛 설명", NetworkNamedResource(name = "ko")),
+                NetworkFlavorText(
+                    "HP가 줄었을 때\n풀타입 기술의\n위력이 올라간다.",
+                    NetworkNamedResource(name = "ko")
+                ),
+                NetworkFlavorText(
+                    "Powers up Grass-type moves\nwhen the Pokémon's HP is low.",
+                    NetworkNamedResource(name = "en")
+                )
             )
         )
     }

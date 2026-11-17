@@ -25,15 +25,20 @@ data class TypeNameEntity(
 )
 
 /**
- * 특성의 언어별 이름.
+ * 특성의 언어별 이름과 설명.
  *
  * @param name PokeAPI 식별자(`overgrow`)
+ * @param descriptionKorean 최신 게임의 한국어 설명. 8 버전 전에 받은 특성은 비어 있다
  */
 @Entity(tableName = "ability_names")
 data class AbilityNameEntity(
     @PrimaryKey val name: String,
     @ColumnInfo(defaultValue = "") val korean: String,
     @ColumnInfo(defaultValue = "") val english: String,
+    @ColumnInfo(name = "description_korean", defaultValue = "")
+    val descriptionKorean: String = "",
+    @ColumnInfo(name = "description_english", defaultValue = "")
+    val descriptionEnglish: String = "",
 )
 
 /**

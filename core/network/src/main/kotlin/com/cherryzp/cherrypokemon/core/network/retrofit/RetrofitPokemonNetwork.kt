@@ -2,6 +2,7 @@ package com.cherryzp.cherrypokemon.core.network.retrofit
 
 import com.cherryzp.cherrypokemon.core.network.BuildConfig
 import com.cherryzp.cherrypokemon.core.network.PokemonNetworkDataSource
+import com.cherryzp.cherrypokemon.core.network.model.NetworkAbility
 import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionChain
 import com.cherryzp.cherrypokemon.core.network.model.NetworkGraphQlRequest
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
@@ -43,7 +44,7 @@ private interface RetrofitPokemonNetworkApi {
     suspend fun getType(@Path("name") name: String): NetworkType
 
     @GET("ability/{name}")
-    suspend fun getAbility(@Path("name") name: String): NetworkNamedEntry
+    suspend fun getAbility(@Path("name") name: String): NetworkAbility
 
     @GET("evolution-chain/{id}")
     suspend fun getEvolutionChain(@Path("id") chainId: Int): NetworkEvolutionChain
@@ -84,7 +85,7 @@ internal class RetrofitPokemonNetwork @Inject constructor(
 
     override suspend fun getType(name: String): NetworkType = networkApi.getType(name = name)
 
-    override suspend fun getAbility(name: String): NetworkNamedEntry =
+    override suspend fun getAbility(name: String): NetworkAbility =
         networkApi.getAbility(name = name)
 
     override suspend fun getEvolutionChain(chainId: Int): NetworkEvolutionChain =

@@ -3,7 +3,7 @@ package com.cherryzp.cherrypokemon.core.data.model
 import com.cherryzp.cherrypokemon.core.database.model.AbilityNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
 import com.cherryzp.cherrypokemon.core.model.PokemonType
-import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedEntry
+import com.cherryzp.cherrypokemon.core.network.model.NetworkAbility
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedResource
 import com.cherryzp.cherrypokemon.core.network.model.NetworkSpeciesName
 import com.cherryzp.cherrypokemon.core.network.model.NetworkType
@@ -17,10 +17,17 @@ internal fun NetworkType.asEntity(type: PokemonType) = TypeNameEntity(
     noDamageFrom = damageRelations.noDamageFrom.toTypes()
 )
 
-internal fun NetworkNamedEntry.asEntity() = AbilityNameEntity(
+/** 설명은 게임마다 하나씩 오고 뒤로 갈수록 최신이라 언어마다 마지막 것을 쓴다. */
+internal fun NetworkAbility.asEntity() = AbilityNameEntity(
     name = name,
     korean = names.korean(),
-    english = names.english()
+    english = names.english(),
+    descriptionKorean = flavorTextEntries.lastOrNull { it.language.name == "ko" }
+        ?.flavorText
+        .clean(),
+    descriptionEnglish = flavorTextEntries.lastOrNull { it.language.name == "en" }
+        ?.flavorText
+        .clean()
 )
 
 private fun List<NetworkSpeciesName>.korean() =

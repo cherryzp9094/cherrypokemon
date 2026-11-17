@@ -3,12 +3,26 @@ package com.cherryzp.cherrypokemon.core.network.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/** `/ability/{name}` 응답에서 쓰는 부분. 언어별 이름만 꺼낸다. */
+/** `/item/{name}` 처럼 언어별 이름만 꺼내는 응답. */
 @Serializable
 data class NetworkNamedEntry(
     val id: Int = 0,
     val name: String = "",
     val names: List<NetworkSpeciesName> = emptyList(),
+)
+
+/**
+ * `/ability/{name}` 응답. 언어별 이름과 설명을 꺼낸다.
+ *
+ * 설명은 게임마다 하나씩 오고 뒤로 갈수록 최신이다. 아이템 응답은 설명 칸 이름이 달라 같이 쓰지 않는다.
+ */
+@Serializable
+data class NetworkAbility(
+    val id: Int = 0,
+    val name: String = "",
+    val names: List<NetworkSpeciesName> = emptyList(),
+    @SerialName("flavor_text_entries")
+    val flavorTextEntries: List<NetworkFlavorText> = emptyList(),
 )
 
 /** `/type/{name}` 응답. 언어별 이름과 받는 쪽 상성을 꺼낸다. */
