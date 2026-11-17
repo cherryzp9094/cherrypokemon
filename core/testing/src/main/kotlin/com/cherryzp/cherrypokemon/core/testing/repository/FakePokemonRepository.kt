@@ -6,6 +6,8 @@ import androidx.paging.PagingData
 import com.cherryzp.cherrypokemon.core.data.repository.PokemonRepository
 import com.cherryzp.cherrypokemon.core.model.Pokemon
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
+import com.cherryzp.cherrypokemon.core.model.PokemonFilter
+import com.cherryzp.cherrypokemon.core.model.PokemonTypeInfo
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
@@ -40,7 +42,33 @@ class FakePokemonRepository @Inject constructor() : PokemonRepository {
 
     override fun getPokemonsStream(): Flow<PagingData<Pokemon>> = pokemons
 
-    override fun searchPokemonsStream(query: String): Flow<PagingData<Pokemon>> = pokemons
+    /** 마지막으로 검색한 조건. ViewModel 이 거름을 넘기는지 보는 데 쓴다. */
+    var lastFilter: PokemonFilter? = null
+        private set
+
+    override fun searchPokemonsStream(
+        query: String,
+        filter: PokemonFilter,
+    ): Flow<PagingData<Pokemon>> {
+        lastFilter = filter
+        return pokemons
+    }
+
+    /** `ensurePokemonFilters` 가 몇 번 불렸는지. */
+    var filtersCount: Int = 0
+        private set
+
+    override suspend fun ensurePokemonFilters() {
+        filtersCount++
+    }
+
+    private val types = MutableStateFlow(emptyList<PokemonTypeInfo>())
+
+    fun sendTypes(values: List<PokemonTypeInfo>) {
+        types.value = values
+    }
+
+    override fun getTypesStream(): Flow<List<PokemonTypeInfo>> = types
 
     /** 몇 번 불렸는지. 검색이 색인을 채우는지 본다. */
     var indexCount: Int = 0

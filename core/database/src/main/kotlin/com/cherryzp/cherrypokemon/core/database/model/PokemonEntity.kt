@@ -31,3 +31,17 @@ data class PokemonWithName(
 fun PokemonWithName.asExternalModel() = pokemon.asExternalModel().copy(
     localizedName = LocalizedText(korean = korean.orEmpty(), english = english.orEmpty())
 )
+
+/**
+ * 목록을 거를 때 쓰는 포켓몬의 타입과 세대. 목록 표와 따로 한꺼번에 받아 둔다.
+ *
+ * @param type1 첫 번째 타입([com.cherryzp.cherrypokemon.core.model.PokemonType] 이름)
+ * @param generation 처음 나온 세대. 폼은 원래 종의 세대
+ */
+@Entity(tableName = "pokemon_filters")
+data class PokemonFilterEntity(
+    @PrimaryKey val id: Int,
+    val type1: String,
+    val type2: String?,
+    val generation: Int,
+)

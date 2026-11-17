@@ -7,6 +7,7 @@ import com.cherryzp.cherrypokemon.core.database.dao.PokemonDao
 import com.cherryzp.cherrypokemon.core.database.dao.RemoteKeyDao
 import com.cherryzp.cherrypokemon.core.database.model.PokemonDetailEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
+import com.cherryzp.cherrypokemon.core.database.model.PokemonFilterEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonWithName
 import com.cherryzp.cherrypokemon.core.database.model.RemoteKeyEntity
@@ -30,16 +31,35 @@ class FakePokemonDao(private val names: () -> Map<Int, PokemonNameEntity> = { em
     override fun pagingSource(): PagingSource<Int, PokemonWithName> =
         withNames(pokemonsState.value).asPagingSourceFactory().invoke()
 
-    override fun searchPagingSource(query: String): PagingSource<Int, PokemonWithName> =
-        withNames(pokemonsState.value)
+    private val filtersState = MutableStateFlow(emptyMap<Int, PokemonFilterEntity>())
+
+    override fun searchPagingSource(
+        query: String,
+        type: String?,
+        generation: Int?,
+    ): PagingSource<Int, PokemonWithName> {
+        val filters = filtersState.value
+        return withNames(pokemonsState.value)
             .filter {
                 it.pokemon.name.contains(query, ignoreCase = true) ||
                     it.korean.orEmpty().contains(query, ignoreCase = true) ||
                     it.english.orEmpty().contains(query, ignoreCase = true) ||
                     it.pokemon.id.toString().startsWith(query)
             }
+            .filter { pokemon ->
+                val filter = filters[pokemon.pokemon.id]
+                (type == null || filter?.type1 == type || filter?.type2 == type) &&
+                    (generation == null || filter?.generation == generation)
+            }
             .asPagingSourceFactory()
             .invoke()
+    }
+
+    override suspend fun countFilters(): Int = filtersState.value.size
+
+    override suspend fun insertFilters(filters: List<PokemonFilterEntity>) {
+        filtersState.value = filtersState.value + filters.associateBy { it.id }
+    }
 
     private fun withNames(pokemons: List<PokemonEntity>): List<PokemonWithName> {
         val saved = names()

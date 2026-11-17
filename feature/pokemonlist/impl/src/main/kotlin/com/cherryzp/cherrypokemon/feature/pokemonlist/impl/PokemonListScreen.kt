@@ -1,5 +1,6 @@
 package com.cherryzp.cherrypokemon.feature.pokemonlist.impl
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -21,16 +23,26 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,11 +61,14 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.cherryzp.cherrypokemon.core.model.AppLanguage
 import com.cherryzp.cherrypokemon.core.model.Pokemon
+import com.cherryzp.cherrypokemon.core.model.PokemonType
+import com.cherryzp.cherrypokemon.core.model.PokemonTypeInfo
 import com.cherryzp.cherrypokemon.core.ui.LanguageToggle
 import com.cherryzp.cherrypokemon.core.ui.PokemonCard
 import com.cherryzp.cherrypokemon.core.ui.PokemonSearchField
 import com.cherryzp.cherrypokemon.core.ui.R as CoreUiR
 import com.cherryzp.cherrypokemon.core.ui.StatusBarProtection
+import com.cherryzp.cherrypokemon.core.ui.color
 import org.orbitmvi.orbit.compose.collectAsState
 
 /** 화면 좌우 여백. 제목·검색·카드가 모두 같은 선에서 시작하고 끝난다. */
@@ -107,6 +122,13 @@ internal fun PokemonListScreen(
         language = uiState.language ?: currentLanguage,
         query = uiState.query,
         onQueryChange = viewModel::setQuery,
+        filters = ListFilters(
+            type = uiState.typeFilter,
+            generation = uiState.generationFilter,
+            types = uiState.types,
+            onTypeChange = viewModel::setTypeFilter,
+            onGenerationChange = viewModel::setGenerationFilter
+        ),
         onLanguageClick = viewModel::setLanguage,
         onPokemonClick = onPokemonClick,
         selectedPokeId = selectedPokeId,
@@ -122,6 +144,7 @@ internal fun PokemonListScreen(
     onPokemonClick: (pokeId: Int) -> Unit,
     query: String = "",
     onQueryChange: (String) -> Unit = {},
+    filters: ListFilters = ListFilters(),
     selectedPokeId: Int? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -130,7 +153,8 @@ internal fun PokemonListScreen(
             language = language,
             onLanguageClick = onLanguageClick,
             query = query,
-            onQueryChange = onQueryChange
+            onQueryChange = onQueryChange,
+            filters = filters
         )
     }
 
@@ -140,6 +164,7 @@ internal fun PokemonListScreen(
             language = language,
             header = header,
             query = query,
+            filtered = filters.type != null || filters.generation != null,
             onPokemonClick = onPokemonClick,
             selectedPokeId = selectedPokeId
         )
@@ -160,6 +185,7 @@ private fun PokemonListBody(
     language: AppLanguage,
     header: @Composable () -> Unit,
     query: String,
+    filtered: Boolean,
     onPokemonClick: (pokeId: Int) -> Unit,
     selectedPokeId: Int?,
 ) {
@@ -183,10 +209,15 @@ private fun PokemonListBody(
         pokemons.itemCount == 0 -> {
             {
                 Text(
-                    text = if (query.isBlank()) {
-                        stringResource(R.string.feature_pokemonlist_impl_empty)
-                    } else {
-                        stringResource(CoreUiR.string.core_ui_search_empty, query)
+                    text = when {
+                        query.isNotBlank() -> stringResource(
+                            CoreUiR.string.core_ui_search_empty,
+                            query
+                        )
+
+                        filtered -> stringResource(R.string.feature_pokemonlist_impl_empty_filtered)
+
+                        else -> stringResource(R.string.feature_pokemonlist_impl_empty)
                     },
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = 32.dp)
@@ -215,6 +246,7 @@ private fun ListHeader(
     onLanguageClick: (AppLanguage) -> Unit,
     query: String,
     onQueryChange: (String) -> Unit,
+    filters: ListFilters,
 ) {
     Column(
         modifier = Modifier
@@ -239,6 +271,7 @@ private fun ListHeader(
             onQueryChange = onQueryChange,
             modifier = Modifier.padding(top = 4.dp)
         )
+        FilterRow(filters = filters, language = language, modifier = Modifier.padding(top = 8.dp))
     }
 }
 
@@ -385,3 +418,101 @@ private const val PLACEHOLDER_KEY = "placeholder"
 
 /** 키보드가 화면 대부분을 가려도 안내 글이 들어갈 높이. */
 private val PLACEHOLDER_MIN_HEIGHT = 160.dp
+
+/**
+ * 타입·세대 거름. 고른 값과 바꾸는 콜백을 묶는다.
+ *
+ * @param types 타입 단추에 늘어놓을 타입과 언어별 이름
+ */
+internal data class ListFilters(
+    val type: PokemonType? = null,
+    val generation: Int? = null,
+    val types: List<PokemonTypeInfo> = emptyList(),
+    val onTypeChange: (PokemonType?) -> Unit = {},
+    val onGenerationChange: (Int?) -> Unit = {},
+)
+
+/** 검색창 아래의 타입·세대 단추. 누르면 고를 수 있는 값이 펼쳐진다. 맨 위 "전체" 는 거름을 푼다. */
+@Composable
+private fun FilterRow(filters: ListFilters, language: AppLanguage, modifier: Modifier = Modifier) {
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilterDropdown(
+            label = filters.type?.let { type ->
+                filters.types.firstOrNull { it.type == type }?.name?.of(language)?.ifEmpty { null }
+                    ?: type.name
+            } ?: stringResource(R.string.feature_pokemonlist_impl_filter_type),
+            selected = filters.type != null,
+            options = listOf(null) + filters.types,
+            optionLabel = { info ->
+                info?.name?.of(language)?.ifEmpty { info.type.name }
+                    ?: stringResource(R.string.feature_pokemonlist_impl_filter_all)
+            },
+            optionColor = { it?.type?.color },
+            onSelect = { filters.onTypeChange(it?.type) }
+        )
+        FilterDropdown(
+            label = filters.generation?.let {
+                stringResource(R.string.feature_pokemonlist_impl_generation_value, it)
+            } ?: stringResource(R.string.feature_pokemonlist_impl_filter_generation),
+            selected = filters.generation != null,
+            options = listOf(null) + (1..MAX_GENERATION).toList(),
+            optionLabel = { generation ->
+                generation?.let {
+                    stringResource(R.string.feature_pokemonlist_impl_generation_value, it)
+                } ?: stringResource(R.string.feature_pokemonlist_impl_filter_all)
+            },
+            optionColor = { null },
+            onSelect = filters.onGenerationChange
+        )
+    }
+}
+
+/**
+ * 거름 단추 하나. 고른 값이 있으면 그 이름을 적고 채운 모양으로 바뀐다.
+ *
+ * @param optionColor 값 앞에 찍을 색 점. 타입 색을 보여준다
+ */
+@Composable
+private fun <T> FilterDropdown(
+    label: String,
+    selected: Boolean,
+    options: List<T?>,
+    optionLabel: @Composable (T?) -> String,
+    optionColor: (T?) -> Color?,
+    onSelect: (T?) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        FilterChip(
+            selected = selected,
+            onClick = { expanded = true },
+            label = { Text(label) },
+            trailingIcon = {
+                Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = null)
+            }
+        )
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(optionLabel(option)) },
+                    leadingIcon = optionColor(option)?.let { color ->
+                        {
+                            Box(
+                                modifier = Modifier
+                                    .size(12.dp)
+                                    .background(color, CircleShape)
+                            )
+                        }
+                    },
+                    onClick = {
+                        expanded = false
+                        onSelect(option)
+                    }
+                )
+            }
+        }
+    }
+}
+
+/** 지금까지 나온 세대. 새 세대가 나오면 늘린다. */
+private const val MAX_GENERATION = 9

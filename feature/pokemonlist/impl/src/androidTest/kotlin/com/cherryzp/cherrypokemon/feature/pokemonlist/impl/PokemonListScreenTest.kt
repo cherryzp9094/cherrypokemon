@@ -20,7 +20,10 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cherryzp.cherrypokemon.core.designsystem.theme.CherryPokemonTheme
 import com.cherryzp.cherrypokemon.core.model.AppLanguage
+import com.cherryzp.cherrypokemon.core.model.LocalizedText
 import com.cherryzp.cherrypokemon.core.model.Pokemon
+import com.cherryzp.cherrypokemon.core.model.PokemonType
+import com.cherryzp.cherrypokemon.core.model.PokemonTypeInfo
 import com.cherryzp.cherrypokemon.core.ui.R as CoreUiR
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -236,6 +239,60 @@ class PokemonListScreenTest {
         pagingData.value = PagingData.from(emptyList(), loadedStates)
 
         composeTestRule.onNode(hasSetTextAction()).assertIsDisplayed()
+    }
+
+    @Test
+    fun typeFilter_choosingATypePassesIt() {
+        var chosen: PokemonType? = null
+        composeTestRule.setContent {
+            CherryPokemonTheme {
+                PokemonListScreen(
+                    pokemons = flowOf(PagingData.from(emptyList<Pokemon>(), loadedStates))
+                        .collectAsLazyPagingItems(),
+                    language = AppLanguage.KOREAN,
+                    onLanguageClick = {},
+                    onPokemonClick = {},
+                    filters = ListFilters(
+                        types = listOf(
+                            PokemonTypeInfo(PokemonType.Fire, LocalizedText("불꽃", "Fire"))
+                        ),
+                        onTypeChange = { chosen = it }
+                    )
+                )
+            }
+        }
+
+        composeTestRule
+            .onNodeWithText(resources.getString(R.string.feature_pokemonlist_impl_filter_type))
+            .performClick()
+        composeTestRule.onNodeWithText("불꽃").performClick()
+
+        assertEquals(PokemonType.Fire, chosen)
+    }
+
+    @Test
+    fun filteredWithNoResult_saysNothingMatches() {
+        composeTestRule.setContent {
+            CherryPokemonTheme {
+                PokemonListScreen(
+                    pokemons = flowOf(PagingData.from(emptyList<Pokemon>(), loadedStates))
+                        .collectAsLazyPagingItems(),
+                    language = AppLanguage.KOREAN,
+                    onLanguageClick = {},
+                    onPokemonClick = {},
+                    filters = ListFilters(generation = 9)
+                )
+            }
+        }
+
+        composeTestRule
+            .onNodeWithText(resources.getString(R.string.feature_pokemonlist_impl_empty_filtered))
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText(
+                resources.getString(R.string.feature_pokemonlist_impl_generation_value, 9)
+            )
+            .assertIsDisplayed()
     }
 
     @Composable

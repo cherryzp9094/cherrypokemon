@@ -9,12 +9,15 @@ import com.cherryzp.cherrypokemon.core.data.repository.PokemonRepository
 import com.cherryzp.cherrypokemon.core.data.repository.UserDataRepository
 import com.cherryzp.cherrypokemon.core.model.AppLanguage
 import com.cherryzp.cherrypokemon.core.model.Pokemon
+import com.cherryzp.cherrypokemon.core.model.PokemonFilter
+import com.cherryzp.cherrypokemon.core.model.PokemonType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -37,14 +40,59 @@ class PokemonListViewModel @Inject constructor(
     // 검색어는 프로세스가 죽었다 살아나도 남아야 한다. 회전만 버티는 메모리 값으로는 모자라다.
     private val query = savedStateHandle.getMutableStateFlow(QUERY_KEY, "")
 
+    // 고른 거름도 같은 이유로 저장한다. 타입은 이름, 세대는 숫자로 두고 없으면 빈 값이다.
+    private val typeFilter = savedStateHandle.getMutableStateFlow(TYPE_KEY, "")
+    private val generationFilter = savedStateHandle.getMutableStateFlow(GENERATION_KEY, 0)
+
+    private val filter = combine(typeFilter, generationFilter) { type, generation ->
+        PokemonFilter(
+            type = PokemonType.entries.firstOrNull { it.name == type },
+            generation = generation.takeIf { it > 0 }
+        )
+    }
+
     override val container = orbitContainer<PokemonListUiState, PokemonListSideEffect>(
-        initialState = PokemonListUiState(query = query.value)
+        initialState = PokemonListUiState(
+            query = query.value,
+            typeFilter = PokemonType.entries.firstOrNull { it.name == typeFilter.value },
+            generationFilter = generationFilter.value.takeIf { it > 0 }
+        )
     ) {
         coroutineScope {
             launch { observeLanguage() }
+            launch { observeTypes() }
             launch { fillIndexOnFirstSearch() }
             launch { fillNames() }
+            launch { fillFilters() }
         }
+    }
+
+    /**
+     * 타입·세대로 거를 데이터와 18 타입 이름을 받아 둔다. 처음 한 번만 받는다.
+     *
+     * 받지 못하면 거를 수 없지만 목록은 보이므로 실패를 삼킨다. 다음에 화면을 열 때 다시 해 본다.
+     */
+    private suspend fun fillFilters() {
+        runCatching { pokemonRepository.ensurePokemonFilters() }
+    }
+
+    @OptIn(OrbitExperimental::class)
+    private suspend fun observeTypes() = subIntent {
+        repeatOnSubscription {
+            pokemonRepository.getTypesStream().collect { types ->
+                reduce { state.copy(types = types) }
+            }
+        }
+    }
+
+    fun setTypeFilter(type: PokemonType?) = intent {
+        reduce { state.copy(typeFilter = type) }
+        typeFilter.value = type?.name.orEmpty()
+    }
+
+    fun setGenerationFilter(generation: Int?) = intent {
+        reduce { state.copy(generationFilter = generation) }
+        generationFilter.value = generation ?: 0
     }
 
     /**
@@ -60,12 +108,13 @@ class PokemonListViewModel @Inject constructor(
     val pokemons: Flow<PagingData<Pokemon>> = query
         // 글자를 칠 때마다 새 Pager 를 만들지 않는다.
         .debounce { if (it.isEmpty()) 0 else SEARCH_DEBOUNCE_MILLIS }
+        .combine(filter) { text, filter -> text to filter }
         .distinctUntilChanged()
-        .flatMapLatest { text ->
-            if (text.isBlank()) {
+        .flatMapLatest { (text, filter) ->
+            if (text.isBlank() && !filter.isActive) {
                 pokemonRepository.getPokemonsStream()
             } else {
-                pokemonRepository.searchPokemonsStream(text.trim())
+                pokemonRepository.searchPokemonsStream(text.trim(), filter)
             }
         }
         .cachedIn(viewModelScope)
@@ -96,20 +145,23 @@ class PokemonListViewModel @Inject constructor(
     }
 
     /**
-     * 처음 검색할 때 전체 이름 색인을 한 번 받는다.
+     * 처음 검색하거나 거를 때 전체 이름 색인을 한 번 받는다.
      *
      * 검색은 로컬에서만 하므로 색인이 있어야 한다. 받는 동안 친 글자는 [query] 가 하나로 합쳐
      * 요청이 겹치지 않는다. 받지 못하면 다음 검색어에서 다시 해 본다. 그동안은 지금까지 받아 둔
      * 범위에서 찾는다.
      */
     private suspend fun fillIndexOnFirstSearch() {
-        query
-            .filter { it.isNotBlank() }
+        // 거름도 검색처럼 로컬 전체에서 찾으므로 색인이 있어야 한다.
+        query.combine(filter) { text, filter -> text.isNotBlank() || filter.isActive }
+            .filter { it }
             .first { runCatching { pokemonRepository.ensurePokemonIndex() }.isSuccess }
     }
 
     private companion object {
         const val SEARCH_DEBOUNCE_MILLIS = 250L
         const val QUERY_KEY = "query"
+        const val TYPE_KEY = "type"
+        const val GENERATION_KEY = "generation"
     }
 }

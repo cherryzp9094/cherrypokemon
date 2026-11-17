@@ -19,6 +19,7 @@ import com.cherryzp.cherrypokemon.core.database.model.ItemNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.MoveEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonDetailEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
+import com.cherryzp.cherrypokemon.core.database.model.PokemonFilterEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonMoveEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.RemoteKeyEntity
@@ -38,9 +39,10 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         ItemNameEntity::class,
         EggGroupNameEntity::class,
         MoveEntity::class,
-        PokemonMoveEntity::class
+        PokemonMoveEntity::class,
+        PokemonFilterEntity::class
     ],
-    version = 13,
+    version = 14,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -53,7 +55,8 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         AutoMigration(from = 9, to = 10),
         AutoMigration(from = 10, to = 11),
         AutoMigration(from = 11, to = 12),
-        AutoMigration(from = 12, to = 13)
+        AutoMigration(from = 12, to = 13),
+        AutoMigration(from = 13, to = 14)
     ],
     exportSchema = true
 )

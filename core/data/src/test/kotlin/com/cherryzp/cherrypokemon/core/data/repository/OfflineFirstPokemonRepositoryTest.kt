@@ -13,18 +13,25 @@ import com.cherryzp.cherrypokemon.core.data.FakePokemonNetworkDataSource.Compani
 import com.cherryzp.cherrypokemon.core.data.FakeRemoteKeyDao
 import com.cherryzp.cherrypokemon.core.database.model.AbilityNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonEntity
+import com.cherryzp.cherrypokemon.core.database.model.PokemonFilterEntity
 import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
 import com.cherryzp.cherrypokemon.core.database.model.TypeNameEntity
 import com.cherryzp.cherrypokemon.core.model.LocalizedText
 import com.cherryzp.cherrypokemon.core.model.PokemonDetail
+import com.cherryzp.cherrypokemon.core.model.PokemonFilter
 import com.cherryzp.cherrypokemon.core.model.PokemonType
 import com.cherryzp.cherrypokemon.core.network.model.NetworkChainLink
 import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionChain
 import com.cherryzp.cherrypokemon.core.network.model.NetworkEvolutionDetail
+import com.cherryzp.cherrypokemon.core.network.model.NetworkFilterSpecies
+import com.cherryzp.cherrypokemon.core.network.model.NetworkGraphQlName
 import com.cherryzp.cherrypokemon.core.network.model.NetworkLanguageName
 import com.cherryzp.cherrypokemon.core.network.model.NetworkNamedResource
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonFilter
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonFilters
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNames
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonPage
+import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonTypeSlotName
 import com.cherryzp.cherrypokemon.core.network.model.NetworkVariety
 import java.io.IOException
 import kotlinx.coroutines.flow.first
@@ -185,6 +192,59 @@ class OfflineFirstPokemonRepositoryTest {
         assertEquals(
             listOf("pikachu"),
             repository.searchPokemonsStream("피카").asSnapshot().map { it.name }
+        )
+    }
+
+    @Test
+    fun ensurePokemonFilters_savesOnceAndFillsAllTypeNames() = runTest {
+        network.pokemonFilters = NetworkPokemonFilters(
+            pokemons = listOf(
+                NetworkPokemonFilter(
+                    id = 25,
+                    types = listOf(NetworkPokemonTypeSlotName(1, NetworkGraphQlName("electric"))),
+                    species = NetworkFilterSpecies(generation = 1)
+                )
+            )
+        )
+
+        repository.ensurePokemonFilters()
+        repository.ensurePokemonFilters()
+
+        assertEquals(1, network.filtersCallCount)
+        // 타입 단추에 이름을 적을 수 있게 18 타입 이름이 다 있어야 한다.
+        assertEquals(18, localizedNameDao.getSavedTypes().size)
+        assertTrue(repository.getTypesStream().first().all { it.name.korean.isNotEmpty() })
+    }
+
+    @Test
+    fun searchPokemonsStream_filtersByTypeAndGeneration() = runTest {
+        pokemonDao.insertPokemons(
+            listOf(
+                PokemonEntity(id = 25, name = "pikachu", imageUrl = ""),
+                PokemonEntity(id = 172, name = "pichu", imageUrl = ""),
+                PokemonEntity(id = 4, name = "charmander", imageUrl = "")
+            )
+        )
+        pokemonDao.insertFilters(
+            listOf(
+                PokemonFilterEntity(id = 25, type1 = "Electric", type2 = null, generation = 1),
+                PokemonFilterEntity(id = 172, type1 = "Electric", type2 = null, generation = 2),
+                PokemonFilterEntity(id = 4, type1 = "Fire", type2 = null, generation = 1)
+            )
+        )
+
+        // 검색어 없이 거르기만 해도 된다.
+        assertEquals(
+            listOf("pikachu", "pichu"),
+            repository.searchPokemonsStream("", PokemonFilter(type = PokemonType.Electric))
+                .asSnapshot().map { it.name }
+        )
+        assertEquals(
+            listOf("pichu"),
+            repository.searchPokemonsStream(
+                "",
+                PokemonFilter(type = PokemonType.Electric, generation = 2)
+            ).asSnapshot().map { it.name }
         )
     }
 

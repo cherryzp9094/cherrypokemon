@@ -6,4 +6,9 @@
     <string name="feature_pokemonlist_impl_empty">No Pokémon to show</string>
     <string name="feature_pokemonlist_impl_detail_placeholder_title">Pick a Pokémon</string>
     <string name="feature_pokemonlist_impl_detail_placeholder_body">Its stats, evolutions and weaknesses show up here.</string>
+    <string name="feature_pokemonlist_impl_filter_type">Type</string>
+    <string name="feature_pokemonlist_impl_filter_generation">Generation</string>
+    <string name="feature_pokemonlist_impl_filter_all">All</string>
+    <string name="feature_pokemonlist_impl_generation_value">Gen %1$d</string>
+    <string name="feature_pokemonlist_impl_empty_filtered">No Pokémon match these filters</string>
 </resources>
