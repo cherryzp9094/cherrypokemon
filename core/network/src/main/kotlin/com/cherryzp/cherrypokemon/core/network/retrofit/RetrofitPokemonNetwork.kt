@@ -193,7 +193,10 @@ internal class RetrofitPokemonNetwork @Inject constructor(
                 "\"platinum\", \"diamond-pearl\", \"emerald\", \"firered-leafgreen\", " +
                 "\"ruby-sapphire\", \"crystal\", \"gold-silver\", \"yellow\", \"red-blue\""
 
-        /** 종 이름은 1~1025 번, 폼은 10001 번부터. 폼은 기본 모양의 이름만 쓴다. */
+        /**
+         * 종 이름은 1~1025 번, 폼은 10001 번부터. 폼은 기본 모양의 이름만 쓴다.
+         * `pokemonform` 은 폼 낱말(`female` → `암컷의 모습`)이다. 한국어 이름이 빠진 폼에 붙인다.
+         */
         val POKEMON_NAMES_QUERY = """
             {
               pokemonspeciesname(where: {language_id: {_in: [$KOREAN, $ENGLISH]}}) {
@@ -205,6 +208,12 @@ internal class RetrofitPokemonNetwork @Inject constructor(
                   pokemonformnames(where: {language_id: {_in: [$KOREAN, $ENGLISH]}}) {
                     pokemon_name name language_id
                   }
+                }
+              }
+              pokemonform(where: {form_name: {_neq: ""}}) {
+                form_name
+                pokemonformnames(where: {language_id: {_eq: $KOREAN}}) {
+                  name
                 }
               }
             }

@@ -26,6 +26,8 @@ internal fun NetworkPokemonNames.asEntities(): List<PokemonNameEntity> {
             it.name
     }
 
+    val formWords = koreanFormWords()
+
     val species = (korean.keys + english.keys).map { id ->
         PokemonNameEntity(id = id, korean = korean[id].orEmpty(), english = english[id].orEmpty())
     }
@@ -33,7 +35,7 @@ internal fun NetworkPokemonNames.asEntities(): List<PokemonNameEntity> {
         PokemonNameEntity(
             id = form.id,
             korean = form.formName(KOREAN, speciesName = korean[form.speciesId].orEmpty())
-                .ifEmpty { form.koreanNameByRule(korean[form.speciesId].orEmpty()) },
+                .ifEmpty { form.koreanNameByRule(korean[form.speciesId].orEmpty(), formWords) },
             english = form.formName(ENGLISH, speciesName = english[form.speciesId].orEmpty())
                 .ifEmpty { english[form.speciesId].orEmpty() }
         )
@@ -65,12 +67,16 @@ private fun NetworkPokemonForm.formName(languageId: Int, speciesName: String): S
 /**
  * 한국어 폼 이름이 없을 때 식별자(`charizard-gmax`)로 만든 이름.
  *
- * 거다이맥스·메가·리전폼은 한국어 이름이 통째로 빠져 있어, 종 이름만 쓰면 같은 종의 다른 모습과
- * 구분되지 않는다. 규칙이 없는 폼은 종 이름 그대로다.
+ * 거다이맥스·메가·주인·리전폼은 한국어 이름이 통째로 빠져 있어, 종 이름만 쓰면 같은 종의 다른 모습과
+ * 구분되지 않는다. 남은 낱말이 [formWords] 에 있으면 뒤에 붙인다(`메가냐오닉스 암컷의 모습`).
+ * 규칙도 낱말도 없는 폼은 종 이름 그대로다.
  */
-private fun NetworkPokemonForm.koreanNameByRule(speciesName: String): String {
+private fun NetworkPokemonForm.koreanNameByRule(
+    speciesName: String,
+    formWords: Map<String, String>,
+): String {
     val form = name.split('-').drop(1)
-    return when {
+    val byRule = when {
         "gmax" in form -> "거다이맥스 $speciesName"
 
         "mega" in form ->
@@ -84,7 +90,42 @@ private fun NetworkPokemonForm.koreanNameByRule(speciesName: String): String {
         }?.let { "${it.value} $speciesName" }
             ?: speciesName
     }
+    val word = form.wordAfterRule(formWords) ?: return byRule
+    return "$byRule $word"
 }
+
+/**
+ * 규칙 낱말(`mega`, `gmax`, `totem`, 지역, 메가 X·Y 글자)을 빼고 남은 낱말이 통째로 폼 낱말이면 그 이름.
+ *
+ * 뒤쪽 일부만 맞추면 `pikachu-rock-star` 의 `star` 가 다른 피카츄의 `스타컷` 으로 잡혀서 통째로만 본다.
+ */
+private fun List<String>.wordAfterRule(formWords: Map<String, String>): String? =
+    filterIndexed { index, token ->
+        token !in RULE_WORDS && token !in REGION_NAMES &&
+            !(token.length == 1 && getOrNull(index - 1) == "mega")
+    }.joinToString("-").let { formWords[it] }
+
+/**
+ * 폼 낱말별 한국어 이름. 같은 낱말이 폼마다 다르게 옮겨진 것(`white` → `하얀 꽃`, `화이트큐레무`)과
+ * 안농 글자 같은 한 글자 낱말(`kommo-o` 의 `o`)은 뺀다.
+ * PokeAPI 에 없는 팔데아 켄타로스 품종은 게임 표기로 채운다.
+ */
+private fun NetworkPokemonNames.koreanFormWords(): Map<String, String> {
+    val fromApi = formWords.filter { it.formName.length > 1 }.groupBy({ it.formName }) { word ->
+        word.names.firstOrNull()?.name.orEmpty()
+    }.mapValues { (_, names) -> names.filter { it.isNotBlank() }.distinct() }
+        .filterValues { it.size == 1 }
+        .mapValues { (_, names) -> names.single() }
+    return TAUROS_BREEDS + fromApi
+}
+
+private val RULE_WORDS = setOf("gmax", "mega", "totem")
+
+private val TAUROS_BREEDS = mapOf(
+    "combat-breed" to "컴뱃종",
+    "blaze-breed" to "블레이즈종",
+    "aqua-breed" to "워터종"
+)
 
 private val REGION_NAMES = mapOf(
     "alola" to "알로라",

@@ -23,6 +23,16 @@ data class NetworkPokemonNames(
     /** 10000 번 이후의 폼(메가진화, 거다이맥스 등). 종 번호와 폼 이름을 함께 받는다. */
     @SerialName("pokemon")
     val forms: List<NetworkPokemonForm> = emptyList(),
+    /** 폼 낱말과 그 한국어 이름. 한국어 이름이 빠진 폼을 이 낱말로 구분한다. */
+    @SerialName("pokemonform")
+    val formWords: List<NetworkFormWord> = emptyList(),
+)
+
+/** 폼 낱말(`female`, `single-strike`)과 그 한국어 이름(`암컷의 모습`). */
+@Serializable
+data class NetworkFormWord(
+    @SerialName("form_name") val formName: String = "",
+    @SerialName("pokemonformnames") val names: List<NetworkFormName> = emptyList(),
 )
 
 /** 한 언어의 종 이름. 언어는 PokeAPI 언어 ID 다(한국어 3, 영어 9). */

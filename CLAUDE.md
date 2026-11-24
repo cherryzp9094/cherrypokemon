@@ -145,7 +145,7 @@ PokemonNetworkDataSource (Retrofit + kotlinx.serialization)
 
 - 타입·특성·도구·알 그룹 이름은 `type_names`·`ability_names`·`item_names`·`egg_group_names` 에, 기술은 `moves`·`pokemon_moves` 에, 진화 체인은 `evolution_chain_members` 에 캐시한다. 상세를 읽을 때 `combine`·`flatMapLatest` 로 이어 붙인다.
 - **모든 포켓몬의 이름은 GraphQL 한 번으로 받는다.** 목록을 처음 열 때 `graphql.pokeapi.co/v1beta2` 에서 종 1025개와 폼 326개의 한국어·영어 이름을 받아 `pokemon_names` 에 둔다. REST 로는 종마다 불러야 해서 천 번이 넘는다. 목록 카드, 한국어 검색, 아직 열어보지 않은 진화 단계, 같은 종의 다른 모습이 이 표를 쓴다. 받지 못하면 식별자(`pikachu`)로 보인다.
-  - 폼 149개는 PokeAPI 에 한국어 이름이 없다. 거다이맥스·메가·주인·리전폼은 식별자(`charizard-gmax`)로 `거다이맥스 리자몽` 처럼 만들고, 규칙이 없는 폼은 종 이름을 쓴다.
+  - 폼 149개는 PokeAPI 에 한국어 이름이 없다. 거다이맥스·메가·주인·리전폼은 식별자(`charizard-gmax`)로 `거다이맥스 리자몽` 처럼 만든다. 남은 낱말이 다른 폼에 한국어로 있으면(`female` → `암컷의 모습`) 같은 질의로 받아 뒤에 붙인다. 팔데아 켄타로스 품종(`컴뱃종`)만 직접 적었다. 규칙도 낱말도 없는 폼(피카츄 옷 버전, 코라이돈 모드 등)은 종 이름을 쓴다.
 - **타입·세대 거름도 GraphQL 한 번으로 받는다.** 목록을 처음 열 때 1025종의 타입과 세대를 `pokemon_filters` 에, 18 타입 이름을 `type_names` 에 둔다. 검색과 거름은 로컬에서만 한다.
 - **언어는 한국어와 영어를 함께 저장한다.** 한 응답에 둘 다 오므로 언어를 바꿔도 다시 받지 않는다. 모델은 `LocalizedText` 로 들고 화면이 `of(language)` 로 고른다.
 
