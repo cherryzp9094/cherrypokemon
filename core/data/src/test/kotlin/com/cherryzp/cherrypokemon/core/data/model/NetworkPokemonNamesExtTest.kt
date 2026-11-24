@@ -112,6 +112,7 @@ class NetworkPokemonNamesExtTest {
                 form(10326, speciesId = 678, name = "meowstic-female-mega"),
                 form(10250, speciesId = 128, name = "tauros-paldea-combat-breed"),
                 form(10146, speciesId = 784, name = "kommo-o-totem"),
+                form(10999, speciesId = 25, name = "pikachu-world-star"),
                 form(10080, speciesId = 25, name = "pikachu-rock-star")
             ),
             formWords = listOf(
@@ -128,7 +129,24 @@ class NetworkPokemonNamesExtTest {
         assertEquals("팔데아 켄타로스 컴뱃종", entities.byId(10250).korean)
         // 종 식별자의 일부(`kommo-o` 의 `o`)나 뒤쪽 일부(`rock-star` 의 `star`)는 붙이지 않는다.
         assertEquals("주인 짜랑고우거", entities.byId(10146).korean)
-        assertEquals("피카츄", entities.byId(10080).korean)
+        assertEquals("피카츄", entities.byId(10999).korean)
+        // 옷갈아입기 피카츄는 직접 적은 이름이다.
+        assertEquals("하드록 피카츄", entities.byId(10080).korean)
+    }
+
+    @Test
+    fun asEntities_formWordMissingInApi_usesWordWrittenByHand() {
+        val entities = NetworkPokemonNames(
+            speciesNames =
+                species + NetworkLanguageName("싸리용", speciesId = 978, languageId = KOREAN),
+            forms = listOf(
+                form(10258, speciesId = 978, name = "tatsugiri-droopy"),
+                form(10322, speciesId = 978, name = "tatsugiri-curly-mega")
+            )
+        ).asEntities()
+
+        assertEquals("싸리용 늘어진 모습", entities.byId(10258).korean)
+        assertEquals("메가싸리용 젖힌 모습", entities.byId(10322).korean)
     }
 
     private fun formWord(formName: String, korean: String) = NetworkFormWord(

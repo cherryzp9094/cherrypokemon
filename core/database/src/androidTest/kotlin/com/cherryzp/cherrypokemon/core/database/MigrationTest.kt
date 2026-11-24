@@ -347,4 +347,21 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate16To17_clearsPokemonNamesSoTheyAreFetchedAgain() = runTest {
+        helper.createDatabase(version = 16).use { connection ->
+            connection.execSQL(
+                "INSERT INTO pokemon_names (id, korean, english) " +
+                    "VALUES (10258, '싸리용', 'Droopy Form Tatsugiri')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 17).use { connection ->
+            connection.prepare("SELECT COUNT(*) FROM pokemon_names").use { statement ->
+                assertTrue(statement.step())
+                assertEquals(0, statement.getInt(0))
+            }
+        }
+    }
 }
