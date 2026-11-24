@@ -42,7 +42,7 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         PokemonMoveEntity::class,
         PokemonFilterEntity::class
     ],
-    version = 15,
+    version = 16,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -57,7 +57,8 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         AutoMigration(from = 11, to = 12),
         AutoMigration(from = 12, to = 13),
         AutoMigration(from = 13, to = 14),
-        AutoMigration(from = 14, to = 15, spec = ClearPokemonNamesSpec::class)
+        AutoMigration(from = 14, to = 15, spec = ClearPokemonNamesSpec::class),
+        AutoMigration(from = 15, to = 16, spec = ClearPokemonNamesSpec::class)
     ],
     exportSchema = true
 )
@@ -87,6 +88,8 @@ internal class ClearEvolutionChainsSpec : AutoMigrationSpec {
 /**
  * 14 → 15: 한국어 이름이 없는 폼(거다이맥스·메가·리전폼)에 이름을 만들어 넣게 됐다. 이미 받아 둔
  * 이름에는 종 이름만 들어 있으므로 지워서 목록을 열 때 다시 받게 한다.
+ *
+ * 15 → 16: 같은 이유다. 남은 폼 낱말(`암컷의 모습`, `컴뱃종`)을 붙이게 됐다.
  */
 internal class ClearPokemonNamesSpec : AutoMigrationSpec {
     override suspend fun onPostMigrate(connection: SQLiteConnection) {

@@ -3,6 +3,7 @@ package com.cherryzp.cherrypokemon.core.data.model
 import com.cherryzp.cherrypokemon.core.database.model.PokemonNameEntity
 import com.cherryzp.cherrypokemon.core.network.model.NetworkFormName
 import com.cherryzp.cherrypokemon.core.network.model.NetworkFormNames
+import com.cherryzp.cherrypokemon.core.network.model.NetworkFormWord
 import com.cherryzp.cherrypokemon.core.network.model.NetworkLanguageName
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonForm
 import com.cherryzp.cherrypokemon.core.network.model.NetworkPokemonNames
@@ -17,7 +18,10 @@ class NetworkPokemonNamesExtTest {
         NetworkLanguageName("피카츄", speciesId = 25, languageId = KOREAN),
         NetworkLanguageName("Pikachu", speciesId = 25, languageId = ENGLISH),
         NetworkLanguageName("테오키스", speciesId = 386, languageId = KOREAN),
-        NetworkLanguageName("Deoxys", speciesId = 386, languageId = ENGLISH)
+        NetworkLanguageName("Deoxys", speciesId = 386, languageId = ENGLISH),
+        NetworkLanguageName("켄타로스", speciesId = 128, languageId = KOREAN),
+        NetworkLanguageName("냐오닉스", speciesId = 678, languageId = KOREAN),
+        NetworkLanguageName("짜랑고우거", speciesId = 784, languageId = KOREAN)
     )
 
     @Test
@@ -99,6 +103,38 @@ class NetworkPokemonNamesExtTest {
         // 주인 포켓몬이면서 알로라 모습이면 주인 쪽을 쓴다.
         assertEquals("주인 피카츄", entities.byId(10150).korean)
     }
+
+    @Test
+    fun asEntities_formWithoutKoreanName_appendsRemainingFormWord() {
+        val entities = NetworkPokemonNames(
+            speciesNames = species,
+            forms = listOf(
+                form(10326, speciesId = 678, name = "meowstic-female-mega"),
+                form(10250, speciesId = 128, name = "tauros-paldea-combat-breed"),
+                form(10146, speciesId = 784, name = "kommo-o-totem"),
+                form(10080, speciesId = 25, name = "pikachu-rock-star")
+            ),
+            formWords = listOf(
+                formWord("female", "암컷의 모습"),
+                formWord("o", "O"),
+                formWord("star", "스타컷"),
+                formWord("white", "하얀 꽃"),
+                formWord("white", "화이트큐레무")
+            )
+        ).asEntities()
+
+        assertEquals("메가냐오닉스 암컷의 모습", entities.byId(10326).korean)
+        // PokeAPI 에 없는 켄타로스 품종은 게임 표기로 채운다.
+        assertEquals("팔데아 켄타로스 컴뱃종", entities.byId(10250).korean)
+        // 종 식별자의 일부(`kommo-o` 의 `o`)나 뒤쪽 일부(`rock-star` 의 `star`)는 붙이지 않는다.
+        assertEquals("주인 짜랑고우거", entities.byId(10146).korean)
+        assertEquals("피카츄", entities.byId(10080).korean)
+    }
+
+    private fun formWord(formName: String, korean: String) = NetworkFormWord(
+        formName = formName,
+        names = listOf(NetworkFormName(name = korean))
+    )
 
     private fun namesWith(form: NetworkPokemonForm) =
         NetworkPokemonNames(speciesNames = species, forms = listOf(form)).asEntities()

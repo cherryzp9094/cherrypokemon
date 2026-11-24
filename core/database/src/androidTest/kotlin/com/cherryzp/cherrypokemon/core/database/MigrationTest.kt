@@ -329,4 +329,22 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate15To16_clearsPokemonNamesSoTheyAreFetchedAgain() = runTest {
+        helper.createDatabase(version = 15).use { connection ->
+            connection.execSQL(
+                "INSERT INTO pokemon_names (id, korean, english) " +
+                    "VALUES (10250, '팔데아 켄타로스', 'Paldean Tauros (Combat Breed)')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 16).use { connection ->
+            // 예전 이름에는 품종이 빠져 있다. 지워야 목록을 열 때 다시 받는다.
+            connection.prepare("SELECT COUNT(*) FROM pokemon_names").use { statement ->
+                assertTrue(statement.step())
+                assertEquals(0, statement.getInt(0))
+            }
+        }
+    }
 }
