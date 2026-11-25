@@ -42,7 +42,7 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         PokemonMoveEntity::class,
         PokemonFilterEntity::class
     ],
-    version = 16,
+    version = 17,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -58,7 +58,8 @@ import com.cherryzp.cherrypokemon.core.database.util.PokemonTypeListConverter
         AutoMigration(from = 12, to = 13),
         AutoMigration(from = 13, to = 14),
         AutoMigration(from = 14, to = 15, spec = ClearPokemonNamesSpec::class),
-        AutoMigration(from = 15, to = 16, spec = ClearPokemonNamesSpec::class)
+        AutoMigration(from = 15, to = 16, spec = ClearPokemonNamesSpec::class),
+        AutoMigration(from = 16, to = 17, spec = ClearPokemonNamesSpec::class)
     ],
     exportSchema = true
 )
@@ -90,6 +91,7 @@ internal class ClearEvolutionChainsSpec : AutoMigrationSpec {
  * 이름에는 종 이름만 들어 있으므로 지워서 목록을 열 때 다시 받게 한다.
  *
  * 15 → 16: 같은 이유다. 남은 폼 낱말(`암컷의 모습`, `컴뱃종`)을 붙이게 됐다.
+ * 16 → 17: 같은 이유다. PokeAPI 에 없는 폼 낱말(`늘어진 모습`)과 옷갈아입기 피카츄 이름을 직접 넣었다.
  */
 internal class ClearPokemonNamesSpec : AutoMigrationSpec {
     override suspend fun onPostMigrate(connection: SQLiteConnection) {

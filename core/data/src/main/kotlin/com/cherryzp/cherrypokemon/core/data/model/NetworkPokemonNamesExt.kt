@@ -69,12 +69,13 @@ private fun NetworkPokemonForm.formName(languageId: Int, speciesName: String): S
  *
  * 거다이맥스·메가·주인·리전폼은 한국어 이름이 통째로 빠져 있어, 종 이름만 쓰면 같은 종의 다른 모습과
  * 구분되지 않는다. 남은 낱말이 [formWords] 에 있으면 뒤에 붙인다(`메가냐오닉스 암컷의 모습`).
- * 규칙도 낱말도 없는 폼은 종 이름 그대로다.
+ * 규칙도 낱말도 없는 폼은 종 이름 그대로다. [FORM_NAMES_BY_HAND] 에 있으면 그 이름이다.
  */
 private fun NetworkPokemonForm.koreanNameByRule(
     speciesName: String,
     formWords: Map<String, String>,
 ): String {
+    FORM_NAMES_BY_HAND[name]?.let { return it }
     val form = name.split('-').drop(1)
     val byRule = when {
         "gmax" in form -> "거다이맥스 $speciesName"
@@ -108,7 +109,7 @@ private fun List<String>.wordAfterRule(formWords: Map<String, String>): String? 
 /**
  * 폼 낱말별 한국어 이름. 같은 낱말이 폼마다 다르게 옮겨진 것(`white` → `하얀 꽃`, `화이트큐레무`)과
  * 안농 글자 같은 한 글자 낱말(`kommo-o` 의 `o`)은 뺀다.
- * PokeAPI 에 없는 팔데아 켄타로스 품종은 게임 표기로 채운다.
+ * PokeAPI 에 없는 낱말은 [FORM_WORDS_BY_HAND] 로 채운다.
  */
 private fun NetworkPokemonNames.koreanFormWords(): Map<String, String> {
     val fromApi = formWords.filter { it.formName.length > 1 }.groupBy({ it.formName }) { word ->
@@ -116,15 +117,40 @@ private fun NetworkPokemonNames.koreanFormWords(): Map<String, String> {
     }.mapValues { (_, names) -> names.filter { it.isNotBlank() }.distinct() }
         .filterValues { it.size == 1 }
         .mapValues { (_, names) -> names.single() }
-    return TAUROS_BREEDS + fromApi
+    return FORM_WORDS_BY_HAND + fromApi
 }
 
 private val RULE_WORDS = setOf("gmax", "mega", "totem")
 
-private val TAUROS_BREEDS = mapOf(
+/**
+ * PokeAPI 에 한국어가 없는 폼 낱말. 한국어 도감 사이트의 폼 표기로 확인한 것만 둔다.
+ * 확인하지 못한 것(코라이돈·미라이돈 모드, 테라파고스 폼, 파트너 피카츄 등)은 넣지 않는다.
+ */
+private val FORM_WORDS_BY_HAND = mapOf(
     "combat-breed" to "컴뱃종",
     "blaze-breed" to "블레이즈종",
-    "aqua-breed" to "워터종"
+    "aqua-breed" to "워터종",
+    "curly" to "젖힌 모습",
+    "droopy" to "늘어진 모습",
+    "stretchy" to "뻗은 모습",
+    "blue-plumage" to "블루 페더",
+    "yellow-plumage" to "옐로 페더",
+    "white-plumage" to "화이트 페더",
+    "three-segment" to "세 마디폼",
+    "hero" to "마이티폼",
+    "family-of-three" to "세 식구",
+    "roaming" to "도보폼",
+    "white-striped" to "백색근의 모습"
+)
+
+/** 낱말을 뒤에 붙이지 않고 앞에 두는 이름. 옷갈아입기 피카츄는 게임에서 `하드록 피카츄` 처럼 부른다. */
+private val FORM_NAMES_BY_HAND = mapOf(
+    "pikachu-rock-star" to "하드록 피카츄",
+    "pikachu-belle" to "마담 피카츄",
+    "pikachu-pop-star" to "아이돌 피카츄",
+    "pikachu-phd" to "닥터 피카츄",
+    "pikachu-libre" to "마스크드 피카츄",
+    "pikachu-cosplay" to "옷갈아입기 피카츄"
 )
 
 private val REGION_NAMES = mapOf(
